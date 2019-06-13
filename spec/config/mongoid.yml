@@ -1,0 +1,16 @@
+development:
+  clients:
+    default:
+      database: event_source_development
+      hosts:
+        - localhost:27017
+test:
+  clients:
+    default:
+      database: event_source_test
+      hosts:
+        - localhost:27017
+      options:
+        read:
+          mode: :primary
+        max_pool_size: 1
