@@ -34,7 +34,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'dry-monads',               '~> 1.2'
 
   spec.add_development_dependency 'bundler',      '~> 2.0'
-  spec.add_development_dependency 'rake',         '~> 12.0'
+  spec.add_development_dependency 'rake',         '~> 13.0'
   spec.add_development_dependency 'rspec',        '~> 3.0'
   spec.add_development_dependency 'rspec-rails',  '~> 3.0'
   spec.add_development_dependency 'pry-byebug',   '~> 3.0'
