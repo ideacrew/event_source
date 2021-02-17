@@ -6,15 +6,14 @@ module Organizations
     send(:include, Dry::Monads[:try])
     include EventSource::Events
 
-    # event Organizations::OrganizationCreated,
-    #       entity_class: Organizations::Organization,
-    #       contract_class: Organizations::CreateContract,
-    #       attributes: %i[hbx_id legal_name entity_kind fein],
-    #       metadata: {
-    #         command: self.class.name,
-    #         correlation_id: '',
-    #         created_at: DateTime.now
-    #       }
+    event Organizations::OrganizationCreated,
+          entity_class: Organizations::Organization,
+          attributes: %i[hbx_id legal_name entity_kind fein],
+          metadata: {
+            command: command_name,
+            # correlation_id: '',
+            created_at: DateTime.now
+          }
 
     # event(event_name, options = [])
     # # namespaced event, attributes
