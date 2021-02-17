@@ -1,20 +1,26 @@
-require "bundler/setup"
-require "event_source"
-require "active_support"
-require "active_support/core_ext"
-require "pry-byebug"
-
-Mongoid.load!('./spec/config/mongoid.yml', :test)
-# Mongoid.logger.level = Logger::DEBUG
-# Mongo::Logger.logger.level = Logger::DEBUG
-
+require 'bundler/setup'
+require 'event_source'
+require 'pry-byebug'
 
 # Set up the local context
-Dir['./spec/event_source/organizations/*.rb'].sort.each { |file| require file }
+
+# Bring in the Rails test harness
+# require "active_support/all"
+SPEC_ROOT = Pathname(__FILE__).dirname
+Dir[SPEC_ROOT.join('event_source', '**', '*.rb')].sort.each do |file|
+  require file
+end
+Dir[SPEC_ROOT.join('config', '**', '*.rb')].sort.each { |file| require file }
+Dir[SPEC_ROOT.join('support', 'config', '**', '*.rb')].sort.each do |file|
+  require file
+end
+Dir[SPEC_ROOT.join('app', 'types.rb')].sort.each { |file| require file }
+Dir[SPEC_ROOT.join('app', '**', '*.rb')].sort.each { |file| require file }
+# Dir[SPEC_ROOT.join("app/*.rb").to_s].each(&method(:require))
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
-  config.example_status_persistence_file_path = ".rspec_status"
+  config.example_status_persistence_file_path = '.rspec_status'
 
   # Disable RSpec exposing methods globally on `Module` and `main`
   config.disable_monkey_patching!

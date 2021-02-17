@@ -1,14 +1,23 @@
-require 'dry/monads/result'
+require 'event_source/version'
+require 'event_source/error'
+require 'date'
 
-require "active_support"
-require "active_support/core_ext/module/introspection"
-require "mongoid"
-require "event_source/version"
-require "event_source/command"
-require "event_source/dispatcher"
-require "event_source/event_stream"
+require 'dry/types/type'
+require 'dry/monads'
+require 'dry/monads/do'
+require 'dry/monads/result'
+require 'dry/validation'
+require 'dry-struct'
+
+require 'active_support/all'
+# require 'event_source/command'
+# require 'event_source/dispatcher'
+# require 'event_source/event_stream'
+
+require 'event_source/inflector'
+require 'event_source/metadata'
+require 'event_source/event'
 
 module EventSource
-  class Error < StandardError; end
   # Your code goes here...
 end
