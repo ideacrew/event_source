@@ -1,13 +1,8 @@
 # frozen_string_literal: true
 
-require 'dry/core/equalizer'
-require 'dry/events/constants'
-
 module EventSource
   # Event object
   class Event
-    include Dry.Equalizer(:id, :payload)
-
     # @!attribute [r] id
     # @return [Symbol, String] The event identifier
     attr_reader :id
@@ -54,9 +49,10 @@ module EventSource
       attributes ? self.class.new(id, @payload.merge(attributes)) : @payload
     end
 
+    # Naming convention
     # @api private
     def listener_method
-      @listener_method ||= :"on_#{id.to_s.gsub('.'', '_'')}"
+      @listener_method ||= :"on_#{id.to_s.gsub('.', '_')}"
     end
   end
 end
