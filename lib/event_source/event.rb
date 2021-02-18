@@ -56,7 +56,7 @@ module EventSource
 
     # @api private
     def listener_method
-      @listener_method ||= :"on_#{id.to_s.gsub('.'', '_'')}"
+      @listener_method ||= :"on_#{id.to_s.gsub('.', '_')}"
     end
   end
 end
