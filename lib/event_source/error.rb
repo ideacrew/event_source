@@ -16,5 +16,7 @@ module EventSource
     class Error < StandardError
       include ErrorInitalizer
     end
+
+    InvalidEventNameError = Class.new(Error)
   end
 end
