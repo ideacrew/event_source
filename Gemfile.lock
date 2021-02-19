@@ -3,6 +3,7 @@ PATH
   specs:
     event_source (0.3.0)
       activesupport
+      dry-initializer (~> 3.0)
       dry-monads (~> 1.2)
       dry-struct (~> 1.0)
       dry-types (~> 1.0)

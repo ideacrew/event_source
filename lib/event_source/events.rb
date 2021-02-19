@@ -91,7 +91,7 @@ module EventSource
 
       def map_attributes(options)
         map = options.fetch(:attribute_map)
-        source = = options.fetch(:attribute_hash)
+        source = options.fetch(:attribute_hash)
 
         # block to map attribute keys from Command to Event
       end

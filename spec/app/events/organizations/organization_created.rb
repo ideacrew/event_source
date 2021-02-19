@@ -1,20 +1,14 @@
 # frozen_string_literal: true
 
 module Organizations
-  class OrganizationCreated #< EventSource::Event
-    # organization = Organizations::Organization.new
+  class OrganizationCreated < EventSource::Event
+    # Schema used to validaate Event payload
+    # contract Organizations::CreateContract
 
-    # data_attributes :hbx_id, :legal_name, :entity_kind, :fein, :meta
-
-    # organization_created_contract.new.call
-
-    # Use #apply to update the source model record
-    def apply(organization)
-      organization.fein = fein
-      organization.legal_name = legal_name
-      organization.entity_kind = entity_kind
-
-      organization
-    end
+    option :hbx_id, optional: false
+    option :legal_name, optional: false
+    option :entity_kind, optional: false
+    option :fein, optional: false
+    option :metadata, optional: true
   end
 end
