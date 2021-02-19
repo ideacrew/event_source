@@ -14,8 +14,8 @@ Dir[SPEC_ROOT.join('config', '**', '*.rb')].sort.each { |file| require file }
 Dir[SPEC_ROOT.join('support', 'config', '**', '*.rb')].sort.each do |file|
   require file
 end
-Dir[SPEC_ROOT.join('app', 'types.rb')].sort.each { |file| require file }
-Dir[SPEC_ROOT.join('app', '**', '*.rb')].sort.each { |file| require file }
+Dir[SPEC_ROOT.join('rails_app', 'types.rb')].sort.each { |file| require file }
+Dir[SPEC_ROOT.join('rails_app', '**', '*.rb')].sort.each { |file| require file }
 # Dir[SPEC_ROOT.join("app/*.rb").to_s].each(&method(:require))
 
 RSpec.configure do |config|

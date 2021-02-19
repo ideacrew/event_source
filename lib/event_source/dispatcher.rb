@@ -51,8 +51,8 @@ module EventSource
   end
 
   # Contains sync and async listeners. Used to:
-  # * store listeners via Rules#register
-  # * return a set of matching listeners with Rules#for
+  # * store listeners via RuleSet#register
+  # * return a set of matching listeners with RuleSet#for
   class ListenerSet
     attr_reader :sync, :async
 

@@ -1,106 +1,138 @@
-# Mixin to add EventSource Commands
-#
-# A Command has the following public API.
-#
-# ```
-#   MyCommand.call(user: ..., post: ...) # shorthand to initialize, validate and execute the command
-#   command = MyCommand.new(user: ..., post: ...)
-#   command.valid? # true or false
-#   command.errors # +> <ActiveModel::Errors ... >
-#   command.call # validate and execute the command
-# ```
-#
-# `call` will raise an `ActiveModel::RecordInvalid` error if it fails validations.
-#
-# Commands including the `Command` mixin must:
-# * list the attributes the command takes
-# * implement `build_event` which returns a non-persisted event or nil for noop.
-#
-# Ex:
-#
-# ```
-#   class MyCommand
-#     include Command
-#
-#     attributes :user, :post
-#
-#     def build_event
-#       Event.new(...)
-#     end
-#   end
-# ```
+# frozen_string_literal: true
 
+require 'dry/events/publisher'
 module EventSource
+  # Define an Event
+  # @example
+  # event Organizations::OrganizationCreated,
+  #   entity_klass:   Organizations::Organization,
+  #   contract_klass: Organizations::CreateOrganizationContract,
+  #   attributes:     [:hbx_id, :legal_name, :entity_kind, :fein],
+  #   metadata: {
+  #     command: self.class.name,
+  #     correlation_id: "",
+  #     created_at: DateTime.now,
+  #   }
+
+  # This module defines behavior for Events
   module Command
+    include Metadata
     extend ActiveSupport::Concern
 
     included do
-      include Dry::Monads::Result::Mixin
+      class_attribute :events
+
+      self.events = {}
+
+      # @return [EventSource::Event]
+      attr_reader :event_klass
+
+      # @return [Dry::Struct]
+      attr_reader :entity_klass
+
+      # @return [Dry::Validation::Contract]
+      attr_reader :contract_klass
+
+      # @return [Array]
+      attr_reader :attributes
+
+      # @api private
+      def initialize(event_klass, **options)
+        super
+        @events = []
+      end
+
+      def command_name
+        self.class.name
+      end
+
+      # Return an array with this +Event+ only in it.
+      # @example Return the event in an array.
+      #   event.to_a
+      #
+      # @return [ Array<Event> ] An array with the Event as its only item.
+      def to_a
+        [self]
+      end
+
+      # 1. Constantize and Verify Event Exists and is Correct Class (?). Raise error for fail
+      # 2. Start with event attribute keys for Command (source) and Event (destination) and override any with mapped values
+
+      # Map values, for example:
+      #   attribute_map = { identifier: :id }
+      #   mixin_class[:identifier] => event[:id]
+
+      # 3. Construct Metadata
+      # 3.1 Accept passed key/value pairs and construct default key/value pairs
+      # 3.2 Default key/value pairs:
+
+      #   command (mixin class name)
+      #   submitted_at timestamp when fired
+      #   correlation_id - GUID from Rails Global ID or gem
+
+      # 4. Validate using contract referenced in Event
+      # 5. Expose instance method to fire defined event
+      # 6. Log event bhild and fire actions and success or failure
+
+      def map_attributes(options)
+        map = options.fetch(:attribute_map)
+        source = options.fetch(:attribute_hash)
+
+        # block to map attribute keys from Command to Event
+      end
+
+      def event_klass(options); end
+
+      def contract_klass(options)
+        options.fetch(:contract_klass).new
+      end
+
+      # constructor = (nil, **options, &block)
+
+      def apply_contract; end
+
+      # def add_listener(listener)
+      #   subscribe(listener)
+      # end
+
+      def publish(event, payload)
+        publisher = Organizations::OrganizationEvents.new
+        publisher.publish(event, payload)
+      end
+
+      def map(event, params)
+      end
     end
 
     class_methods do
-      # Run validations and persist the event.
-      #
-      # On success: returns the event
-      # On noop: returns nil
-      # On failure: raise an ActiveRecord::RecordInvalid error
-      def call(*args)
-        new(*args).call
-      end
+      
+      # @param [Event] event
+      # @param [Hash] options
+      # @option options [Array] :values
+      def event(event_key, publisher)
+        # Use event key to instantiate event class 
+        # event = Organizations::OrganizationCreated.new(event_key, payload)
+        # @@publisher = Dry::Events::Publisher[:organization]
+        
+        # {
+        #   event_class: Organizations::OrganizationCreated
+        #   attribute_map: %i[hbx_id legal_name entity_kind fein],
+        #   metadata: {
+        #     command: 'create',
+        #     # correlation_id: '',
+        #     created_at: DateTime.now
+        #   }
+        # }
 
-      # Define the attributes.
-      # They are set when initializing the command as keyword arguments and
-      # are all accessible as getter methods.
-      #
-      # ex: `attributes :post, :user, :ability`
-      def attributes(*args)
-        attr_reader(*args)
-
-        initialize_method_arguments = args.map { |arg| "#{arg}:" }.join(', ')
-        initialize_method_body = args.map { |arg| "@#{arg} = #{arg}" }.join(";")
-
-        class_eval <<~CODE
-        def initialize(#{initialize_method_arguments})
-           #{initialize_method_body}
-           after_initialize
-        end
-        CODE
-      end
-    end
-
-    def call
-      return nil if event.nil?
-      Failure("Event should not be persisted at this stage: #{event}") if event.persisted?
-
-      execute!
-      event
-    end
-
-    # A new record or nil if noop
-    def event
-      @event ||= build_event
-    end
-
-    private
-    # Save the event. Should not be overwritten by the command as side effects
-    # should be implemented via Listeners triggering other Events.
-    def execute!
-      if event.save
-        Success(event)
-      else
-        Failure(event.messages)
+        # Transform payload to match event class options
+        # @event_klass = event
+        # @contract_klass = options.fetch(:contract_klass).freeze
+        # @entity_klass = entity_klass(options)
+        # @attribute_map = options.fetch(:attribute_map).freeze
+        # @metadata = options.fetch(:metadata).freeze
+        # events[event_key] = Event.new(event_key, payload)
+        # register_event(event_key, event.to_h)
       end
     end
-
-    # Returns a new event record or nil if noop
-    def build_event
-      raise NotImplementedError
-    end
-
-    # Hook to set default values
-    def after_initialize
-      # noop
-    end
-    
   end
 end

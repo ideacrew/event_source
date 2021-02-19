@@ -11,7 +11,6 @@ module EventSource
 
     # @api private
     def self.new(id, payload = EMPTY_HASH)
-      binding.pry
 
       if (id.is_a?(String) || id.is_a?(Symbol)) && !id.empty?
         return super(id, payload)
@@ -56,8 +55,8 @@ module EventSource
 
     # Set the contract class used to validate payload
     # @param [String, Class]
-    def contract(klass)
-      @contract = klass.contantize
+    def self.contract(klass)
+      @contract = klass.is_a?(Class) ? klass : klass.constantize
     end
 
     # Validate payload against schema contract
@@ -76,16 +75,20 @@ module EventSource
       @valid ||= false
     end
 
+    def publish
+      Dispatcher.dispatch(self)
+    end
+
     # Coerce an event to a hash
     # @return [Hash]
     def to_h
       @payload
     end
 
-    # Naming convention
-    # @api private
-    def listener_method
-      @listener_method ||= :"on_#{id.to_s.gsub('.', '_')}"
-    end
+    # # Naming convention
+    # # @api private
+    # def listener_method
+    #   @listener_method ||= :"on_#{id.to_s.gsub('.', '_')}"
+    # end
   end
 end

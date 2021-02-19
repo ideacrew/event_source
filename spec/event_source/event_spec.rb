@@ -12,7 +12,7 @@ require 'spec_helper'
 # 4. EventStream
 # 4.1 Future: v0.3.0 will not include persistence
 
-RSpec.describe EventSource::Events do
+RSpec.describe EventSource::Event do
   context 'it should do something useful' do
   end
 end

@@ -16,7 +16,7 @@ require 'active_support/all'
 
 require 'event_source/inflector'
 require 'event_source/metadata'
-require 'event_source/events'
+require 'event_source/command'
 require 'event_source/event'
 
 module EventSource
