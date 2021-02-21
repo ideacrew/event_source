@@ -4,7 +4,6 @@ module EventSource
   # Define an Event
   # @example
   # event Organizations::OrganizationCreated,
-  #   entity_klass:   Organizations::Organization,
   #   contract_klass: Organizations::CreateOrganizationContract,
   #   attributes:     [:hbx_id, :legal_name, :entity_kind, :fein],
   #   metadata: {

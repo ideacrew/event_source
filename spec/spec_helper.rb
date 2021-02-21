@@ -7,14 +7,17 @@ require 'pry-byebug'
 # Bring in the Rails test harness
 # require "active_support/all"
 SPEC_ROOT = Pathname(__FILE__).dirname
-Dir[SPEC_ROOT.join('event_source', '**', '*.rb')].sort.each do |file|
-  require file
-end
-Dir[SPEC_ROOT.join('config', '**', '*.rb')].sort.each { |file| require file }
 Dir[SPEC_ROOT.join('support', 'config', '**', '*.rb')].sort.each do |file|
   require file
 end
-Dir[SPEC_ROOT.join('rails_app', 'types.rb')].sort.each { |file| require file }
+Dir[SPEC_ROOT.join('event_source', '**', '*.rb')].sort.each do |file|
+  require file
+end
+Dir[SPEC_ROOT.join('rails_app', 'config', '**', '*.rb')].sort.each do |file|
+  require file
+end
+Dir[SPEC_ROOT.join('rails_app', 'app', 'entities', 'types.rb')].sort
+  .each { |file| require file }
 Dir[SPEC_ROOT.join('rails_app', '**', '*.rb')].sort.each { |file| require file }
 # Dir[SPEC_ROOT.join("app/*.rb").to_s].each(&method(:require))
 
