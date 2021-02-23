@@ -33,9 +33,16 @@ module EventSource
           with(metadata: @metadata.merge(data))
         end
       end
+
       def pristine
         with(meta: EMPTY_HASH)
       end
+
+      def command_id; end
+
+      def correlation_id; end
+
+      def created_at; end
     end
   end
 end

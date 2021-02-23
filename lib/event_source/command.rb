@@ -1,13 +1,12 @@
 # frozen_string_literal: true
 
 require 'dry/events/publisher'
+
 module EventSource
   # Define an Event
   # @example
-  # event Organizations::OrganizationCreated,
-  #   entity_klass:   Organizations::Organization,
-  #   contract_klass: Organizations::CreateOrganizationContract,
-  #   attributes:     [:hbx_id, :legal_name, :entity_kind, :fein],
+  # event 'organizations.organization.created',
+  #   attributes: {:hbx_id, :legal_name, :entity_kind, :fein],
   #   metadata: {
   #     command: self.class.name,
   #     correlation_id: "",
@@ -15,20 +14,59 @@ module EventSource
   #   }
 
   # This module defines behavior for Events
+
+  # Mixin to add EventSource Commands
+  #
+  # A Command has the following public API.
+  # ```
+  #   MyCommand.call(user: ..., post: ...) # shorthand to initialize, validate and execute the command
+  #   command = MyCommand.new(user: ..., post: ...)
+  #   command.valid? # true or false
+  #   command.errors # +> <Dry::Validation::Errors ... >
+  #   command.publish # validate and execute the command
+  # ```
+  #
+  # `call` will raise an `EventSource::UndefinedEvent` error if corresponding constant isn't found for the EventId
+  #
+  # Commands including the `Command` mixin must:
+  # * list the attributes the command takes
+  # * implement `event` which returns a non-persisted event or nil for noop.
+  #
+  # Example:
+  #
+  # ```
+  #   class MyCommand
+  #     include Command
+  #
+  #     def call(params)
+  #       values = yield validate(params)
+  #       event = yield build_event(values)
+  #     end
+  #
+  #     private
+  #
+  #     def build_event
+  #       Event.new(...)
+  #     end
+  #   end
+  # ```
+
+  # Change a Domain Model Entity's state
+
   module Command
-    include Metadata
+    send(:include, Dry::Monads[:result, :do])
+    send(:include, Dry::Monads[:try])
     extend ActiveSupport::Concern
 
     included do
+      include Dry::Monads::Result::Mixin
+
       class_attribute :events
 
-      self.events = {}
+      self.events = []
 
       # @return [EventSource::Event]
       attr_reader :event_klass
-
-      # @return [Dry::Struct]
-      attr_reader :entity_klass
 
       # @return [Dry::Validation::Contract]
       attr_reader :contract_klass
@@ -74,46 +112,44 @@ module EventSource
       # 5. Expose instance method to fire defined event
       # 6. Log event bhild and fire actions and success or failure
 
-      def map_attributes(options)
-        map = options.fetch(:attribute_map)
-        source = options.fetch(:attribute_hash)
-
-        # block to map attribute keys from Command to Event
-      end
-
-      def event_klass(options); end
-
-      def contract_klass(options)
-        options.fetch(:contract_klass).new
-      end
-
-      # constructor = (nil, **options, &block)
-
-      def apply_contract; end
-
-      # def add_listener(listener)
-      #   subscribe(listener)
-      # end
-
-      def publish(event, payload)
-        publisher = Organizations::OrganizationEvents.new
-        publisher.publish(event, payload)
-      end
-
-      def map(event, params)
+      def self.module_parent
+        list = self.to_s.split('::')
+        if list.size > 1
+          parents = list.slice(0, list.size - 1)
+          parents.join('::').constantize
+        else
+          list.size == 1 ? self : nil
+        end
       end
     end
 
     class_methods do
-      
-      # @param [Event] event
+      # @param [String] event_key
       # @param [Hash] options
-      # @option options [Array] :values
-      def event(event_key, publisher)
-        # Use event key to instantiate event class 
+      # @return [Event]
+      def event(event_key, options = {})
+        @attributes = {}
+        @errors = []
+
+        @event_class = event_klass(event_key)
+        params = options.fetch(:attributes)
+        @event = @event_class.new(params)
+
+        @contract_klass = @event.contract
+        result = @contract_klass.new.call(params)
+
+        if result.success?
+          @valid = true
+          @event.transform(params)
+        else
+          @valid = false
+          @attributes = {}
+          @errors = result.errors
+        end
+
+        # Use event key to instantiate event class
         # event = Organizations::OrganizationCreated.new(event_key, payload)
         # @@publisher = Dry::Events::Publisher[:organization]
-        
         # {
         #   event_class: Organizations::OrganizationCreated
         #   attribute_map: %i[hbx_id legal_name entity_kind fein],
@@ -123,15 +159,63 @@ module EventSource
         #     created_at: DateTime.now
         #   }
         # }
-
-        # Transform payload to match event class options
-        # @event_klass = event
-        # @contract_klass = options.fetch(:contract_klass).freeze
-        # @entity_klass = entity_klass(options)
         # @attribute_map = options.fetch(:attribute_map).freeze
-        # @metadata = options.fetch(:metadata).freeze
         # events[event_key] = Event.new(event_key, payload)
-        # register_event(event_key, event.to_h)
+      end
+
+      # entities, contracts, operations, events, publishers, publisher_instance, subscribers
+      def documentation
+        entity = 'parties.organization'
+
+        contract = 'parties.organization.contracts.create'
+        contract = 'parties.organization.change_address_contract'
+
+        operation = 'parties.organization.operations.create'
+        operation = 'parties.organization.correct_or_update_fein'
+
+        event = 'events.parties.organization.created'
+        event = 'events.parties.organization.fein_corrected'
+        event = 'events.parties.organization.fein_updated'
+
+        # publisher = 'sync'
+        publisher = 'async'
+
+        # Listeners for subscribers
+        publisher = 'publisher.parties.organization'
+        publisher = 'enrollments'
+        publisher = 'families'
+        publisher = 'market.individual.cycles' # event => 'open_enfollment_begin'
+        publisher = 'timekeeper' # event => 'change_date_of_record'
+
+        # provide default broadcast publisher (Dispatcher) with ability to override
+        # supported by local subscibers that publish to enterprise
+        publisher = 'enterprise.urgent'
+        publisher = 'enterprise.each_minute'
+        publisher = 'enterprise.beginning_of_day'
+        publisher = 'enterprise.end_of_day'
+        publisher = 'enterprise.hourly'
+        publisher = 'enterprise.beginning_of_month'
+        publisher = 'enterprise.silent_period'
+
+        # Example
+        # initiated in IAP
+        iap_event = 'iap.applicant.demographic_corrected'
+
+        # initiated in EA
+        ea_event = 'person.demographic_corrected'
+        subscriber = ''
+      end
+
+      def valid?
+        @valid ||= false
+      end
+
+      def event_klass_name(event_key)
+        event_key.gsub('.', '::')
+      end
+
+      def event_klass(event_key)
+        event_klass_name(event_key).constantize
       end
     end
   end

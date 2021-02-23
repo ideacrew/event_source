@@ -1,17 +1,32 @@
 # frozen_string_literal: true
 
 module EventSource
-  # Event object
+  # A notification that something has happened in the system
   class Event
     extend Dry::Initializer
+    include EventSource::Metadata
+
+    MetadataOptionDefaults = {
+      version: '3.0',
+      created_at: DateTime.now,
+      correlation_id: 'ADD CorrID Snowflake GUID',
+      command_name: '',
+      entity_kind: ''
+    }
+
+    AttributesOptionDefaults = { id: 'ADD Attrs Snowflake GUID' }
+
+    OptionDefaults = {
+      attributes: AttributesOptionDefaults,
+      metadata: MetadataOptionDefaults
+    }
 
     # @!attribute [r] id
     # @return [Symbol, String] The event identifier
     attr_reader :id
 
     # @api private
-    def self.new(id, payload = EMPTY_HASH)
-
+    def self.new(id, options = {})
       if (id.is_a?(String) || id.is_a?(Symbol)) && !id.empty?
         return super(id, payload)
       end
@@ -24,11 +39,13 @@ module EventSource
     # @param [Hash] payload
     # @return [Event]
     # @api private
-    def initialize(id, payload)
-      @contract = nil
-      @valid = false
+    def initialize(id, options)
       @id = id
-      @payload = payload
+      @options = OptionDefaults.deep_merge(options)
+      @params = options.fetch(attributes)
+
+      # @contract_class = contract_klass(contract_class_name)
+      @cpublisher_class = contract_klass(publisher_class_name)
     end
 
     # Get data from the payload
@@ -36,6 +53,33 @@ module EventSource
     def [](name)
       @payload.fetch(name)
     end
+
+    # Derive Event Publisher from Event ID
+    def publisher; end
+
+    # Derive Event Name from Event ID
+    def contract_klass(klass_name)
+      raise EventSource::UndefinedEvent, "#{klass_name}"
+    end
+
+    def apply_contract; end
+
+    def publish(event, payload)
+      publisher = Organizations::OrganizationEvents.new
+      publisher.publish(event, payload)
+    end
+
+    def map_attributes(options)
+      map = options.fetch(:attribute_map)
+      source = options.fetch(:attribute_hash)
+
+      # block to map attribute keys from Command to Event
+    end
+
+    def map(event, params); end
+
+    # @return [Boolea]
+    def valid?; end
 
     # Get or set a payload
     # @overload
@@ -48,9 +92,9 @@ module EventSource
       attributes ? self.class.new(id, @payload.merge(attributes)) : @payload
     end
 
-    # Add standard metadata attributes
+    # Build and merge standard metadata attributes
     def metadata(options = {})
-      options.merge(created_at: DateTime.now, correlation_id: 'GUID')
+      options.merge
     end
 
     # Set the contract class used to validate payload
@@ -75,9 +119,16 @@ module EventSource
       @valid ||= false
     end
 
-    def publish
-      Dispatcher.dispatch(self)
+    def errors
+      @contract_result.errors
     end
+
+    def publish
+      # Dispatcher.dispatch(self)
+    end
+
+    # @return [Dry::Event] event
+    def to_dry_event; end
 
     # Coerce an event to a hash
     # @return [Hash]
