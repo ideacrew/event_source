@@ -3,18 +3,21 @@
 module Parties
   module Organization
     class Created < EventSource::Event
+
+      attributes :data, :metadata
+
+      # attributes :hbx_id, :legal_name, :entity_kind, :fein
       # Schema used to validaate Event payload
       # contract Parties::Organization::CreateContract
 
       # Build getters
+      # construct metadata
 
-      construct metadata
-
-      option :hbx_id, optional: false
-      option :legal_name, optional: false
-      option :entity_kind, optional: false
-      option :fein, optional: false
-      option :metadata, optional: true
+      # option :hbx_id, optional: false
+      # option :legal_name, optional: false
+      # option :entity_kind, optional: false
+      # option :fein, optional: false
+      # option :metadata, optional: true
     end
   end
 end

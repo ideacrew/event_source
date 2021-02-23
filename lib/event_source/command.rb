@@ -121,31 +121,29 @@ module EventSource
           list.size == 1 ? self : nil
         end
       end
-    end
 
-    class_methods do
       # @param [String] event_key
       # @param [Hash] options
       # @return [Event]
       def event(event_key, options = {})
-        @attributes = {}
-        @errors = []
+        event_class = event_klass(event_key)
+        options_with_defaults = EventSource::Event::OptionDefaults.deep_merge(options)
+        event = event_class.new(options_with_defaults)
+        self.events.push(event)
 
-        @event_class = event_klass(event_key)
-        params = options.fetch(:attributes)
-        @event = @event_class.new(params)
+        Success(event)
 
-        @contract_klass = @event.contract
-        result = @contract_klass.new.call(params)
+        # @contract_klass = @event.contract
+        # result = @contract_klass.new.call(params)
 
-        if result.success?
-          @valid = true
-          @event.transform(params)
-        else
-          @valid = false
-          @attributes = {}
-          @errors = result.errors
-        end
+        # if result.success?
+        #   @valid = true
+        #   @event.transform(params)
+        # else
+        #   @valid = false
+        #   @attributes = {}
+        #   @errors = result.errors
+        # end
 
         # Use event key to instantiate event class
         # event = Organizations::OrganizationCreated.new(event_key, payload)
@@ -162,6 +160,13 @@ module EventSource
         # @attribute_map = options.fetch(:attribute_map).freeze
         # events[event_key] = Event.new(event_key, payload)
       end
+
+      def event_klass(event_key)
+        event_key.split('.').map(&:camelcase).join('::').constantize
+      end
+    end
+
+    class_methods do
 
       # entities, contracts, operations, events, publishers, publisher_instance, subscribers
       def documentation

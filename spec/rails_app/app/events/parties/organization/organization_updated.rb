@@ -3,12 +3,12 @@
 module Organizations
   class OrganizationUpdated < EventSource::Event
     # Schema used to validaate Event payload
-    contract Organizations::CreateContract
+    # contract Organizations::CreateContract
 
-    option :hbx_id, optional: false
-    option :legal_name, optional: false
-    option :entity_kind, optional: false
-    option :fein, optional: false
-    option :metadata, optional: true
+    # option :hbx_id, optional: false
+    # option :legal_name, optional: false
+    # option :entity_kind, optional: false
+    # option :fein, optional: false
+    # option :metadata, optional: true
   end
 end

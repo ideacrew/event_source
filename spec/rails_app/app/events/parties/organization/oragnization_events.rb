@@ -15,7 +15,7 @@ module Organizations
   end
 
   ORGANIZATION_PUBLISHER = OrganizationEvents.new
-  ORGANIZATION_PUBLISHER.subscribe(
-    Organizations::OrganizationCreatedListener.new
-  )
+  # ORGANIZATION_PUBLISHER.subscribe(
+  #   Organizations::OrganizationCreatedListener.new
+  # )
 end

@@ -4,7 +4,7 @@ module EventSource
   # A notification that something has happened in the system
   class Event
     extend Dry::Initializer
-    include EventSource::Metadata
+    # include EventSource::Metadata
 
     MetadataOptionDefaults = {
       version: '3.0',
@@ -14,10 +14,7 @@ module EventSource
       entity_kind: ''
     }
 
-    AttributesOptionDefaults = { id: 'ADD Attrs Snowflake GUID' }
-
     OptionDefaults = {
-      attributes: AttributesOptionDefaults,
       metadata: MetadataOptionDefaults
     }
 
@@ -25,28 +22,62 @@ module EventSource
     # @return [Symbol, String] The event identifier
     attr_reader :id
 
-    # @api private
-    def self.new(id, options = {})
-      if (id.is_a?(String) || id.is_a?(Symbol)) && !id.empty?
-        return super(id, payload)
-      end
 
-      raise InvalidEventNameError.new
+    # Define the attributes.
+    # They are set when initializing the event as keyword arguments and
+    # are all accessible as getter methods.
+    #
+    # ex: `attributes :post, :user, :ability`
+    def self.attributes(*args)
+      attr_reader(*args)
+
+      initialize_method_arguments = args.map { |arg| "#{arg}:" }.join(', ')
+      initialize_method_body = args.map { |arg| "@#{arg} = #{arg}" }.join(";")
+
+      class_eval <<~CODE
+      def initialize(#{initialize_method_arguments})
+         #{initialize_method_body}
+      end
+      CODE
     end
+
+    # def initialize(*args)
+    #   attr_reader(*args)
+
+    #   initialize_method_arguments = args.map { |arg| "#{arg}:" }.join(', ')
+    #   initialize_method_body = args.map { |arg| "@#{arg} = #{arg}" }.join(";")
+
+    #   class_eval <<~CODE
+    #   def initialize(#{initialize_method_arguments})
+    #      #{initialize_method_body}
+    #      after_initialize
+    #   end
+    #   CODE
+    # end
+
+    # # @api private
+    # def self.new(id, options = {})
+    #   if (id.is_a?(String) || id.is_a?(Symbol)) && !id.empty?
+    #     return super(id, payload)
+    #   end
+
+    #   raise InvalidEventNameError.new
+    # end
 
     # Initialize a new event
     # @param [Symbol, String] id The event identifier
     # @param [Hash] payload
     # @return [Event]
     # @api private
-    def initialize(id, options)
-      @id = id
-      @options = OptionDefaults.deep_merge(options)
-      @params = options.fetch(attributes)
+    # def initialize(options)
+    #   # @params = options.fetch(attributes)
+    #   # options.deep_merge!(OptionDefaults)
 
-      # @contract_class = contract_klass(contract_class_name)
-      @cpublisher_class = contract_klass(publisher_class_name)
-    end
+    #   # # @contract_class = contract_klass(contract_class_name)
+    #   # @cpublisher_class = contract_klass(publisher_class_name)
+    #   # super(OptionDefaults.deep_merge(options))
+    #   super(OptionDefaults.deep_merge(options))
+    # end
 
     # Get data from the payload
     # @param [String, Symbol] name

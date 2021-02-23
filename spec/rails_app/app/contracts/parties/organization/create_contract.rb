@@ -6,9 +6,9 @@ module Parties
       params do
         required(:hbx_id).filled(:string)
         required(:legal_name).filled(:string)
-        required(:entitiy_kind).filled(:string)
+        required(:entity_kind).filled(:string)
         required(:fein).filled(:string)
-        optional(:addresses).array(Locations::StreetAddress)
+        # optional(:addresses).array(Locations::StreetAddress)
       end
     end
   end

@@ -3,7 +3,7 @@
 module Parties
   module Organization
     class Create
-      include EventSource::CommandL
+      include EventSource::Command
 
       # @param [String] hbx_id
       # @param [String] legal_name
