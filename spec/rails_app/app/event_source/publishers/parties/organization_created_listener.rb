@@ -2,9 +2,7 @@
 
 module Organizations
   class OrganizationCreatedListener
-
-
-    def on_organization_created(event)
+    def on_parties_organization_created(event)
       puts "Hello World #{event.inspect}"
     end
   end

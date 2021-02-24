@@ -191,7 +191,7 @@ module EventSource
         # publisher = 'sync'
         publisher = 'async'
 
-        # Listeners for subscribers
+        # Listeners (Reactors) for subscribers
         topic_publishers = [
           'parties.organizations.organization_publisher',
           'enrollment_publisher',
@@ -202,7 +202,7 @@ module EventSource
           'system.timekeeper_publisher' # event => 'advance_date_of_record'
         ]
 
-        # provide default broadcast publisher (Dispatcher) with ability to override
+        # provide default broadcast Publisher (Dispatcher) with ability to override
         # supported by local subscibers that publish to enterprise
         broadcast_publishers = %w[
           urgent
