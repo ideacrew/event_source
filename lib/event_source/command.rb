@@ -61,21 +61,15 @@ module EventSource
     included do
       include Dry::Monads::Result::Mixin
 
-      class_attribute :events
-
-      self.events = []
+      # class_attribute :events
 
       # @return [EventSource::Event]
-      attr_reader :event_klass
+      attr_reader :event_class
 
-      # @return [Dry::Validation::Contract]
-      attr_reader :contract_klass
+      # @return [Array<EventSource::Event>]
+      attr_reader :events
 
-      # @return [Array]
-      attr_reader :attributes
-
-      # @api private
-      def initialize(event_klass, **options)
+      def initialize
         super
         @events = []
       end
@@ -126,10 +120,17 @@ module EventSource
       # @param [Hash] options
       # @return [Event]
       def event(event_key, options = {})
-        event_class = event_klass(event_key)
-        options_with_defaults = EventSource::Event::OptionDefaults.deep_merge(options)
-        event = event_class.new(options_with_defaults)
-        self.events.push(event)
+        @event_class = event_klass(event_key)
+
+        # options_with_defaults =
+        #   EventSource::Event::OptionDefaults.deep_merge(options)
+
+        # event = @event_class.new(options_with_defaults)
+        event = Try() { @event_class.new(options) }
+
+        # TODO Trap for UndefinedEventName error
+
+        @events.push(event)
 
         Success(event)
 
@@ -167,40 +168,51 @@ module EventSource
     end
 
     class_methods do
-
       # entities, contracts, operations, events, publishers, publisher_instance, subscribers
       def documentation
         entity = 'parties.organization'
 
-        contract = 'parties.organization.contracts.create'
-        contract = 'parties.organization.change_address_contract'
+        contracts = %w[
+          parties.organization.create_contract
+          parties.organization.change_address_contract
+        ]
 
-        operation = 'parties.organization.operations.create'
-        operation = 'parties.organization.correct_or_update_fein'
+        operations = %w[
+          parties.organization.create
+          parties.organization.correct_or_update_fein
+        ]
 
-        event = 'events.parties.organization.created'
-        event = 'events.parties.organization.fein_corrected'
-        event = 'events.parties.organization.fein_updated'
+        events = %w[
+          parties.organization.created
+          parties.organization.fein_corrected
+          parties.organization.fein_updated
+        ]
 
         # publisher = 'sync'
         publisher = 'async'
 
         # Listeners for subscribers
-        publisher = 'publisher.parties.organization'
-        publisher = 'enrollments'
-        publisher = 'families'
-        publisher = 'market.individual.cycles' # event => 'open_enfollment_begin'
-        publisher = 'timekeeper' # event => 'change_date_of_record'
+        topic_publishers = [
+          'parties.organizations.organization_publisher',
+          'enrollment_publisher',
+          'family_publisher',
+          'marketplace.congress.cycle_event_publisher', # event => 'open_enfollment_begin'
+          'marketplace.individual.cycle_event_publisher', # event => 'open_enfollment_begin'
+          'marketplace.shop.cycle_event_publisher', # event => 'open_enfollment_begin'
+          'system.timekeeper_publisher' # event => 'advance_date_of_record'
+        ]
 
         # provide default broadcast publisher (Dispatcher) with ability to override
         # supported by local subscibers that publish to enterprise
-        publisher = 'enterprise.urgent'
-        publisher = 'enterprise.each_minute'
-        publisher = 'enterprise.beginning_of_day'
-        publisher = 'enterprise.end_of_day'
-        publisher = 'enterprise.hourly'
-        publisher = 'enterprise.beginning_of_month'
-        publisher = 'enterprise.silent_period'
+        broadcast_publishers = %w[
+          urgent
+          each_minute
+          beginning_of_day
+          end_of_day
+          hourly
+          beginning_of_month
+          silent_period
+        ]
 
         # Example
         # initiated in IAP
@@ -209,18 +221,6 @@ module EventSource
         # initiated in EA
         ea_event = 'person.demographic_corrected'
         subscriber = ''
-      end
-
-      def valid?
-        @valid ||= false
-      end
-
-      def event_klass_name(event_key)
-        event_key.gsub('.', '::')
-      end
-
-      def event_klass(event_key)
-        event_klass_name(event_key).constantize
       end
     end
   end

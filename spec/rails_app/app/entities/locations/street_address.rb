@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Locations
-  class StreetAddress < Dry::Struct::Value
+  class StreetAddress < Dry::Struct
     # include EventSource::Contract
     # contract_class Contracts::Locations::StreetAddress
 

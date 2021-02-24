@@ -3,9 +3,9 @@
 require 'dry/events/publisher'
 require_relative 'organization_created_listener'
 
-module Organizations
-  class OrganizationEvents
-    include Dry::Events::Publisher[:organization]
+module Parties
+  class OrganizationPublisher
+    include Dry::Events::Publisher[:organization_publisher]
 
     register_event 'parties.organization.created'
     register_event 'parties.organization.fein_corrected'
@@ -14,7 +14,7 @@ module Organizations
     subscribe('organization.created') { |event| puts '---Hello world!!' }
   end
 
-  ORGANIZATION_PUBLISHER = OrganizationEvents.new
+  ORGANIZATION_PUBLISHER = OrganizationPublisher.new
   # ORGANIZATION_PUBLISHER.subscribe(
   #   Organizations::OrganizationCreatedListener.new
   # )

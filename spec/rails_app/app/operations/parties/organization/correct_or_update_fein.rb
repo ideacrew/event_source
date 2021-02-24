@@ -4,21 +4,19 @@ module Parties
   module Organization
     # Change an organizations's federal identification number as either a correction or
     # a new identifier
+
     class CorrectOrUpdateFein
       send(:include, Dry::Monads[:result, :do])
       send(:include, Dry::Monads[:try])
       include EventSource::Command
-
-
-      def initialize; end
 
       # @param [Hash] organization
       # @param [String] fein
       # @param [Types::ChangeReasonKind] change_reason
       # @return [Dry::Monad::Result] result
       def call(params)
-        new_state    = yield validate(params)
-        event        = yield build_event(new_state, params)
+        new_state = yield validate(params)
+        event = yield build_event(new_state, params)
         organization = yield new_entity(organization)
         notification = yield publish_event(event)
 
@@ -28,15 +26,18 @@ module Parties
       private
 
       def validate(params)
-        result = Try {
-          params.fetch(:organization).merge(fein: params.fetch(:fein))
-        }.bind {|new_state| Parties::Organization::CreateContract.new.call(new_state)}
+        result =
+          Try() do
+            params.fetch(:organization).merge(fein: params.fetch(:fein))
+          end.bind do |new_state|
+            Parties::Organization::CreateContract.new.call(new_state)
+          end
 
         result.success? ? Success(result.to_h) : Failure(result.errors)
       end
 
-      # Use Snapshot-style Event-carried State Transfer where before and after
-      # states are included in payload
+      # Use Snapshot-style Event-carried State Transfer: include both 'before' and
+      # 'after' states in payload
       def build_event(new_state, params)
         data = { old_state: params.fetch(:organization), new_state: new_state }
 

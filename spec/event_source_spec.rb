@@ -5,7 +5,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Organizations::UpdateFein do
+RSpec.describe Parties::Organization::CorrectOrUpdateFein do
   context 'Call the Organization Create Service and store a record with an incorrect FEIN value' do
     let(:legal_name) { 'Spacely Sprockets, Inc.' }
     let(:entity_kind) { :s_corporation }
