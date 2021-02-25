@@ -30,11 +30,11 @@ Or install it yourself as:
 
 EventSource uses five core components:
 
-1. `Command`
-1. `Event`
-1. `Contract`
-1. `Publisher`
-1. `Reactor`
+1. Command
+1. Event
+1. Contract
+1. Publisher
+1. Reactor
 
 ### Command
 
@@ -42,38 +42,53 @@ The Command is where Events are generated and published. Where they exist, Opera
 
 Mix EventSource::Command into any class. This provides the on-ramp to accessing the Event library.
 
-    # app/operations/parties/organization/create.rb
+```ruby
+ # app/operations/parties/organization/create.rb
 
-    class Parties::Organization::Create
-      include EventSource::Command
+  class Parties::Organization::Create
+    include EventSource::Command
+```
 
 Specify one or more Events that will be published by this Command using the `event` keyword, followed by the Event's key and the attributes to include in the payload.
 
-    def build_event(values)
-      created_event = event 'parties.organization.created', { data: values }
-    end
+```ruby
+def build_event(values)
+  created_event = event 'parties.organization.created', { data: values }
+end
+```
 
 Publish the Event after the Command has completed the intended operation. After succussful persistance to the data store in this case
 
-    def create(values, event)
-      if Parties::OrganizationModel.create(values)
-        event.publish
-      end
-    end
+```ruby
+def create(values, event)
+  event.publish if Parties::OrganizationModel.create(values)
+end
+```
 
 In addition to `#publish` he Command DSL includes methods for working with Events. For example:
 
-    self.events
-    # => [#<Parties::Organization::Created:0x007fea1944b410>]
+```ruby
+self.events
 
-    created_event = events[0]
-    # => <Parties::Organization::Created:0x007fea1944b410>
+# => [#<Parties::Organization::Created:0x007fea1944b410>]
 
-    created_event.valid?
-    # => true
+created_event = events[0]
 
-    created_event.errors
-    # => []
+# => <Parties::Organization::Created:0x007fea1944b410>
+
+created_event.valid?
+
+# => true
+
+created_event.errors
+
+# => []
+
+operations = %w[
+  parties.organization.create
+  parties.organization.correct_or_update_fein
+]
+```
 
 ### Event
 
@@ -81,72 +96,72 @@ The Event object defines attributes of its payload message along with a referenc
 
 Event classes inherit from the EventSource::Event class and identify the publisher using the `publisher_key` keyword:
 
+```ruby
     # app/event_source/parties/organization/created.rb
 
     class Parties::Organization::Created < EventSource::Event
       publisher_key 'parties.organization_publisher'
+```
 
 Events may include payload attributes along with a mapping file for transforming incoming parameters to their corresponding attributes. Events that don't include attribute and transformers will automatically forward all passed parameters as attributes.
 
+```ruby
+events = %w[
+  parties.organization.created
+  parties.organization.fein_corrected
+  parties.organization.fein_updated
+]
+
+# Example
+# initiated in IAP
+iap_event = 'iap.applicant.demographic_corrected'
+
+# initiated in EA
+ea_event = 'person.demographic_corrected'
+subscriber = ''
+
 ### Publisher
+
+# publisher = 'sync'
+publisher = 'async'
+
+# Listeners (Reactors) for subscribers
+topic_publishers = [
+  'parties.organizations.organization_publisher',
+  'enrollment_publisher',
+  'family_publisher',
+  'marketplace.congress.cycle_event_publisher', # event => 'open_enfollment_begin'
+  'marketplace.individual.cycle_event_publisher', # event => 'open_enfollment_begin'
+  'marketplace.shop.cycle_event_publisher', # event => 'open_enfollment_begin'
+  'system.timekeeper_publisher', # event => 'advance_date_of_record'
+]
+
+# provide default broadcast Publisher (Dispatcher) with ability to override
+# supported by local subscibers that publish to enterprise
+broadcast_publishers = %w[
+  urgent
+  each_minute
+  beginning_of_day
+  end_of_day
+  hourly
+  beginning_of_month
+  silent_period
+]
+```
 
 ### Contracts
 
 Contracts use schemas to validate data payloads. Verify the content and composition of all external data before useing it in the domain model.
 
-      # entities, contracts, operations, events, publishers, publisher_instance, subscribers
-      def documentation
-        entity = 'parties.organization'
+ruby ```
+entity = 'parties.organization'
 
         contracts = %w[
           parties.organization.create_contract
           parties.organization.change_address_contract
         ]
 
-        operations = %w[
-          parties.organization.create
-          parties.organization.correct_or_update_fein
-        ]
-
-        events = %w[
-          parties.organization.created
-          parties.organization.fein_corrected
-          parties.organization.fein_updated
-        ]
-
-        # publisher = 'sync'
-        publisher = 'async'
-
-        # Listeners (Reactors) for subscribers
-        topic_publishers = [
-          'parties.organizations.organization_publisher',
-          'enrollment_publisher',
-          'family_publisher',
-          'marketplace.congress.cycle_event_publisher', # event => 'open_enfollment_begin'
-          'marketplace.individual.cycle_event_publisher', # event => 'open_enfollment_begin'
-          'marketplace.shop.cycle_event_publisher', # event => 'open_enfollment_begin'
-          'system.timekeeper_publisher' # event => 'advance_date_of_record'
-        ]
-
-        # provide default broadcast Publisher (Dispatcher) with ability to override
-        # supported by local subscibers that publish to enterprise
-        broadcast_publishers = %w[
-          urgent
-          each_minute
-          beginning_of_day
-          end_of_day
-          hourly
-          beginning_of_month
-          silent_period
-        ]
-
-        # Example
-        # initiated in IAP
-        iap_event = 'iap.applicant.demographic_corrected'
-
-        # initiated in EA
-        ea_event = 'person.demographic_corrected'
-        subscriber = ''
+```
 
 ## Development
 
@@ -170,3 +185,4 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/ideacr
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+```
