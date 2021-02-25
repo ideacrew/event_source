@@ -3,6 +3,7 @@
 module Parties
   module Organization
     class Created < EventSource::Event
+      publisher_key 'parties.organization_publisher'
 
       attributes :data, :metadata
 

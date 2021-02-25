@@ -49,11 +49,12 @@ module Parties
       end
 
       def new_entity(organization)
-        Try() { Parties::Organization.new(organization) }
+        Try() { Parties::Organization.new(organization) }.to_result
+        Success(true)
       end
 
       def publish_event(event)
-        Try() { event.publish }
+        Try() { events.each{|event| event.publish} }
       end
     end
   end

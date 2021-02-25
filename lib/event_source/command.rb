@@ -122,11 +122,11 @@ module EventSource
       def event(event_key, options = {})
         @event_class = event_klass(event_key)
 
-        # options_with_defaults =
-        #   EventSource::Event::OptionDefaults.deep_merge(options)
+        options_with_defaults =
+          EventSource::Event::OptionDefaults.deep_merge(options)
 
-        # event = @event_class.new(options_with_defaults)
-        event = Try() { @event_class.new(options) }
+        event = @event_class.new(options_with_defaults)
+        # event = Try() { @event_class.new(options) }
 
         # TODO Trap for UndefinedEventName error
 

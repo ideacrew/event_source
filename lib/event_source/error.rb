@@ -19,5 +19,7 @@ module EventSource
 
     AttributesInvalid = Class.new(Error)
     UndefinedEventName = Class.new(Error)
+    ConstantNotDefined = Class.new(Error)
+
   end
 end

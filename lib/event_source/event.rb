@@ -21,7 +21,7 @@ module EventSource
     # @!attribute [r] id
     # @return [Symbol, String] The event identifier
     attr_reader :id
-
+    attr_reader :publisher_key, :publisher
 
     # Define the attributes.
     # They are set when initializing the event as keyword arguments and
@@ -33,6 +33,7 @@ module EventSource
 
       initialize_method_arguments = args.map { |arg| "#{arg}:" }.join(', ')
       initialize_method_body = args.map { |arg| "@#{arg} = #{arg}" }.join(";")
+      # initialize_publisher = "#{binding.pry}"
 
       class_eval <<~CODE
       def initialize(#{initialize_method_arguments})
@@ -40,20 +41,6 @@ module EventSource
       end
       CODE
     end
-
-    # def initialize(*args)
-    #   attr_reader(*args)
-
-    #   initialize_method_arguments = args.map { |arg| "#{arg}:" }.join(', ')
-    #   initialize_method_body = args.map { |arg| "@#{arg} = #{arg}" }.join(";")
-
-    #   class_eval <<~CODE
-    #   def initialize(#{initialize_method_arguments})
-    #      #{initialize_method_body}
-    #      after_initialize
-    #   end
-    #   CODE
-    # end
 
     # # @api private
     # def self.new(id, options = {})
@@ -85,9 +72,6 @@ module EventSource
       @payload.fetch(name)
     end
 
-    # Derive Event Publisher from Event ID
-    def publisher; end
-
     # Derive Event Name from Event ID
     def contract_klass(klass_name)
       raise EventSource::UndefinedEvent, "#{klass_name}"
@@ -95,10 +79,6 @@ module EventSource
 
     def apply_contract; end
 
-    def publish(event, payload)
-      publisher = Organizations::OrganizationEvents.new
-      publisher.publish(event, payload)
-    end
 
     def map_attributes(options)
       map = options.fetch(:attribute_map)
@@ -154,8 +134,28 @@ module EventSource
       @contract_result.errors
     end
 
+    def self.publisher_key(publisher_key)
+      @@publisher_key = publisher_key
+    end
+
+    def publisher_key=(value)
+      @publisher_key = value
+      @publisher = to_constant(value)
+    end
+
     def publish
-      # Dispatcher.dispatch(self)
+      self.publisher_key = @@publisher_key
+      publisher.publish(key, data)      
+    end
+
+    def key
+      self.class.to_s.underscore.gsub('/', '.')
+    end
+
+    def to_constant(value)
+      constant_name = value.split('.').each { |f| f.upcase! }.join('_')
+      raise EventSource::Error::ConstantNotDefined.new("Constant not defined for: '#{constant_name}'") unless Object.const_defined?(constant_name)
+      constant_name.constantize
     end
 
     # @return [Dry::Event] event
