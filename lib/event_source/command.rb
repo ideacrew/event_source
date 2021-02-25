@@ -126,6 +126,7 @@ module EventSource
           EventSource::Event::OptionDefaults.deep_merge(options)
 
         event = @event_class.new(options_with_defaults)
+
         # event = Try() { @event_class.new(options) }
 
         # TODO Trap for UndefinedEventName error
@@ -167,61 +168,6 @@ module EventSource
       end
     end
 
-    class_methods do
-      # entities, contracts, operations, events, publishers, publisher_instance, subscribers
-      def documentation
-        entity = 'parties.organization'
-
-        contracts = %w[
-          parties.organization.create_contract
-          parties.organization.change_address_contract
-        ]
-
-        operations = %w[
-          parties.organization.create
-          parties.organization.correct_or_update_fein
-        ]
-
-        events = %w[
-          parties.organization.created
-          parties.organization.fein_corrected
-          parties.organization.fein_updated
-        ]
-
-        # publisher = 'sync'
-        publisher = 'async'
-
-        # Listeners (Reactors) for subscribers
-        topic_publishers = [
-          'parties.organizations.organization_publisher',
-          'enrollment_publisher',
-          'family_publisher',
-          'marketplace.congress.cycle_event_publisher', # event => 'open_enfollment_begin'
-          'marketplace.individual.cycle_event_publisher', # event => 'open_enfollment_begin'
-          'marketplace.shop.cycle_event_publisher', # event => 'open_enfollment_begin'
-          'system.timekeeper_publisher' # event => 'advance_date_of_record'
-        ]
-
-        # provide default broadcast Publisher (Dispatcher) with ability to override
-        # supported by local subscibers that publish to enterprise
-        broadcast_publishers = %w[
-          urgent
-          each_minute
-          beginning_of_day
-          end_of_day
-          hourly
-          beginning_of_month
-          silent_period
-        ]
-
-        # Example
-        # initiated in IAP
-        iap_event = 'iap.applicant.demographic_corrected'
-
-        # initiated in EA
-        ea_event = 'person.demographic_corrected'
-        subscriber = ''
-      end
-    end
+    class_methods {}
   end
 end

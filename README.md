@@ -1,8 +1,14 @@
-# EventSource
+# EventSource - Event-enable your domain model
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/event_source`. To experiment with that code, run `bin/console` for an interactive prompt.
+EventSource simplifies event-driven code development by adding helpers and interfaces that abstract away many of the underlying complexities associated with composing, publishing and subscribing to events - `Event Sourcing Lite`.
 
-TODO: Delete this and the text above, and describe your gem
+The gem offers a clean interface and default behavior for easily extending a new or existing application with event-driven capabilities. EventSource additionally includes flexibility intended to extend this baseline behavior to support more complex scenarios.
+
+EventSource uses plain old ruby objects, operating within the confines of an application's domain model without dependecies on a particilar persistance model. Although it's directed at Rails applications, it doesn't include Rails runtime dependencies (Rspec regressions include Rails test scenarios).
+
+EventSource is built using the versatile [dry-rb Ruby library](https://dry-rb.org/). All that's needed is an environment with a Ruby version that meets dry-rb's gem minimum requrements.
+
+This strategy is intended to make EventSource widely compatible across Active Record and Active Model ORM's and a range of Rails versions.
 
 ## Installation
 
@@ -22,7 +28,125 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+EventSource uses five core components:
+
+1. `Command`
+1. `Event`
+1. `Contract`
+1. `Publisher`
+1. `Reactor`
+
+### Command
+
+The Command is where Events are generated and published. Where they exist, Operations are likely candidates to extend as Commands. Command names should be in imperitive form, for example: `Create`, `Update`, `Delete`. A good convention to follow in a Rails application is to locate Commands under one folder tree organized by domain entity.
+
+Mix EventSource::Command into any class. This provides the on-ramp to accessing the Event library.
+
+    # app/operations/parties/organization/create.rb
+
+    class Parties::Organization::Create
+      include EventSource::Command
+
+Specify one or more Events that will be published by this Command using the `event` keyword, followed by the Event's key and the attributes to include in the payload.
+
+    def build_event(values)
+      created_event = event 'parties.organization.created', { data: values }
+    end
+
+Publish the Event after the Command has completed the intended operation. After succussful persistance to the data store in this case
+
+    def create(values, event)
+      if Parties::OrganizationModel.create(values)
+        event.publish
+      end
+    end
+
+In addition to `#publish` he Command DSL includes methods for working with Events. For example:
+
+    self.events
+    # => [#<Parties::Organization::Created:0x007fea1944b410>]
+
+    created_event = events[0]
+    # => <Parties::Organization::Created:0x007fea1944b410>
+
+    created_event.valid?
+    # => true
+
+    created_event.errors
+    # => []
+
+### Event
+
+The Event object defines attributes of its payload message along with a reference to the Publisher where Subscribers may listen for notifications. Event naming convention is to used past tense form, for example: `Created`, `Updated`, `Deleted`. By convention Events are are located under one folder tree organized by domain entity.
+
+Event classes inherit from the EventSource::Event class and identify the publisher using the `publisher_key` keyword:
+
+    # app/event_source/parties/organization/created.rb
+
+    class Parties::Organization::Created < EventSource::Event
+      publisher_key 'parties.organization_publisher'
+
+Events may include payload attributes along with a mapping file for transforming incoming parameters to their corresponding attributes. Events that don't include attribute and transformers will automatically forward all passed parameters as attributes.
+
+### Publisher
+
+### Contracts
+
+Contracts use schemas to validate data payloads. Verify the content and composition of all external data before useing it in the domain model.
+
+      # entities, contracts, operations, events, publishers, publisher_instance, subscribers
+      def documentation
+        entity = 'parties.organization'
+
+        contracts = %w[
+          parties.organization.create_contract
+          parties.organization.change_address_contract
+        ]
+
+        operations = %w[
+          parties.organization.create
+          parties.organization.correct_or_update_fein
+        ]
+
+        events = %w[
+          parties.organization.created
+          parties.organization.fein_corrected
+          parties.organization.fein_updated
+        ]
+
+        # publisher = 'sync'
+        publisher = 'async'
+
+        # Listeners (Reactors) for subscribers
+        topic_publishers = [
+          'parties.organizations.organization_publisher',
+          'enrollment_publisher',
+          'family_publisher',
+          'marketplace.congress.cycle_event_publisher', # event => 'open_enfollment_begin'
+          'marketplace.individual.cycle_event_publisher', # event => 'open_enfollment_begin'
+          'marketplace.shop.cycle_event_publisher', # event => 'open_enfollment_begin'
+          'system.timekeeper_publisher' # event => 'advance_date_of_record'
+        ]
+
+        # provide default broadcast Publisher (Dispatcher) with ability to override
+        # supported by local subscibers that publish to enterprise
+        broadcast_publishers = %w[
+          urgent
+          each_minute
+          beginning_of_day
+          end_of_day
+          hourly
+          beginning_of_month
+          silent_period
+        ]
+
+        # Example
+        # initiated in IAP
+        iap_event = 'iap.applicant.demographic_corrected'
+
+        # initiated in EA
+        ea_event = 'person.demographic_corrected'
+        subscriber = ''
 
 ## Development
 
@@ -30,9 +154,18 @@ After checking out the repo, run `bin/setup` to install dependencies. Then, run 
 
 To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
+## Future
+
+### EventStream
+
+The current implementation supports event-based publish and subscribe (Pub/Sub) but doesn't cover EventStreams. Adding support for EventStreams is a project consideration. However, for many use cases EventStream features are overkill and introduces additional complexity and resources to build and operate. There also are other avialable options, including these projects:
+
+- [Sequent](https://www.sequent.io/)
+- [Eventide](https://eventide-project.org/)
+
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/event_source.
+Bug reports and pull requests are welcome on GitHub at https://github.com/ideacrew/event_source.
 
 ## License
 

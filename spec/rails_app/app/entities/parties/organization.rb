@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Parties
-  class OrganizationEntity < Dry::Struct
+  class Organization < Dry::Struct
     attribute :hbx_id, Types::Coercible::String.meta(omittable: false)
     attribute :legal_name, Types::Coercible::String.meta(omittable: false)
     attribute :entity_kind, Types::EntityKind.meta(omittable: false)
