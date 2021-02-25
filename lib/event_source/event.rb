@@ -38,33 +38,27 @@ module EventSource
       class_eval <<~CODE
       def initialize(#{initialize_method_arguments})
          #{initialize_method_body}
+         after_init
       end
       CODE
     end
 
-    # # @api private
-    # def self.new(id, options = {})
-    #   if (id.is_a?(String) || id.is_a?(Symbol)) && !id.empty?
-    #     return super(id, payload)
-    #   end
+    def self.publisher_key(publisher_key)
+      @@publisher_key = publisher_key
+    end
 
-    #   raise InvalidEventNameError.new
-    # end
+    def publisher_key=(value)
+      @publisher_key = value
+      @publisher = to_constant(value)
+    end
 
-    # Initialize a new event
-    # @param [Symbol, String] id The event identifier
-    # @param [Hash] payload
-    # @return [Event]
-    # @api private
-    # def initialize(options)
-    #   # @params = options.fetch(attributes)
-    #   # options.deep_merge!(OptionDefaults)
+    def after_init
+      assign_publisher
+    end
 
-    #   # # @contract_class = contract_klass(contract_class_name)
-    #   # @cpublisher_class = contract_klass(publisher_class_name)
-    #   # super(OptionDefaults.deep_merge(options))
-    #   super(OptionDefaults.deep_merge(options))
-    # end
+    def assign_publisher
+      self.publisher_key = @@publisher_key
+    end
 
     # Get data from the payload
     # @param [String, Symbol] name
@@ -72,22 +66,7 @@ module EventSource
       @payload.fetch(name)
     end
 
-    # Derive Event Name from Event ID
-    def contract_klass(klass_name)
-      raise EventSource::UndefinedEvent, "#{klass_name}"
-    end
-
     def apply_contract; end
-
-
-    def map_attributes(options)
-      map = options.fetch(:attribute_map)
-      source = options.fetch(:attribute_hash)
-
-      # block to map attribute keys from Command to Event
-    end
-
-    def map(event, params); end
 
     # @return [Boolea]
     def valid?; end
@@ -134,17 +113,7 @@ module EventSource
       @contract_result.errors
     end
 
-    def self.publisher_key(publisher_key)
-      @@publisher_key = publisher_key
-    end
-
-    def publisher_key=(value)
-      @publisher_key = value
-      @publisher = to_constant(value)
-    end
-
     def publish
-      self.publisher_key = @@publisher_key
       publisher.publish(key, data)      
     end
 
@@ -158,19 +127,10 @@ module EventSource
       constant_name.constantize
     end
 
-    # @return [Dry::Event] event
-    def to_dry_event; end
-
     # Coerce an event to a hash
     # @return [Hash]
     def to_h
       @payload
     end
-
-    # # Naming convention
-    # # @api private
-    # def listener_method
-    #   @listener_method ||= :"on_#{id.to_s.gsub('.', '_')}"
-    # end
   end
 end
