@@ -7,7 +7,7 @@ RSpec.describe EventSource::Command do
 			{
 				hbx_id: '553234',
 				legal_name: 'Test Organization',
-				entity_kind: 'test_event',
+				entity_kind: 'c_corp',
 				fein: '546232323'
 			}
 		end

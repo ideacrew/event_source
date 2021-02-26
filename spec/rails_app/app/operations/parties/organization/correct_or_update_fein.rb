@@ -17,7 +17,7 @@ module Parties
       def call(params)
         new_state = yield validate(params)
         event = yield build_event(new_state, params)
-        organization = yield new_entity(organization)
+        organization = yield new_entity(new_state)
         notification = yield publish_event(event)
 
         Success(organization)
@@ -48,9 +48,8 @@ module Parties
         end
       end
 
-      def new_entity(organization)
-        Try() { Parties::Organization.new(organization) }.to_result
-        Success(true)
+      def new_entity(new_state)
+        Try() { Parties::OrganizationEntity.new(new_state) }.to_result
       end
 
       def publish_event(event)

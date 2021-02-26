@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
 module Parties
-  class OrganizationListener
+  class OrganizationSubscriber
+
+  	# subscribe 'parties.organization_publisher'
+  	# subscribe 'parties.enrollment_publisher'
     
     def on_parties_organization_created(event)
       puts "Hello World #{event.inspect}"

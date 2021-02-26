@@ -1,13 +1,11 @@
 require_relative 'parties/organization_publisher'
-require_relative 'parties/organization_listener'
+require_relative '../subscribers/parties/organization_subscriber'
 
 module Publishers
   module Publisher
 
     ::PARTIES_ORGANIZATION_PUBLISHER = Parties::OrganizationPublisher.new
-
-    ::PARTIES_ORGANIZATION_PUBLISHER.subscribe(Parties::OrganizationListener.new)
-
+    ::PARTIES_ORGANIZATION_PUBLISHER.subscribe(Parties::OrganizationSubscriber.new)
 
     # Find all defined publishers, instantiante an instance and assiggn to constant
     # @example
@@ -15,7 +13,6 @@ module Publishers
     #   File: parties/organization_publisher.rb => PARTIES_ORGANIZATION_PUBLISHER = Parties::OrganizationPublisher.new
     def register_publishers
       publisher_root = Pathname(__FILE__).dirname
-
 
       Dir[publisher_root.join('**', '*_publisher.rb')].each do |file|
         constant_name =

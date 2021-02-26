@@ -33,7 +33,6 @@ module EventSource
 
       initialize_method_arguments = args.map { |arg| "#{arg}:" }.join(', ')
       initialize_method_body = args.map { |arg| "@#{arg} = #{arg}" }.join(";")
-      # initialize_publisher = "#{binding.pry}"
 
       class_eval <<~CODE
       def initialize(#{initialize_method_arguments})
@@ -89,29 +88,29 @@ module EventSource
 
     # Set the contract class used to validate payload
     # @param [String, Class]
-    def self.contract(klass)
-      @contract = klass.is_a?(Class) ? klass : klass.constantize
-    end
+    # def self.contract(klass)
+    #   @contract = klass.is_a?(Class) ? klass : klass.constantize
+    # end
 
     # Validate payload against schema contract
-    def validate
-      if @contract.empty?
-        raise MissingContractEventError,
-              'specify a schema contract to validate payload'
-      end
+    # def validate
+    #   if @contract.empty?
+    #     raise MissingContractEventError,
+    #           'specify a schema contract to validate payload'
+    #   end
 
-      result = @contract.new.call(@payload)
-      result.success? ? @valid == true : @valid == false
-      result
-    end
+    #   result = @contract.new.call(@payload)
+    #   result.success? ? @valid == true : @valid == false
+    #   result
+    # end
 
-    def valid?
-      @valid ||= false
-    end
+    # def valid?
+    #   @valid ||= false
+    # end
 
-    def errors
-      @contract_result.errors
-    end
+    # def errors
+    #   @contract_result.errors
+    # end
 
     def publish
       publisher.publish(key, data)      
@@ -123,8 +122,8 @@ module EventSource
 
     def to_constant(value)
       constant_name = value.split('.').each { |f| f.upcase! }.join('_')
-      raise EventSource::Error::ConstantNotDefined.new("Constant not defined for: '#{constant_name}'") unless Object.const_defined?(constant_name)
-      constant_name.constantize
+      return constant_name.constantize if Object.const_defined?(constant_name)
+      raise EventSource::Error::ConstantNotDefined.new("Constant not defined for: '#{constant_name}'")
     end
 
     # Coerce an event to a hash

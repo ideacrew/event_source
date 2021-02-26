@@ -7,8 +7,6 @@ module Parties
 
       attributes :data, :metadata
 
-
-
       # Use #apply to update the source model record
       # def apply(organization)
       #   organization.hbx_id = hbx_id
