@@ -37,7 +37,9 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'dry-validation', '~> 1.2'
   spec.add_dependency 'dry-initializer', '~> 3.0'
   spec.add_dependency 'dry-events'
+  spec.add_dependency 'dry-transformer'
 
+  # TODO Change to development dependency
   spec.add_dependency 'activesupport'
 
   spec.add_development_dependency 'database_cleaner'
