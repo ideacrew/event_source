@@ -1,6 +1,6 @@
-# EventSource - Event-enable your domain model
+# EventSource: Event-enable your applications's domain model
 
-EventSource simplifies event-driven code development by adding helpers and interfaces that abstract away many of the underlying complexities associated with composing, publishing and subscribing to events - `Event Sourcing Lite`.
+EventSource simplifies event-driven code development by adding helpers and interfaces that abstract away many of the underlying complexities associated with composing, publishing and subscribing to events - Event Sourcing Lite.
 
 The gem offers a clean interface and default behavior for easily extending a new or existing application with event-driven capabilities. EventSource additionally includes flexibility intended to extend this baseline behavior to support more complex scenarios.
 
@@ -34,19 +34,21 @@ EventSource uses five core components:
 1. Event
 1. Contract
 1. Publisher
-1. Reactor
+1. Subscriber
 
 ### Command
 
-The Command is where Events are generated and published. Where they exist, Operations are likely candidates to extend as Commands. Command names should be in imperitive form, for example: `Create`, `Update`, `Delete`. A good convention to follow in a Rails application is to locate Commands under one folder tree organized by domain entity.
+The Command is where Events are generated and published. Where they exist, Operations are likely candidates to extend as Commands. Command names use imperitive form, for example: `Create`, `Update`, `Delete`. A good convention to follow in a Rails application is to locate Commands under one folder tree organized by domain entity.
 
 Mix EventSource::Command into any class. This provides the on-ramp to accessing the Event library.
 
 ```ruby
- # app/operations/parties/organization/create.rb
+   # app/operations/parties/organization/create.rb
 
-  class Parties::Organization::Create
+   class Parties::Organization::Create
     include EventSource::Command
+    ...
+   end
 ```
 
 Specify one or more Events that will be published by this Command using the `event` keyword, followed by the Event's key and the attributes to include in the payload.
@@ -67,65 +69,46 @@ end
 
 In addition to `#publish` he Command DSL includes methods for working with Events. For example:
 
+<!-- prettier_ignore_start -->
+
 ```ruby
 self.events
-
 # => [#<Parties::Organization::Created:0x007fea1944b410>]
 
 created_event = events[0]
-
 # => <Parties::Organization::Created:0x007fea1944b410>
 
 created_event.valid?
-
 # => true
 
 created_event.errors
-
 # => []
-
-operations = %w[
-  parties.organization.create
-  parties.organization.correct_or_update_fein
-]
 ```
+
+<!-- prettier_ignore_end -->
 
 ### Event
 
 The Event object defines attributes of its payload message along with a reference to the Publisher where Subscribers may listen for notifications. Event naming convention is to used past tense form, for example: `Created`, `Updated`, `Deleted`. By convention Events are are located under one folder tree organized by domain entity.
 
-Event classes inherit from the EventSource::Event class and identify the publisher using the `publisher_key` keyword:
+Event classes inherit from the EventSource::Event class. The `publisher_key` keyword identifies where to post the published event:
 
 ```ruby
     # app/event_source/parties/organization/created.rb
 
     class Parties::Organization::Created < EventSource::Event
-      publisher_key 'parties.organization_publisher'
+      publisher_key 'parties.organization_publisher', async: true
+      ...
+    end
 ```
 
 Events may include payload attributes along with a mapping file for transforming incoming parameters to their corresponding attributes. Events that don't include attribute and transformers will automatically forward all passed parameters as attributes.
 
-```ruby
-events = %w[
-  parties.organization.created
-  parties.organization.fein_corrected
-  parties.organization.fein_updated
-]
-
-# Example
-# initiated in IAP
-iap_event = 'iap.applicant.demographic_corrected'
-
-# initiated in EA
-ea_event = 'person.demographic_corrected'
-subscriber = ''
-
 ### Publisher
 
-# publisher = 'sync'
-publisher = 'async'
+Publishers are queues that broadcast events for consumption by Subscribers.
 
-# Listeners (Reactors) for subscribers
+```ruby
 topic_publishers = [
   'parties.organizations.organization_publisher',
   'enrollment_publisher',
@@ -148,6 +131,8 @@ broadcast_publishers = %w[
   silent_period
 ]
 ```
+
+### Subscriber
 
 ### Contracts
 
