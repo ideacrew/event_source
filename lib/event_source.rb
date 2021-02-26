@@ -17,8 +17,18 @@ require 'active_support/all'
 require 'event_source/inflector'
 require 'event_source/metadata'
 require 'event_source/command'
+require 'event_source/publisher'
 require 'event_source/event'
+require 'event_source/subscriber'
 
 module EventSource
-  # Your code goes here...
+  class << self
+    attr_writer :logger
+
+    # Set up logging: first attempt to attach to host application logger instance, otherwise
+    # use local
+    def logger
+      @logger ||= Logger.new($stdout).tap { |log| log.progname = self.name }
+    end
+  end
 end
