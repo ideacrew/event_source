@@ -18,8 +18,9 @@ module EventSource
     end
 
     AttributesInvalid = Class.new(Error)
-    UndefinedEventName = Class.new(Error)
+    EventNameUndefined = Class.new(Error)
     ConstantNotDefined = Class.new(Error)
-
+    PublisherKeyMissing = Class.new(Error)
+    PublisherNotDefined = Class.new(Error)
   end
 end
