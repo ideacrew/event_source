@@ -1,4 +1,4 @@
-require 'spec_helper'
+# require 'spec_helper'
 
 # 0. EventSource Gem supports domain model entities
 # 1. Command
@@ -13,6 +13,22 @@ require 'spec_helper'
 # 4.1 Future: v0.3.0 will not include persistence
 
 RSpec.describe EventSource::Event do
-  context 'it should do something useful' do
+  context 'An Event class is initialized' do
+    context "and it doesn't define a publisher_key" do
+      it 'should raise an EventSource::PublisherKeyMissing error'
+    end
+
+    context 'and a Publisher is not found for the defined publisher_key' do
+      it 'should raise an EventSource::PublisherNotDefined'
+    end
+  end
+
+  context 'An Initialized Event class' do
+    context 'and Attributes are defined' do
+      it 'should do something useful'
+    end
+
+    context 'and an transform map is provided' do
+    end
   end
 end
