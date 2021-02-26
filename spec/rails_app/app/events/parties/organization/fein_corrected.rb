@@ -3,7 +3,7 @@
 module Parties
   module Organization
     class FeinCorrected < EventSource::Event
-    	# publisher_key 'parties.organization_publisher', async: true # ?
+    	publisher_key 'parties.organization_publisher' #, async: true # ?
 
       attributes :data, :metadata
 

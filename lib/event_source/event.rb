@@ -42,21 +42,28 @@ module EventSource
       CODE
     end
 
-    def self.publisher_key(publisher_key)
-      @@publisher_key = publisher_key
+    class << self
+      attr_reader :publisher_reference
+
+      def publisher_key(key)
+        @publisher_reference = key
+      end
+    end
+
+    def after_init
+      self.publisher_key = self.class.publisher_reference
     end
 
     def publisher_key=(value)
+      return unless value
       @publisher_key = value
       @publisher = to_constant(value)
     end
 
-    def after_init
-      assign_publisher
-    end
-
-    def assign_publisher
-      self.publisher_key = @@publisher_key
+    def to_constant(value)
+      constant_name = value.split('.').each { |f| f.upcase! }.join('_')
+      return constant_name.constantize if Object.const_defined?(constant_name)
+      raise EventSource::Error::ConstantNotDefined.new("Constant not defined for: '#{constant_name}'")
     end
 
     # Get data from the payload
@@ -98,7 +105,6 @@ module EventSource
     #     raise MissingContractEventError,
     #           'specify a schema contract to validate payload'
     #   end
-
     #   result = @contract.new.call(@payload)
     #   result.success? ? @valid == true : @valid == false
     #   result
@@ -113,17 +119,8 @@ module EventSource
     # end
 
     def publish
-      publisher.publish(key, data)      
-    end
-
-    def key
-      self.class.to_s.underscore.gsub('/', '.')
-    end
-
-    def to_constant(value)
-      constant_name = value.split('.').each { |f| f.upcase! }.join('_')
-      return constant_name.constantize if Object.const_defined?(constant_name)
-      raise EventSource::Error::ConstantNotDefined.new("Constant not defined for: '#{constant_name}'")
+      event_name = self.class.to_s.underscore.gsub('/', '.')
+      publisher.publish(event_name, data)
     end
 
     # Coerce an event to a hash
