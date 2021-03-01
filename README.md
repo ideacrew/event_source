@@ -98,15 +98,16 @@ Event classes inherit from the EventSource::Event class. The `publisher_key` key
 
     class Parties::Organization::Created < EventSource::Event
       publisher_key 'parties.organization_publisher', async: true
+      attributes :user, :post
       ...
     end
 ```
 
-Events may include payload attributes along with a mapping file for transforming incoming parameters to their corresponding attributes. Events that don't include attribute and transformers will automatically forward all passed parameters as attributes.
+Events may include attributes enumerated using the `attributes` keyword. Events that don't define attributes will automatically forward all passed parameters as attributes.
 
 ### Publisher
 
-Publishers are queues that broadcast events for consumption by Subscribers.
+Publishers broadcast events for consumption by Subscribers.
 
 ```ruby
 topic_publishers = [
@@ -133,6 +134,9 @@ broadcast_publishers = %w[
 ```
 
 ### Subscriber
+
+subscription
+subscriptions
 
 ### Contracts
 

@@ -1,9 +1,17 @@
 # frozen_string_literal: true
 
+require 'set'
+
 module EventSource
-  # A notification that something has happened in the system
+  # A notification aboutthat something has happened in the system
+  # Event
+  #  - attributes
+  #  - publisher_key
+  #  - contract_class
+  #  - payload { :data, :metadata }
   class Event
     extend Dry::Initializer
+
     # include EventSource::Metadata
 
     MetadataOptionDefaults = {
@@ -14,68 +22,115 @@ module EventSource
       entity_kind: ''
     }
 
-    OptionDefaults = {
-      metadata: MetadataOptionDefaults
-    }
+    OptionDefaults = { metadata: MetadataOptionDefaults }
 
     # @!attribute [r] id
     # @return [Symbol, String] The event identifier
-    attr_reader :id
-    attr_reader :publisher_key, :publisher
-
-    # Define the attributes.
-    # They are set when initializing the event as keyword arguments and
-    # are all accessible as getter methods.
-    #
-    # ex: `attributes :post, :user, :ability`
-    def self.attributes(*args)
-      attr_reader(*args)
-
-      initialize_method_arguments = args.map { |arg| "#{arg}:" }.join(', ')
-      initialize_method_body = args.map { |arg| "@#{arg} = #{arg}" }.join(";")
-
-      class_eval <<~CODE
-      def initialize(#{initialize_method_arguments})
-         #{initialize_method_body}
-         after_init
-      end
-      CODE
-    end
+    attr_reader :publisher_key,
+                :publisher_class,
+                :payload,
+                :contract_class,
+                :event_key
 
     class << self
-      attr_reader :publisher_reference
+      attr_accessor :publisher_key, :contract_class
 
-      def publisher_key(key)
-        @publisher_reference = key
+      def publisher_key(key = nil)
+        @publisher_key = key
+      end
+
+      def contract_class(klass = nil)
+        @contract_class = klass
+      end
+
+      def attributes(*keys)
+        list =
+          keys.reduce([]) do |memo, key|
+            attribute = EventSource::Attribute.new(key.to_sym)
+            memo << attribute
+          end
+        @attributes = Set.new(list)
+      end
+
+      #   # Define the attributes.
+      #   # They are set when initializing the event as keyword arguments and
+      #   # are all accessible as getter methods.
+      #   #
+      #   # ex: `attributes :post, :user, :ability`
+      #   def attributes(*args)
+      #     attr_reader(*args)
+
+      #     initialize_method_arguments = args.map { |arg| "#{arg}:" }.join(', ')
+      #     initialize_method_body = args.map { |arg| "@#{arg} = #{arg}" }.join(';')
+
+      #     class_eval <<~CODE
+      #     def initialize(#{initialize_method_arguments})
+      #       #{initialize_method_body}
+      #       after_init
+      #     end
+      #     CODE
+      #   end
+    end
+
+    # def after_init
+    #   unless self.class.publisher_key.present?
+    #     raise EventSource::Error::PublisherKeyMissing.new "add publisher_key to #{self.class.name}"
+    #   end
+
+    #   @publisher_key = self.class.publisher_key
+    #   @contract_class = self.class.contract_class
+    # end
+
+    def initialize(**args)
+      if defined?(self.class.attributes)
+        @attributes = self.class.attributes
+      else
+        @attributes = []
+      end
+
+      unless self.class.publisher_key.present?
+        raise EventSource::Error::PublisherKeyMissing.new "add publisher_key to #{self.class.name}"
+      end
+
+      @publisher_key = self.class.publisher_key
+      @contract_class = self.class.contract_class
+      super
+    end
+
+    def publisher_class
+      @publisher_class = constant_for(@publisher_key)
+    end
+
+    def data
+      attributes.reduce({}) do |dictionary, attr|
+        entry = { attr.to_sym => "#{attribute}" }
+        dictionary.merge!(entry)
       end
     end
 
-    def after_init
-      self.publisher_key = self.class.publisher_reference
+    def metadata; end
+
+    def contract_class
+      self.contract.class
     end
 
-    def publisher_key=(value)
-      return unless value
-      @publisher_key = value
-      @publisher = to_constant(value)
+    def publish!
+      publisher_class.publish(event_key, data)
     end
 
-    def to_constant(value)
-      constant_name = value.split('.').each { |f| f.upcase! }.join('_')
-      return constant_name.constantize if Object.const_defined?(constant_name)
-      raise EventSource::Error::ConstantNotDefined.new("Constant not defined for: '#{constant_name}'")
+    def event_key
+      self.class.to_s.underscore.gsub('/', '.')
     end
 
     # Get data from the payload
     # @param [String, Symbol] name
     def [](name)
-      @payload.fetch(name)
+      @payload[:data].fetch(name)
     end
 
-    def apply_contract; end
-
-    # @return [Boolea]
-    def valid?; end
+    def payload
+      { data: @data, metadata: @metadata }
+    end
 
     # Get or set a payload
     # @overload
@@ -83,9 +138,8 @@ module EventSource
     # @overload payload(attributes)
     #   @param [Hash] attributes A new payload
     #   @return [Event] A copy of the event with the provided payload
-    # @api public
     def payload(attributes = nil)
-      attributes ? self.class.new(id, @payload.merge(attributes)) : @payload
+      attributes ? self.class.new(@payload.merge(attributes)) : @payload
     end
 
     # Build and merge standard metadata attributes
@@ -110,23 +164,29 @@ module EventSource
     #   result
     # end
 
-    # def valid?
-    #   @valid ||= false
-    # end
+    # @return [Boolean]
+    def valid?
+      @valid ||= false
+    end
 
     # def errors
     #   @contract_result.errors
     # end
 
-    def publish
-      event_name = self.class.to_s.underscore.gsub('/', '.')
-      publisher.publish(event_name, data)
-    end
-
     # Coerce an event to a hash
     # @return [Hash]
     def to_h
       @payload
+    end
+
+    private
+
+    def constant_for(value)
+      constant_name = value.split('.').each { |f| f.upcase! }.join('_')
+      return constant_name.constantize if Object.const_defined?(constant_name)
+      raise EventSource::Error::ConstantNotDefined.new(
+              "Constant not defined for: '#{constant_name}'"
+            )
     end
   end
 end

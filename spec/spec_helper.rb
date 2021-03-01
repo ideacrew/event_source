@@ -10,12 +10,13 @@ SPEC_ROOT = Pathname(__FILE__).dirname
 Dir[SPEC_ROOT.join('support', 'config', '**', '*.rb')].sort.each do |file|
   require file
 end
-Dir[SPEC_ROOT.join('event_source', '**', '*.rb')].sort.each do |file|
-  require file
-end
+# Dir[SPEC_ROOT.join('event_source', '**', '*.rb')].sort.each do |file|
+#   require file
+# end
 Dir[SPEC_ROOT.join('rails_app', 'config', '**', '*.rb')].sort.each do |file|
   require file
 end
+
 Dir[SPEC_ROOT.join('rails_app', 'app', 'entities', 'types.rb')].sort
   .each { |file| require file }
 Dir[SPEC_ROOT.join('rails_app', '**', '*.rb')].sort.each { |file| require file }

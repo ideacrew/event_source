@@ -2,7 +2,7 @@ require 'dry/inflector'
 
 module EventSource
   module Publisher
-    # For the root directory and all its subdirectories, find each Publisher (file names that match: '*_publisher.rb'),
+    # For the publisher_root directory and all its subdirectories, find each Publisher (file names that match: '*_publisher.rb'),
     # and using its file name instantiante an instance of the Publisher class and asign it to constant
     # @param [Pathname] publisher_root
     # @example

@@ -42,9 +42,10 @@ module Parties
         data = { old_state: params.fetch(:organization), new_state: new_state }
 
         if params.fetch(:change_reason) == 'correction'
-          event 'parties.organization.fein_corrected', { data: data }
+          event 'parties.organization.fein_corrected',
+                { payload: { data: data, metadata: metadata } }
         else
-          event 'parties.organization.fein_updated', { data: data }
+          event 'parties.organization.fein_updated', { payload: data }
         end
       end
 
@@ -53,7 +54,7 @@ module Parties
       end
 
       def publish_event(event)
-        Try() { events.each{|event| event.publish} }
+        Try() { events.each { |event| event.publish } }
       end
     end
   end

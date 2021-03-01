@@ -21,6 +21,7 @@ module EventSource
     EventNameUndefined = Class.new(Error)
     ConstantNotDefined = Class.new(Error)
     PublisherKeyMissing = Class.new(Error)
-    PublisherNotDefined = Class.new(Error)
+    PublisherNotFound = Class.new(Error)
+    ContractNotFound = Class.new(Error)
   end
 end
