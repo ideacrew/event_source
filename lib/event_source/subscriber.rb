@@ -31,7 +31,6 @@ module EventSource
           pub_key_parts = publisher_key.split('.')
           pub_klass = pub_key_parts.collect{|segment| EventSource::Inflector.camelize(segment)}.join('::').constantize
           pub_const = pub_key_parts.map(&:upcase).join('_')
-          Object.const_set(pub_const, pub_klass.new) unless Object.const_defined?(pub_const)
           pub_const.constantize.subscribe(self.new)
           # raise error PublisherNotDefined
         end

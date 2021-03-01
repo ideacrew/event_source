@@ -16,8 +16,15 @@ end
 Dir[SPEC_ROOT.join('rails_app', 'config', '**', '*.rb')].sort.each do |file|
   require file
 end
+
 Dir[SPEC_ROOT.join('rails_app', 'app', 'entities', 'types.rb')].sort
   .each { |file| require file }
+
+Dir[SPEC_ROOT.join('rails_app', 'app', 'event_source', 'publishers', '**', '*.rb')].sort.each { |file| require file }
+
+publishers_root = SPEC_ROOT.join('rails_app', 'app', 'event_source', 'publishers')
+EventSource::Publisher.register_publishers(publishers_root)
+
 Dir[SPEC_ROOT.join('rails_app', '**', '*.rb')].sort.each { |file| require file }
 # Dir[SPEC_ROOT.join("app/*.rb").to_s].each(&method(:require))
 
