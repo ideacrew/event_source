@@ -6,7 +6,7 @@ module EventSource
   # Define an Event
   # @example
   # event 'organizations.organization.created',
-  #   attributes: {:hbx_id, :legal_name, :entity_kind, :fein],
+  #   attributes: [:hbx_id, :legal_name, :entity_kind, :fein],
   #   metadata: {
   #     command: self.class.name,
   #     correlation_id: "",
@@ -61,8 +61,6 @@ module EventSource
     included do
       include Dry::Monads::Result::Mixin
 
-      # class_attribute :events
-
       # @return [EventSource::Event]
       attr_reader :event_class
 
@@ -87,25 +85,6 @@ module EventSource
         [self]
       end
 
-      # 1. Constantize and Verify Event Exists and is Correct Class (?). Raise error for fail
-      # 2. Start with event attribute keys for Command (source) and Event (destination) and override any with mapped values
-
-      # Map values, for example:
-      #   attribute_map = { identifier: :id }
-      #   mixin_class[:identifier] => event[:id]
-
-      # 3. Construct Metadata
-      # 3.1 Accept passed key/value pairs and construct default key/value pairs
-      # 3.2 Default key/value pairs:
-
-      #   command (mixin class name)
-      #   submitted_at timestamp when fired
-      #   correlation_id - GUID from Rails Global ID or gem
-
-      # 4. Validate using contract referenced in Event
-      # 5. Expose instance method to fire defined event
-      # 6. Log event bhild and fire actions and success or failure
-
       def self.module_parent
         list = self.to_s.split('::')
         if list.size > 1
@@ -123,7 +102,11 @@ module EventSource
         @event_class = event_klass(event_key)
         options_with_defaults =
           EventSource::Event::OptionDefaults.deep_merge(options)
-        event = @event_class.new(options_with_defaults)
+        binding.pry
+        attributes = options_with_defaults.fetch(:data)
+
+        # metadata = options_with_defaults.fetch(:metadata) || {}
+        event = @event_class.new(attributes)
 
         # event = Try() { @event_class.new(options) }
         # TODO Trap for EventNameUndefined error

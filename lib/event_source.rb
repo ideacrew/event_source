@@ -9,15 +9,14 @@ require 'dry/monads/result'
 require 'dry/validation'
 require 'dry-struct'
 
+# TODO Remove ActiveSupport dependency
 require 'active_support/all'
-# require 'event_source/command'
-# require 'event_source/dispatcher'
-# require 'event_source/event_stream'
 
 require 'event_source/inflector'
 require 'event_source/metadata'
 require 'event_source/command'
 require 'event_source/publisher'
+require 'event_source/attribute'
 require 'event_source/event'
 require 'event_source/subscriber'
 

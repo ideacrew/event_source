@@ -5,20 +5,9 @@ module Parties
     class Created < EventSource::Event
       publisher_key 'parties.organization_publisher'
 
-      attributes :data, :metadata
-
-      # attributes :hbx_id, :legal_name, :entity_kind, :fein
       # Schema used to validaate Event payload
-      # contract Parties::Organization::CreateContract
-
-      # Build getters
-      # construct metadata
-
-      # option :hbx_id, optional: false
-      # option :legal_name, optional: false
-      # option :entity_kind, optional: false
-      # option :fein, optional: false
-      # option :metadata, optional: true
+      contract_class 'Parties::Organization::CreateContract'
+      attributes :hbx_id, :legal_name, :fein, :entity_kind
     end
   end
 end
