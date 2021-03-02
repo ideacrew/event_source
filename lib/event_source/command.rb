@@ -100,8 +100,7 @@ module EventSource
       # @return [Event]
       def event(event_key, options = {})
         @event_class = event_klass(event_key)
-        options_with_defaults =
-          EventSource::Event::OptionDefaults.deep_merge(options)
+        options_with_defaults = EventSource::Event::OptionDefaults.deep_merge(options)
         binding.pry
         attributes = options_with_defaults.fetch(:data)
 

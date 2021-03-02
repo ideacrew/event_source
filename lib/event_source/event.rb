@@ -23,28 +23,31 @@ module EventSource
     OptionDefaults = { metadata: MetadataOptionDefaults }
 
     class << self
-      attr_reader :publisher_key, :contract_class, :properties
+      attr_reader :publisher_key, :contract_class
 
       def publisher_key(key = nil)
-        @publisher_key = key
+        if defined? @publisher_key
+          @publisher_key
+        else
+          @publisher_key = key
+        end
       end
 
       def contract_class(klass = nil)
-        @contract_class = klass
+        if defined? @contract_class
+          @contract_class
+        else
+          @contract_class = klass
+        end
       end
 
-      def properties(*keys)
-        @properties =
+      def attributes(*keys)
+        return @attributes if defined? @attributes
+        @attributes =
           keys.reduce([]) do |memo, key|
             attribute = EventSource::Attribute.new(key.to_sym)
             memo << attribute
           end
-        pause
-        @properties
-      end
-
-      def pause
-        binding.pry
       end
 
       # Define the attributes.
@@ -78,7 +81,7 @@ module EventSource
 
     # @!attribute [r] id
     # @return [Symbol, String] The event identifier
-    attr_reader :properties,
+    attr_reader :attributes,
                 :publisher_key,
                 :publisher_class,
                 :payload,
@@ -87,10 +90,10 @@ module EventSource
     def initialize(*args)
       binding.pry
 
-      if defined?(self.class.properties)
-        @properties = self.class.properties
+      if defined?(self.class.attributes)
+        @attributes = self.class.attributes
       else
-        @properties = []
+        @attributes = []
       end
 
       if self.class.publisher_key.present?

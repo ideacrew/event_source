@@ -6,27 +6,7 @@ require 'pry-byebug'
 
 # Bring in the Rails test harness
 # require "active_support/all"
-SPEC_ROOT = Pathname(__FILE__).dirname
-Dir[SPEC_ROOT.join('support', 'config', '**', '*.rb')].sort.each do |file|
-  require file
-end
-# Dir[SPEC_ROOT.join('event_source', '**', '*.rb')].sort.each do |file|
-#   require file
-# end
-Dir[SPEC_ROOT.join('rails_app', 'config', '**', '*.rb')].sort.each do |file|
-  require file
-end
-
-Dir[SPEC_ROOT.join('rails_app', 'app', 'entities', 'types.rb')].sort
-  .each { |file| require file }
-
-Dir[SPEC_ROOT.join('rails_app', 'app', 'event_source', 'publishers', '**', '*.rb')].sort.each { |file| require file }
-
-publishers_root = SPEC_ROOT.join('rails_app', 'app', 'event_source', 'publishers')
-EventSource::Publisher.register_publishers(publishers_root)
-
-Dir[SPEC_ROOT.join('rails_app', '**', '*.rb')].sort.each { |file| require file }
-# Dir[SPEC_ROOT.join("app/*.rb").to_s].each(&method(:require))
+require File.expand_path("../rails_app/config/environment", __FILE__)
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

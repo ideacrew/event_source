@@ -55,13 +55,13 @@ RSpec.describe EventSource::Event do
     let(:event_class) do
       class MyEvent < EventSource::Event
         publisher_key 'parties.organization_publisher'
-        properties :hbx_id, :fein, :entity_kind
+        attributes :hbx_id, :fein, :entity_kind
       end
       MyEvent
     end
 
     it 'keys should be initialized for each attribute' do
-      expect(event_class.new.properties.keys).to eq %i[hbx_id fein entity_kind]
+      expect(event_class.new.attributes.keys).to eq %i[hbx_id fein entity_kind]
       binding.pry
     end
 

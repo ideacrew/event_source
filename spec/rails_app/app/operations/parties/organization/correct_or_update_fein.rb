@@ -43,7 +43,7 @@ module Parties
 
         if params.fetch(:change_reason) == 'correction'
           event 'parties.organization.fein_corrected',
-                { payload: { data: data, metadata: metadata } }
+                { payload: { attributes: data, metadata: {} } }
         else
           event 'parties.organization.fein_updated', { payload: data }
         end

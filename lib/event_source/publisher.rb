@@ -11,7 +11,7 @@ module EventSource
     #   File: parties/organization_publisher.rb => PARTIES_ORGANIZATION_PUBLISHER = Parties::OrganizationPublisher.new
     def self.register_publishers(publisher_root = Pathname(__FILE__).dirname)
       Dir[publisher_root.join('**', '*_publisher.rb')].each do |file|
-        relative_path = file.split(publisher_root.to_s).last.chomp('.rb')
+        relative_path = file.match(/^#{publisher_root}\/(.*)\.rb/)[1]
         constant_name = relative_path.split('/').reject(&:blank?).join('_').upcase
         klass_name = EventSource::Inflector.camelize(relative_path).constantize
         Object.const_set(constant_name, klass_name.new)
