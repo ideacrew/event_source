@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'set'
-
 module EventSource
   # A notification aboutthat something has happened in the system
   # Event
@@ -24,16 +22,8 @@ module EventSource
 
     OptionDefaults = { metadata: MetadataOptionDefaults }
 
-    # @!attribute [r] id
-    # @return [Symbol, String] The event identifier
-    attr_reader :publisher_key,
-                :publisher_class,
-                :payload,
-                :contract_class,
-                :event_key
-
     class << self
-      attr_accessor :publisher_key, :contract_class
+      attr_reader :publisher_key, :contract_class, :properties
 
       def publisher_key(key = nil)
         @publisher_key = key
@@ -43,33 +33,38 @@ module EventSource
         @contract_class = klass
       end
 
-      def attributes(*keys)
-        list =
+      def properties(*keys)
+        @properties =
           keys.reduce([]) do |memo, key|
             attribute = EventSource::Attribute.new(key.to_sym)
             memo << attribute
           end
-        @attributes = Set.new(list)
+        pause
+        @properties
       end
 
-      #   # Define the attributes.
-      #   # They are set when initializing the event as keyword arguments and
-      #   # are all accessible as getter methods.
-      #   #
-      #   # ex: `attributes :post, :user, :ability`
-      #   def attributes(*args)
-      #     attr_reader(*args)
+      def pause
+        binding.pry
+      end
 
-      #     initialize_method_arguments = args.map { |arg| "#{arg}:" }.join(', ')
-      #     initialize_method_body = args.map { |arg| "@#{arg} = #{arg}" }.join(';')
+      # Define the attributes.
+      # They are set when initializing the event as keyword arguments and
+      # are all accessible as getter methods.
+      #
+      # ex: `attributes :post, :user, :ability`
+      # def attributes(*args)
+      #   attr_reader(*args)
 
-      #     class_eval <<~CODE
+      #   initialize_method_arguments = args.map { |arg| "#{arg}:" }.join(', ')
+      #   initialize_method_body = args.map { |arg| "@#{arg} = #{arg}" }.join(';')
+
+      #   class_eval <<~CODE
       #     def initialize(#{initialize_method_arguments})
       #       #{initialize_method_body}
       #       after_init
       #     end
       #     CODE
-      #   end
+      # end
     end
 
     # def after_init
@@ -81,21 +76,34 @@ module EventSource
     #   @contract_class = self.class.contract_class
     # end
 
-    def initialize(**args)
-      if defined?(self.class.attributes)
-        @attributes = self.class.attributes
+    # @!attribute [r] id
+    # @return [Symbol, String] The event identifier
+    attr_reader :properties,
+                :publisher_key,
+                :publisher_class,
+                :payload,
+                :contract_class
+
+    def initialize(*args)
+      binding.pry
+
+      if defined?(self.class.properties)
+        @properties = self.class.properties
       else
-        @attributes = []
+        @properties = []
       end
 
-      unless self.class.publisher_key.present?
-        raise EventSource::Error::PublisherKeyMissing.new "add publisher_key to #{self.class.name}"
+      if self.class.publisher_key.present?
+        @publisher_key = self.class.publisher_key
+      else
+        # raise EventSource::Error::PublisherKeyMissing.new "add 'publisher_key' to #{self.class.name}"
       end
 
-      @publisher_key = self.class.publisher_key
       @contract_class = self.class.contract_class
-      super
+      # super
     end
+
+    def attributes(); end
 
     def publisher_class
       @publisher_class = constant_for(@publisher_key)
@@ -125,11 +133,11 @@ module EventSource
     # Get data from the payload
     # @param [String, Symbol] name
     def [](name)
-      @payload[:data].fetch(name)
+      @payload[:attributes].fetch(name)
     end
 
     def payload
-      { data: @data, metadata: @metadata }
+      @payload = { attributes: @attributes, metadata: @metadata }
     end
 
     # Get or set a payload

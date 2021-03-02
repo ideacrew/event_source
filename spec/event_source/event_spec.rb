@@ -1,4 +1,4 @@
-require 'spec_helper'
+# require 'spec_helper'
 
 # 0. EventSource Gem supports domain model entities
 # 1. Command
@@ -13,25 +13,15 @@ require 'spec_helper'
 # 4.1 Future: v0.3.0 will not include persistence
 
 RSpec.describe EventSource::Event do
-  let(:empty_event_class) do
-    class MyEvent < EventSource::Event
-      attributes :hbx_id
-    end
-    MyEvent
-  end
+  context 'A new Event class' do
+    context "and a publisher_key isn't defined" do
+      let(:empty_event_class) do
+        class MyEvent < EventSource::Event
+          attributes :hbx_id
+        end
+        MyEvent
+      end
 
-  let(:event_class) do
-    class MyEvent < EventSource::Event
-      publisher_key 'parties.organization_publisher'
-      attributes :hbx_id, :fein
-    end
-    MyEvent
-  end
-
-  let(:hbx_id) { '12345' }
-
-  context 'An Event class is initialized' do
-    context "and it doesn't define a publisher_key" do
       it 'should raise an EventSource::PublisherKeyMissing error' do
         expect {
           empty_event_class.new({ hbx_id: hbx_id })
@@ -47,8 +37,11 @@ RSpec.describe EventSource::Event do
       end
     end
 
-    context 'and a Publisher is not found for the defined publisher_key' do
+    context 'and a Publisher class is not found for the defined publisher_key' do
       it 'should raise an EventSource::PublisherNotFound'
+    end
+
+    context 'with a valid publisher_key' do
     end
 
     context 'with a defined contract_class' do
@@ -58,10 +51,31 @@ RSpec.describe EventSource::Event do
     end
   end
 
-  context 'An Initialized Event class' do
-    context 'and Attributes are defined' do
-      it 'each attribute should have a getter method' do
-        expect(event_class.new({ hbx_id: hbx_id })).to eq ''
+  context 'An initialized Event class with defined attributes' do
+    let(:event_class) do
+      class MyEvent < EventSource::Event
+        publisher_key 'parties.organization_publisher'
+        properties :hbx_id, :fein, :entity_kind
+      end
+      MyEvent
+    end
+
+    it 'keys should be initialized for each attribute' do
+      expect(event_class.new.properties.keys).to eq %i[hbx_id fein entity_kind]
+      binding.pry
+    end
+
+    context 'and one or more attribute values are missing' do
+      let(:hbx_id) { '12345' }
+
+      it '#valid? should return false' do
+        expect(event_class.new.valid?).to be_falsey
+      end
+    end
+
+    context 'and all attribute values are present' do
+      it '#valid? should return true' do
+        expect(event_class.new.valid?).to be_truthy
       end
     end
   end
