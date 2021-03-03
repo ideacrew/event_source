@@ -58,10 +58,9 @@ module EventSource
 
       def event(event_key, options = {})
         @events = [] unless defined?(@events)
-
         event = __build_event__(event_key, options)
-        @events << event
-        binding.pry
+        @events.push(event)
+        Success(event)
       end
 
       # @param [String] event_key
@@ -69,16 +68,13 @@ module EventSource
       # @return [Event]
       def __build_event__(event_key, options = {})
         event_class = event_klass_for(event_key)
-        event = Class.new(event_class, options)
-        @events.push(event)
-
-        # Success(event)
+        event_class.new(options)
       end
 
       def event_klass_for(event_key)
-        # binding.pry
         klass_name = event_key.split('.').map(&:camelcase).join('::')
-        return klass_name.constantize if Object.const_defined?(klass_name)
+        klass_name.constantize
+      rescue
         raise EventSource::Error::EventNameUndefined.new(
                 "Event not defined for: #{event_key}"
               )
