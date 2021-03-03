@@ -65,13 +65,13 @@ module EventSource
 
     def initialize(options = {})
       @metadata = {
-        metadata: MetadataOptionDefaults.merge(options.fetch(:metadata))
+        metadata: MetadataOptionDefaults.merge(options[:metadata] || {})
       }
       @contract_class = self.class.contract_class || ''
-
       @attribute_keys = klass_var_for(:attribute_keys) || []
       @publisher_key = klass_var_for(:publisher_key) || nil
-      if nil.eql @publisher_key
+
+      if @publisher_key.blank?
         raise EventSource::Error::PublisherKeyMissing.new "add 'publisher_key' to #{self.class.name}"
       end
       # super

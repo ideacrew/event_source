@@ -16,11 +16,12 @@ RSpec.describe EventSource::Event do
   context 'A new Event class' do
     context "and a publisher_key isn't defined" do
       let(:empty_event_class) do
-        class MyEvent < EventSource::Event
-          attributes :hbx_id
+        class MyEmptyEvent < EventSource::Event
+          attribute_keys :hbx_id
         end
-        MyEvent
+        MyEmptyEvent
       end
+      let(:hbx_id) { '12345' }
 
       it 'should raise an EventSource::PublisherKeyMissing error' do
         expect {
@@ -52,17 +53,17 @@ RSpec.describe EventSource::Event do
   end
 
   context 'An initialized Event class with defined attributes' do
+
     let(:event_class) do
       class MyEvent < EventSource::Event
         publisher_key 'parties.organization_publisher'
-        attributes :hbx_id, :fein, :entity_kind
+        attribute_keys :hbx_id, :fein, :entity_kind
       end
       MyEvent
     end
 
     it 'keys should be initialized for each attribute' do
-      expect(event_class.new.attributes.keys).to eq %i[hbx_id fein entity_kind]
-      binding.pry
+      expect(event_class.new.attribute_keys.map(&:key)).to eq %i[hbx_id fein entity_kind]
     end
 
     context 'and one or more attribute values are missing' do
