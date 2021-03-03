@@ -11,5 +11,5 @@ module Types
       .default('s_corp'.freeze)
       .enum('s_corp', 'c_corp', 'llc')
 
-  ChangeReasonKind = Types::Coercible::String.enum('correction', 'update')
+  ChangeReasonKind = Types::Coercible::String.enum('corrected', 'update')
 end

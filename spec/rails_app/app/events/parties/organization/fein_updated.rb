@@ -4,8 +4,7 @@ module Parties
   module Organization
     class FeinUpdated < EventSource::Event
       publisher_key 'parties.organization_publisher'
-
-      attributes :data, :metadata
+      attribute_keys :data, :metadata
 
       # Use #apply to update the source model record
       # def apply(organization)

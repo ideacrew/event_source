@@ -39,13 +39,15 @@ module Parties
       # Use Snapshot-style Event-carried State Transfer: include both 'before' and
       # 'after' states in payload
       def build_event(new_state, params)
-        data = { old_state: params.fetch(:organization), new_state: new_state }
+        attributes = {
+          old_state: params.fetch(:organization),
+          new_state: new_state
+        }
 
-        if params.fetch(:change_reason) == 'correction'
-          event 'parties.organization.fein_corrected',
-                { payload: { attributes: data, metadata: {} } }
+        if params.fetch(:change_reason) == 'corrected'
+          event 'parties.organization.fein_corrected', attributes: attributes
         else
-          event 'parties.organization.fein_updated', { payload: data }
+          event 'parties.organization.fein_updated', attributes: attributes
         end
       end
 

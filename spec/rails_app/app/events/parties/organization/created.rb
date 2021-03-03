@@ -7,7 +7,7 @@ module Parties
 
       # Schema used to validaate Event payload
       contract_class 'Parties::Organization::CreateContract'
-      attributes :hbx_id, :legal_name, :fein, :entity_kind
+      attribute_keys :hbx_id, :legal_name, :fein, :entity_kind
     end
   end
 end

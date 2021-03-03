@@ -3,9 +3,8 @@
 module Parties
   module Organization
     class FeinCorrected < EventSource::Event
-    	publisher_key 'parties.organization_publisher' #, async: true # ?
-
-      attributes :hbx_id, :legal_name, :fein, :entity_kind
+      publisher_key 'parties.organization_publisher' #, async: true # ?
+      attribute_keys :hbx_id, :legal_name, :fein, :entity_kind
 
       # TODO Attribute managment
       # Default behavior is to include all attributes in Envent payload

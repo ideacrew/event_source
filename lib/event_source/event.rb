@@ -1,32 +1,35 @@
 # frozen_string_literal: true
 
+# require 'dry/events/publisher'
+
 module EventSource
-  # A notification aboutthat something has happened in the system
-  # Event
-  #  - attributes
-  #  - publisher_key
-  #  - contract_class
-  #  - payload { :data, :metadata }
+  # A notification that something has happened in the system
+  # @example
+  # An Event has the following public API
+  #   MyEvent.call(event_key, options)
+  #   event = MyEvnet.new(event_key, options:)
+  #
+  # (attributes:, metadata:, contract_class:)
+  #
+  #   event.valid? # true or false
+  #   event.errors # +> <Dry::Validation::Errors ... >
+  #   event.publish # validate and execute the command
   class Event
     extend Dry::Initializer
 
-    # include EventSource::Metadata
-
     MetadataOptionDefaults = {
       version: '3.0',
-      created_at: DateTime.now,
-      correlation_id: 'ADD CorrID Snowflake GUID',
-      command_name: '',
-      entity_kind: ''
+      created_at: DateTime.now
+      # correlation_id: 'ADD CorrID Snowflake GUID',
+      # command_name: '',
+      # entity_kind: ''
     }
-
-    OptionDefaults = { metadata: MetadataOptionDefaults }
 
     class << self
       attr_reader :publisher_key, :contract_class
 
       def publisher_key(key = nil)
-        if defined? @publisher_key
+        if defined?(@publisher_key)
           @publisher_key
         else
           @publisher_key = key
@@ -34,99 +37,61 @@ module EventSource
       end
 
       def contract_class(klass = nil)
-        if defined? @contract_class
+        if defined?(@contract_class)
           @contract_class
         else
           @contract_class = klass
         end
       end
 
-      def attributes(*keys)
-        return @attributes if defined? @attributes
-        @attributes =
+      def attribute_keys(*keys)
+        return @attribute_keys if defined?(@attribute_keys)
+        @attribute_keys =
           keys.reduce([]) do |memo, key|
-            attribute = EventSource::Attribute.new(key.to_sym)
-            memo << attribute
+            attribute_key = EventSource::Attribute.new(key.to_sym)
+            memo << attribute_key
           end
       end
-
-      # Define the attributes.
-      # They are set when initializing the event as keyword arguments and
-      # are all accessible as getter methods.
-      #
-      # ex: `attributes :post, :user, :ability`
-      # def attributes(*args)
-      #   attr_reader(*args)
-
-      #   initialize_method_arguments = args.map { |arg| "#{arg}:" }.join(', ')
-      #   initialize_method_body = args.map { |arg| "@#{arg} = #{arg}" }.join(';')
-
-      #   class_eval <<~CODE
-      #     def initialize(#{initialize_method_arguments})
-      #       #{initialize_method_body}
-      #       after_init
-      #     end
-      #     CODE
-      # end
     end
-
-    # def after_init
-    #   unless self.class.publisher_key.present?
-    #     raise EventSource::Error::PublisherKeyMissing.new "add publisher_key to #{self.class.name}"
-    #   end
-
-    #   @publisher_key = self.class.publisher_key
-    #   @contract_class = self.class.contract_class
-    # end
 
     # @!attribute [r] id
     # @return [Symbol, String] The event identifier
-    attr_reader :attributes,
+    attr_accessor :attributes
+    attr_reader :attribute_keys,
                 :publisher_key,
                 :publisher_class,
                 :payload,
                 :contract_class
 
-    def initialize(*args)
-      binding.pry
+    def initialize(options = {})
+      @metadata = {
+        metadata: MetadataOptionDefaults.merge(options.fetch(:metadata))
+      }
+      @contract_class = self.class.contract_class || ''
 
-      if defined?(self.class.attributes)
-        @attributes = self.class.attributes
-      else
-        @attributes = []
+      @attribute_keys = klass_var_for(:attribute_keys) || []
+      @publisher_key = klass_var_for(:publisher_key) || nil
+      if nil.eql @publisher_key
+        raise EventSource::Error::PublisherKeyMissing.new "add 'publisher_key' to #{self.class.name}"
       end
-
-      if self.class.publisher_key.present?
-        @publisher_key = self.class.publisher_key
-      else
-        # raise EventSource::Error::PublisherKeyMissing.new "add 'publisher_key' to #{self.class.name}"
-      end
-
-      @contract_class = self.class.contract_class
       # super
     end
-
-    def attributes(); end
 
     def publisher_class
       @publisher_class = constant_for(@publisher_key)
     end
 
-    def data
-      attributes.reduce({}) do |dictionary, attr|
-        entry = { attr.to_sym => "#{attribute}" }
-        dictionary.merge!(entry)
-      end
-    end
+    def attributes(); end
 
-    def metadata; end
+    # def attributes
+    #   attribute_keys.reduce({}) do |dictionary, attr|
+    #     entry = { attr.to_sym => "#{attribute}" }
+    #     dictionary.merge!(entry)
+    #   end
+    # end
 
-    def contract_class
-      self.contract.class
-    end
-
-    def publish!
-      publisher_class.publish(event_key, data)
+    def publish
+      publisher_class.publish(event_key, payload) if valid?
     end
 
     def event_key
@@ -143,46 +108,16 @@ module EventSource
       @payload = { attributes: @attributes, metadata: @metadata }
     end
 
-    # Get or set a payload
-    # @overload
-    #   @return [Hash] payload
-    # @overload payload(attributes)
-    #   @param [Hash] attributes A new payload
-    #   @return [Event] A copy of the event with the provided payload
-    def payload(attributes = nil)
-      attributes ? self.class.new(@payload.merge(attributes)) : @payload
-    end
-
-    # Build and merge standard metadata attributes
-    def metadata(options = {})
-      options.merge
-    end
-
-    # Set the contract class used to validate payload
-    # @param [String, Class]
-    # def self.contract(klass)
-    #   @contract = klass.is_a?(Class) ? klass : klass.constantize
-    # end
-
-    # Validate payload against schema contract
-    # def validate
-    #   if @contract.empty?
-    #     raise MissingContractEventError,
-    #           'specify a schema contract to validate payload'
-    #   end
-    #   result = @contract.new.call(@payload)
-    #   result.success? ? @valid == true : @valid == false
-    #   result
-    # end
-
     # @return [Boolean]
     def valid?
+      # Verify all attribute_keys are present in attributes
+      # Assign attributes to attribute keys
       @valid ||= false
     end
 
-    # def errors
-    #   @contract_result.errors
-    # end
+    def errors
+      # Add validation errors here
+    end
 
     # Coerce an event to a hash
     # @return [Hash]
@@ -198,6 +133,10 @@ module EventSource
       raise EventSource::Error::ConstantNotDefined.new(
               "Constant not defined for: '#{constant_name}'"
             )
+    end
+
+    def klass_var_for(var_name)
+      self.class.send(var_name) if self.class.respond_to? var_name
     end
   end
 end
