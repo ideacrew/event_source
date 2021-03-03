@@ -56,7 +56,7 @@ module EventSource
 
     # @!attribute [r] id
     # @return [Symbol, String] The event identifier
-    attr_accessor :attributes
+    # attr_accessor :attributes
     attr_reader :attribute_keys,
                 :publisher_key,
                 :publisher_class,
@@ -71,7 +71,7 @@ module EventSource
       @attribute_keys = klass_var_for(:attribute_keys) || []
       @publisher_key = klass_var_for(:publisher_key) || nil
 
-      if @publisher_key.blank?
+      if @publisher_key.eql?(nil)
         raise EventSource::Error::PublisherKeyMissing.new "add 'publisher_key' to #{self.class.name}"
       end
       # super
@@ -81,7 +81,22 @@ module EventSource
       @publisher_class = constant_for(@publisher_key)
     end
 
-    def attributes(); end
+
+    # attribute_keys [:hbx_id, :fein]
+    # {hbx_id: '52323'}
+    # {fein: '5232353434'}
+    # {hbx_id: '52323', fein: '5232353434'}
+    # {hbx_id: '52323', fein: '5232353434', entity_kind: :cca} 
+    
+    # attribute_keys []
+    # {hbx_id: '52323', fein: '5232353434', entity_kind: :cca} everything valid
+    # {}
+    def attributes(values = {})
+      # @attributes = values
+
+      values.symbolize_keys!
+      attribute_keys.select {|attribute_key| !values.key?(attribute_key) }
+    end
 
     # def attributes
     #   attribute_keys.reduce({}) do |dictionary, attr|
@@ -91,17 +106,28 @@ module EventSource
     # end
 
     def publish
-      publisher_class.publish(event_key, payload) if valid?
+      publisher_class.publish(publisher_event_key, payload) if valid?
     end
 
-    def event_key
-      self.class.to_s.underscore.gsub('/', '.')
+    def publisher_event_key
+      self.class.to_s.underscore.gsub('::', '.')
     end
 
     # Get data from the payload
     # @param [String, Symbol] name
     def [](name)
-      @payload[:attributes].fetch(name)
+      @attribute_keys.detect{|attribute_key| attribute_key.key == name}
+    end
+
+    # intialize/update_value on EventSource::Attribute
+    def []=(name, value)
+      # detect EventSource::Attribute
+      #
+      # if self.class.attribute_keys.empty?
+      #   update or initialize
+      # else
+      #   update
+      # end
     end
 
     def payload

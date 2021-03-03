@@ -57,10 +57,11 @@ module EventSource
       end
 
       def event(event_key, options = {})
-        @events = [] unless defined?(@events)
-        event = __build_event__(event_key, options)
-        @events.push(event)
-        Success(event)
+        Try {
+          event = __build_event__(event_key, options)
+          @events.push(event)
+          event
+        }.to_result
       end
 
       # @param [String] event_key

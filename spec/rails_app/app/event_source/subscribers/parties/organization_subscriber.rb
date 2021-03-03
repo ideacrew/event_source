@@ -4,9 +4,13 @@ module Parties
   class OrganizationSubscriber
   	include ::EventSource::Subscriber
 
-  	subscriptions 'parties.organization_publisher', 'parties.organization_publisher'
+  	subscriptions 'parties.organization_publisher', 'parties.organization_publisher'#, async: true
+
+    subscription 'parties.organization_publisher'#, async: {job: NotifierJob}
 
     def on_parties_organization_created(event)
+      puts "Hello World #{event.inspect}"
+      puts "Hello World #{event.inspect}"
       puts "Hello World #{event.inspect}"
     end
 

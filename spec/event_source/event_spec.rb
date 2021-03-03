@@ -52,7 +52,7 @@ RSpec.describe EventSource::Event do
     end
   end
 
-  context 'An initialized Event class with defined attributes' do
+  context 'An initialized Event class with defined attribute_keys' do
 
     let(:event_class) do
       class MyEvent < EventSource::Event
@@ -76,8 +76,89 @@ RSpec.describe EventSource::Event do
 
     context 'and all attribute values are present' do
       it '#valid? should return true' do
+        event = event_class.new
+        # event[:fein]
+        event[:fein] = 'test'
+        expect(event_class.new.valid?).to be_truthy
+      end
+    end
+
+    context 'and all attribute values are present along with additional attributes' do
+      it '#valid? should return true' do
+        expect(event_class.new.valid?).to be_truthy
+      end
+
+      it 'should ignore extra attributes' do
         expect(event_class.new.valid?).to be_truthy
       end
     end
   end
+
+  context 'An initialized Event class with no attribute_keys' do
+
+    let(:event_class) do
+      class MyEvent < EventSource::Event
+        publisher_key 'parties.organization_publisher'
+      end
+      MyEvent
+    end
+
+    context 'with attributes passed' do 
+      it '#valid? should return true' do
+        expect(event_class.new.valid?).to be_truthy
+      end
+
+      it 'payload should include all attributes passed' do
+        expect(event_class.new.attribute_keys.map(&:key)).to eq %i[hbx_id fein entity_kind]
+      end
+    end
+
+    context 'with no attributes passed' do
+      let(:hbx_id) { '12345' }
+
+      it '#valid? should return true' do
+        expect(event_class.new.valid?).to be_truthy
+      end
+
+      it 'payload should be an empty hash' do
+      end
+    end
+  end
 end
+
+    # let(:attributes) do
+    #   {
+    #     old_state: {
+    #       hbx_id: '553234',
+    #       legal_name: 'Test Organization',
+    #       entity_kind: 'c_corp',
+    #       fein: '546232323'
+    #     },
+    #     new_state: {
+    #       hbx_id: '553234',
+    #       legal_name: 'Test Organization',
+    #       entity_kind: 'c_corp',
+    #       fein: '546232320'
+    #     }
+    #   }
+    # end
+
+    # let(:metadata) do
+    #   {
+    #     command_name: 'parties.organziation.correct_or_update_fein',
+    #     change_reason: 'corrected'
+    #   }
+    # end
+
+
+      # event 'parties.organization.fein_corrected', attributes: attributes
+      
+      # event = event 'parties.organization.fein_corrected'
+      # event.attributes =  attributes
+
+      # event = event 'parties.organization.fein_corrected'
+      # event.fein = fein
+      # event.hbx_id = hbx_id
+
+      # event.valid?
+      # event.publish

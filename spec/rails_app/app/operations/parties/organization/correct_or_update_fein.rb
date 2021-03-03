@@ -56,7 +56,7 @@ module Parties
       end
 
       def publish_event(event)
-        Try() { events.each { |event| event.publish } }
+        Try() { event.publish }
       end
     end
   end

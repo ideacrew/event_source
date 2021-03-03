@@ -22,47 +22,31 @@ RSpec.describe EventSource::Command do
       }
     end
 
-    let(:attributes) do
-      {
-        old_state: {
-          hbx_id: '553234',
-          legal_name: 'Test Organization',
-          entity_kind: 'c_corp',
-          fein: '546232323'
-        },
-        new_state: {
-          hbx_id: '553234',
-          legal_name: 'Test Organization',
-          entity_kind: 'c_corp',
-          fein: '546232320'
-        }
-      }
-    end
-    let(:metadata) do
-      {
-        command_name: 'parties.organziation.correct_or_update_fein',
-        change_reason: 'correction'
-      }
-    end
-
     context 'with an invalid event_key' do
       it 'should raise an error' do
-        expect {
-          invalid_command.new.call
-        }.to raise_error EventSource::Error::EventNameUndefined
+        result =  invalid_command.new.call
+        expect(result).to be_failure
+        expect(result.failure).to be_a(EventSource::Error::EventNameUndefined)
       end
     end
 
     context 'with a valid event_key' do
       let(:new_fein) { '546232320' }
       let(:corrected_change_reason) { 'corrected' }
-
-      it 'should register event' do
-        Parties::Organization::CorrectOrUpdateFein.new.call(
+      let(:payload) {
+        {
           organization: organization_params,
           fein: new_fein,
           change_reason: corrected_change_reason
-        )
+        }
+      }
+
+      let(:command) { Parties::Organization::CorrectOrUpdateFein }
+
+      it 'should register event' do
+        result = command.new.call(payload)
+        expect(result).to be_success
+        expect(result.success.fein).to eq new_fein
       end
     end
   end

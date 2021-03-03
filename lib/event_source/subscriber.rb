@@ -21,9 +21,17 @@ module EventSource
         @publishers += args
       end
 
-      def subscription(key)
+      def subscription(key, options = {})
       	@publishers = [] unless defined? @publishers
       	@publishers << publisher_key
+
+        # subscribe {|event|
+        #   ListenerJob.perform_later(event, self)
+        # }
+      end
+
+      def perform(event, subscriber)
+        subcriber.on_oraganization_create(event)
       end
 
       def subscribe
