@@ -70,6 +70,7 @@ module EventSource
       @contract_class = self.class.contract_class || ''
       @attribute_keys = klass_var_for(:attribute_keys) || []
       @publisher_key = klass_var_for(:publisher_key) || nil
+      attributes(options.dig(:attributes) || {})
 
       if @publisher_key.eql?(nil)
         raise EventSource::Error::PublisherKeyMissing.new "add 'publisher_key' to #{self.class.name}"
@@ -99,23 +100,18 @@ module EventSource
     end
 
     def attributes(values = {})
-      @event_errors = []
+      return @attributes if values.empty?
       values.symbolize_keys!
+      gapped_keys = attribute_keys - values.keys unless attribute_keys.empty?
 
-      @attributes.merge!(values)
-      gapped_keys = @attribute_keys - values.keys
+      raise ArgumentError, "missing required keys: #{gapped_keys}" unless (gapped_keys || []).empty?
 
-      if gapped_keys.size > 0
-        @valid = false
-        @event_errors << "missing required keys: #{gapped_keys}"
-      else
-        @valid = true
-        @attributes =
-          @attribute_keys.reduce({}) do |memo, key|
-            memo.merge! "#{key}" => values["#{key}"]
-          end
-      end
-      # attribute_keys.select { |attribute_key| !values.key?(attribute_key) }
+      @attributes = values.select{|key, value| attribute_keys.empty? || attribute_keys.include?(key) }
+    end
+
+    # @return [Boolean]
+    def valid?
+      attributes
     end
 
     # def attributes
@@ -136,7 +132,7 @@ module EventSource
     # Get data from the payload
     # @param [String, Symbol] name
     def [](name)
-      @attributes.fetch(:name)
+      @attributes.dig(:name)
       # @attribute_keys.detect { |attribute_key| attribute_key.key == name }
     end
 
@@ -154,11 +150,6 @@ module EventSource
 
     def payload
       @payload = { attributes: @attributes, metadata: @metadata }
-    end
-
-    # @return [Boolean]
-    def valid?
-      attributes
     end
 
     def event_errors
