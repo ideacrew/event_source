@@ -106,11 +106,11 @@ module EventSource
     # end
 
     def publish
-      publisher_class.publish(publisher_event_key, payload) if valid?
+      publisher_class.publish(publisher_event_key, payload)# if valid?
     end
 
     def publisher_event_key
-      self.class.to_s.underscore.gsub('::', '.')
+      self.class.name.gsub('::', '.').underscore
     end
 
     # Get data from the payload
