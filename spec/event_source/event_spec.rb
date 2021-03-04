@@ -53,7 +53,6 @@ RSpec.describe EventSource::Event do
   end
 
   context 'An initialized Event class with defined attribute_keys' do
-
     let(:event_class) do
       class MyEvent < EventSource::Event
         publisher_key 'parties.organization_publisher'
@@ -62,21 +61,27 @@ RSpec.describe EventSource::Event do
       MyEvent
     end
 
-    it 'keys should be initialized for each attribute' do
-      expect(event_class.new.attribute_keys.map(&:key)).to eq %i[hbx_id fein entity_kind]
+    it 'attribute_keys should be initialized for each key' do
+      # expect(event_class.new.attribute_keys.map(&:key)).to eq %i[
+      expect(event_class.new.attribute_keys).to eq %i[hbx_id fein entity_kind]
     end
 
     context 'and one or more attribute values are missing' do
       let(:hbx_id) { '12345' }
 
       it '#valid? should return false' do
-        expect(event_class.new.valid?).to be_falsey
+        event = event_class.new
+        event.attributes = { hbx_id: hbx_id }
+
+        expect(event.valid?).to be_falsey
+        expect(event.errors).to eq []
       end
     end
 
     context 'and all attribute values are present' do
       it '#valid? should return true' do
         event = event_class.new
+
         # event[:fein]
         event[:fein] = 'test'
         expect(event_class.new.valid?).to be_truthy
@@ -95,7 +100,6 @@ RSpec.describe EventSource::Event do
   end
 
   context 'An initialized Event class with no attribute_keys' do
-
     let(:event_class) do
       class MyEvent < EventSource::Event
         publisher_key 'parties.organization_publisher'
@@ -103,13 +107,17 @@ RSpec.describe EventSource::Event do
       MyEvent
     end
 
-    context 'with attributes passed' do 
+    context 'with attributes passed' do
       it '#valid? should return true' do
         expect(event_class.new.valid?).to be_truthy
       end
 
       it 'payload should include all attributes passed' do
-        expect(event_class.new.attribute_keys.map(&:key)).to eq %i[hbx_id fein entity_kind]
+        expect(event_class.new.attribute_keys.map(&:key)).to eq %i[
+             hbx_id
+             fein
+             entity_kind
+           ]
       end
     end
 
@@ -126,39 +134,38 @@ RSpec.describe EventSource::Event do
   end
 end
 
-    # let(:attributes) do
-    #   {
-    #     old_state: {
-    #       hbx_id: '553234',
-    #       legal_name: 'Test Organization',
-    #       entity_kind: 'c_corp',
-    #       fein: '546232323'
-    #     },
-    #     new_state: {
-    #       hbx_id: '553234',
-    #       legal_name: 'Test Organization',
-    #       entity_kind: 'c_corp',
-    #       fein: '546232320'
-    #     }
-    #   }
-    # end
+# let(:attributes) do
+#   {
+#     old_state: {
+#       hbx_id: '553234',
+#       legal_name: 'Test Organization',
+#       entity_kind: 'c_corp',
+#       fein: '546232323'
+#     },
+#     new_state: {
+#       hbx_id: '553234',
+#       legal_name: 'Test Organization',
+#       entity_kind: 'c_corp',
+#       fein: '546232320'
+#     }
+#   }
+# end
 
-    # let(:metadata) do
-    #   {
-    #     command_name: 'parties.organziation.correct_or_update_fein',
-    #     change_reason: 'corrected'
-    #   }
-    # end
+# let(:metadata) do
+#   {
+#     command_name: 'parties.organziation.correct_or_update_fein',
+#     change_reason: 'corrected'
+#   }
+# end
 
+# event 'parties.organization.fein_corrected', attributes: attributes
 
-      # event 'parties.organization.fein_corrected', attributes: attributes
-      
-      # event = event 'parties.organization.fein_corrected'
-      # event.attributes =  attributes
+# event = event 'parties.organization.fein_corrected'
+# event.attributes =  attributes
 
-      # event = event 'parties.organization.fein_corrected'
-      # event.fein = fein
-      # event.hbx_id = hbx_id
+# event = event 'parties.organization.fein_corrected'
+# event.fein = fein
+# event.hbx_id = hbx_id
 
-      # event.valid?
-      # event.publish
+# event.valid?
+# event.publish

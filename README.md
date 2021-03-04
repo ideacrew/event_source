@@ -38,7 +38,7 @@ EventSource uses five core components:
 
 ### Command
 
-The Command is where Events are generated and published. Where they exist, Operations are likely candidates to extend as Commands. Command names use imperitive form, for example: `Create`, `Update`, `Delete`. A good convention to follow in a Rails application is to locate Commands under one folder tree organized by domain entity.
+The Command is where Events are generated and published. Where they already exist, Operations are likely candidates to extend as Commands.
 
 Mix EventSource::Command into any class. This provides the on-ramp to accessing the Event library.
 
@@ -51,14 +51,17 @@ Mix EventSource::Command into any class. This provides the on-ramp to accessing 
    end
 ```
 
-Specify one or more Events that will be published by this Command using the `event` keyword, followed by the Event's key and the attributes to include in the payload.
+Define an event using the `event` keyword followed by a reference to its `event_key` - a unique, namespaced reference to an existing Event class. The system will raise a runtime error if the event isn't found.
+
+For the following `build_event` method, the Command will publish the event `Parties::Orgaznization::Create`. Assigning a hash to the `attributes` option adds those key/value pairs to the event's payload.
 
 ```ruby
 def build_event(values)
-  created_event = event 'parties.organization.created', { data: values }
+  event 'parties.organization.created', attributes: values
 end
 ```
 
+Defining an event
 Publish the Event after the Command has completed the intended operation. After succussful persistance to the data store in this case
 
 ```ruby
@@ -86,6 +89,19 @@ created_event.errors
 ```
 
 <!-- prettier_ignore_end -->
+
+Command names use imperative form, for example: `Create`, `Update`, `Delete`. A good convention for Rails applications is to group all Commands for a single domain entity under one folder. For example:
+
+```ruby
+app
+  |- operations
+    |- parties
+      |- organizations
+        |- create.rb
+        |- delete.rb
+        |- update.rb
+
+```
 
 ### Event
 

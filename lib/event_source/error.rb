@@ -17,7 +17,6 @@ module EventSource
       include ErrorInitalizer
     end
 
-    AttributesInvalid = Class.new(Error)
     EventNameUndefined = Class.new(Error)
     ConstantNotDefined = Class.new(Error)
     PublisherKeyMissing = Class.new(Error)

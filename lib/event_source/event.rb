@@ -48,8 +48,8 @@ module EventSource
         return @attribute_keys if defined?(@attribute_keys)
         @attribute_keys =
           keys.reduce([]) do |memo, key|
-            attribute_key = EventSource::Attribute.new(key.to_sym)
-            memo << attribute_key
+            # attribute_key = EventSource::Attribute.new(key.to_sym)
+            memo << key.to_sym
           end
       end
     end
@@ -81,21 +81,41 @@ module EventSource
       @publisher_class = constant_for(@publisher_key)
     end
 
-
     # attribute_keys [:hbx_id, :fein]
     # {hbx_id: '52323'}
     # {fein: '5232353434'}
     # {hbx_id: '52323', fein: '5232353434'}
-    # {hbx_id: '52323', fein: '5232353434', entity_kind: :cca} 
-    
+    # {hbx_id: '52323', fein: '5232353434', entity_kind: :cca}
+
     # attribute_keys []
     # {hbx_id: '52323', fein: '5232353434', entity_kind: :cca} everything valid
     # {}
-    def attributes(values = {})
-      # @attributes = values
 
+    def attributes=(values)
+      unless values.class == Hash
+        raise ArgumentError, 'attributes must be a hash'
+      end
+      attributes(values)
+    end
+
+    def attributes(values = {})
+      @event_errors = []
       values.symbolize_keys!
-      attribute_keys.select {|attribute_key| !values.key?(attribute_key) }
+
+      @attributes.merge!(values)
+      gapped_keys = @attribute_keys - values.keys
+
+      if gapped_keys.size > 0
+        @valid = false
+        @event_errors << "missing required keys: #{gapped_keys}"
+      else
+        @valid = true
+        @attributes =
+          @attribute_keys.reduce({}) do |memo, key|
+            memo.merge! "#{key}" => values["#{key}"]
+          end
+      end
+      # attribute_keys.select { |attribute_key| !values.key?(attribute_key) }
     end
 
     # def attributes
@@ -116,11 +136,13 @@ module EventSource
     # Get data from the payload
     # @param [String, Symbol] name
     def [](name)
-      @attribute_keys.detect{|attribute_key| attribute_key.key == name}
+      @attributes.fetch(:name)
+      # @attribute_keys.detect { |attribute_key| attribute_key.key == name }
     end
 
     # intialize/update_value on EventSource::Attribute
     def []=(name, value)
+      @attributes.merge!(name.to_sym, value)
       # detect EventSource::Attribute
       #
       # if self.class.attribute_keys.empty?
@@ -136,13 +158,11 @@ module EventSource
 
     # @return [Boolean]
     def valid?
-      # Verify all attribute_keys are present in attributes
-      # Assign attributes to attribute keys
-      @valid ||= false
+      attributes
     end
 
-    def errors
-      # Add validation errors here
+    def event_errors
+      @event_errors ||= []
     end
 
     # Coerce an event to a hash
