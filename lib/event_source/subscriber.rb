@@ -14,7 +14,7 @@ module EventSource
     end
 
     module ClassMethods
-      attr_reader :publishers
+      attr_reader :publishers, :async_publishers
 
       def subscriptions(*args)
       	@publishers = [] unless defined? @publishers
@@ -22,12 +22,16 @@ module EventSource
       end
 
       def subscription(key, options = {})
-      	@publishers = [] unless defined? @publishers
-      	@publishers << publisher_key
+        @publishers = [] unless defined? @publishers
+        @async_publishers = {} unless defined? @async_publishers
 
-        # subscribe {|event|
-        #   ListenerJob.perform_later(event, self)
-        # }
+        is_async = options.dig(:async, :enabled) || true
+
+        if is_async
+          @async_publishers[key] = options
+        else
+          @publishers << key
+        end
       end
 
       def perform(event, subscriber)
@@ -36,12 +40,25 @@ module EventSource
 
       def subscribe
         publishers.each do |publisher_key|
-          pub_key_parts = publisher_key.split('.')
-          pub_klass = pub_key_parts.collect{|segment| EventSource::Inflector.camelize(segment)}.join('::').constantize
-          pub_const = pub_key_parts.map(&:upcase).join('_')
-          pub_const.constantize.subscribe(self.new)
-          # raise error PublisherNotDefined
+          publisher = publisher_for(publisher_key)
+          publisher.subscribe(self.new)
         end
+
+        async_publishers.each do |publisher_key, options|
+          publisher = publisher_for(publisher_key)
+          publisher.subscribe(options.dig(:async, :event)) do |event|
+            listener_job = options.dig(:async, :job) || 'ListenerJob'
+            listener_job.constantize.perform_now(event, self)
+          end
+        end
+      end
+
+      def publisher_for(publisher_key)
+        pub_key_parts = publisher_key.split('.')
+        # pub_klass = pub_key_parts.collect{|segment| EventSource::Inflector.camelize(segment)}.join('::').constantize
+        pub_const = pub_key_parts.map(&:upcase).join('_')
+        pub_const.constantize
+        # raise error PublisherNotDefined
       end
     end
   end
