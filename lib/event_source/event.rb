@@ -67,6 +67,7 @@ module EventSource
       @metadata = {
         metadata: MetadataOptionDefaults.merge(options[:metadata] || {})
       }
+      @attributes = {}
       @contract_class = self.class.contract_class || ''
       @attribute_keys = klass_var_for(:attribute_keys) || []
       @publisher_key = klass_var_for(:publisher_key) || nil
@@ -100,29 +101,25 @@ module EventSource
     end
 
     def attributes(values = {})
+      @event_errors = []
       return @attributes if values.empty?
       values.symbolize_keys!
-      gapped_keys = attribute_keys - values.keys unless attribute_keys.empty?
-
-      raise ArgumentError, "missing required keys: #{gapped_keys}" unless (gapped_keys || []).empty?
-
+      gapped_keys = attribute_keys - values.keys
+      @event_errors.push("missing required keys: #{gapped_keys}") unless gapped_keys.empty?
       @attributes = values.select{|key, value| attribute_keys.empty? || attribute_keys.include?(key) }
     end
 
     # @return [Boolean]
     def valid?
-      attributes
+      @event_errors.empty?
     end
 
-    # def attributes
-    #   attribute_keys.reduce({}) do |dictionary, attr|
-    #     entry = { attr.to_sym => "#{attribute}" }
-    #     dictionary.merge!(entry)
-    #   end
-    # end
-
     def publish
-      publisher_class.publish(publisher_event_key, payload)# if valid?
+      if valid?
+        publisher_class.publish(publisher_event_key, payload)
+      else
+        raise EventSource::Error::AttributesInvalid, @event_errors
+      end
     end
 
     def publisher_event_key

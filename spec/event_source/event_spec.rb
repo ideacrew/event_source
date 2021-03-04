@@ -63,41 +63,53 @@ RSpec.describe EventSource::Event do
     end
 
     it 'keys should be initialized for each attribute' do
-      expect(event_class.new.attribute_keys.map(&:key)).to eq %i[hbx_id fein entity_kind]
+      expect(event_class.new.attribute_keys).to eq %i[hbx_id fein entity_kind]
     end
 
+    subject { event_class.new(attributes: attributes) }
+
     context 'and one or more attribute values are missing' do
-      let(:hbx_id) { '12345' }
+      let(:attributes) { {hbx_id: '451231'} }
 
       it '#valid? should return false' do
-#         event = event_class.new
-#         event.attributes({
-#   hbx_id: '553234',
-#   legal_name: 'Test Organization',
-#   entity_kind: 'c_corp',
-#   fein: '546232323'
-# })
-#         binding.pry
-        expect(event_class.new.valid?).to be_falsey
+        expect(subject.valid?).to be_falsey
       end
     end
 
     context 'and all attribute values are present' do
+      let(:attributes) {
+        {
+          hbx_id: '553234',
+          entity_kind: 'c_corp',
+          fein: '546232323'
+        }
+      }
+
       it '#valid? should return true' do
-        event = event_class.new
-        # event[:fein]
-        event[:fein] = 'test'
-        expect(event_class.new.valid?).to be_truthy
+        expect(subject.valid?).to be_truthy
       end
     end
 
     context 'and all attribute values are present along with additional attributes' do
+      let(:attributes) {
+        {
+          hbx_id: '553234',
+          entity_kind: 'c_corp',
+          fein: '546232323',
+          legal_name: 'Test Corp LLC'
+        }
+      }
+
       it '#valid? should return true' do
-        expect(event_class.new.valid?).to be_truthy
+        expect(subject.valid?).to be_truthy
       end
 
       it 'should ignore extra attributes' do
-        expect(event_class.new.valid?).to be_truthy
+        extra_keys = attributes.keys - subject.attribute_keys
+
+        extra_keys.each do |key|
+          expect(subject.attributes.key?(key)).to be_falsey
+        end
       end
     end
   end
@@ -105,30 +117,46 @@ RSpec.describe EventSource::Event do
   context 'An initialized Event class with no attribute_keys' do
 
     let(:event_class) do
-      class MyEvent < EventSource::Event
+      class MyEventTwo < EventSource::Event
         publisher_key 'parties.organization_publisher'
       end
-      MyEvent
+      MyEventTwo
     end
 
+    subject { event_class.new(attributes: attributes) }
+
     context 'with attributes passed' do
+      let(:attributes) {
+        {
+          hbx_id: '553234',
+          entity_kind: 'c_corp',
+          fein: '546232323',
+          legal_name: 'Test Corp LLC'
+        }
+      }
+
       it '#valid? should return true' do
-        expect(event_class.new.valid?).to be_truthy
+        expect(subject.valid?).to be_truthy
       end
 
-      it 'payload should include all attributes passed' do
-        expect(event_class.new.attribute_keys.map(&:key)).to eq %i[hbx_id fein entity_kind]
+      it 'attribute_keys should be empty' do
+        expect(subject.attribute_keys).to be_empty
+      end
+
+      it 'should have all attributes' do
+        expect(subject.attributes).to eq attributes 
       end
     end
 
     context 'with no attributes passed' do
-      let(:hbx_id) { '12345' }
+      let(:attributes) { {} }
 
       it '#valid? should return true' do
-        expect(event_class.new.valid?).to be_truthy
+        expect(subject.valid?).to be_truthy
       end
 
       it 'payload should be an empty hash' do
+        expect(subject.attributes).to be_empty
       end
     end
   end

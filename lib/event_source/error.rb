@@ -22,5 +22,7 @@ module EventSource
     PublisherKeyMissing = Class.new(Error)
     PublisherNotFound = Class.new(Error)
     ContractNotFound = Class.new(Error)
+    AttributesInvalid = Class.new(Error)
+
   end
 end
