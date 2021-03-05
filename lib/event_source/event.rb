@@ -64,15 +64,16 @@ module EventSource
                 :contract_class
 
     def initialize(options = {})
+      @attribute_keys = klass_var_for(:attribute_keys) || []
+      @contract_class = self.class.contract_class || ''
+
+      @attributes = {}
+      attributes(options.dig(:attributes) || attributes({}))
       @metadata = {
         metadata: MetadataOptionDefaults.merge(options[:metadata] || {})
       }
-      @attributes = {}
-      @contract_class = self.class.contract_class || ''
-      @attribute_keys = klass_var_for(:attribute_keys) || []
-      @publisher_key = klass_var_for(:publisher_key) || nil
-      attributes(options.dig(:attributes) || {})
 
+      @publisher_key = klass_var_for(:publisher_key) || nil
       if @publisher_key.eql?(nil)
         raise EventSource::Error::PublisherKeyMissing.new "add 'publisher_key' to #{self.class.name}"
       end
@@ -102,16 +103,24 @@ module EventSource
 
     def attributes(values = {})
       @event_errors = []
-      return @attributes if values.empty?
+
+      # return @attributes = {} if values.empty?
       values.symbolize_keys!
+
       gapped_keys = attribute_keys - values.keys
-      @event_errors.push("missing required keys: #{gapped_keys}") unless gapped_keys.empty?
-      @attributes = values.select{|key, value| attribute_keys.empty? || attribute_keys.include?(key) }
+      unless gapped_keys.empty?
+        @event_errors.push("missing required keys: #{gapped_keys}")
+      end
+      @attributes =
+        values.select do |key, value|
+          attribute_keys.empty? || attribute_keys.include?(key)
+        end
     end
 
     # @return [Boolean]
     def valid?
       @event_errors.empty?
+      # @event_errors.empty?
     end
 
     def publish

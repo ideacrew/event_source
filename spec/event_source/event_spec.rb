@@ -53,7 +53,6 @@ RSpec.describe EventSource::Event do
   end
 
   context 'An initialized Event class with defined attribute_keys' do
-
     let(:event_class) do
       class MyEvent < EventSource::Event
         publisher_key 'parties.organization_publisher'
@@ -69,7 +68,7 @@ RSpec.describe EventSource::Event do
     subject { event_class.new(attributes: attributes) }
 
     context 'and one or more attribute values are missing' do
-      let(:attributes) { {hbx_id: '451231'} }
+      let(:attributes) { { hbx_id: '451231' } }
 
       it '#valid? should return false' do
         expect(subject.valid?).to be_falsey
@@ -77,13 +76,9 @@ RSpec.describe EventSource::Event do
     end
 
     context 'and all attribute values are present' do
-      let(:attributes) {
-        {
-          hbx_id: '553234',
-          entity_kind: 'c_corp',
-          fein: '546232323'
-        }
-      }
+      let(:attributes) do
+        { hbx_id: '553234', entity_kind: 'c_corp', fein: '546232323' }
+      end
 
       it '#valid? should return true' do
         expect(subject.valid?).to be_truthy
@@ -91,14 +86,14 @@ RSpec.describe EventSource::Event do
     end
 
     context 'and all attribute values are present along with additional attributes' do
-      let(:attributes) {
+      let(:attributes) do
         {
           hbx_id: '553234',
           entity_kind: 'c_corp',
           fein: '546232323',
           legal_name: 'Test Corp LLC'
         }
-      }
+      end
 
       it '#valid? should return true' do
         expect(subject.valid?).to be_truthy
@@ -115,7 +110,6 @@ RSpec.describe EventSource::Event do
   end
 
   context 'An initialized Event class with no attribute_keys' do
-
     let(:event_class) do
       class MyEventTwo < EventSource::Event
         publisher_key 'parties.organization_publisher'
@@ -123,33 +117,15 @@ RSpec.describe EventSource::Event do
       MyEventTwo
     end
 
-    subject { event_class.new(attributes: attributes) }
-
-    context 'with attributes passed' do
-      let(:attributes) {
-        {
-          hbx_id: '553234',
-          entity_kind: 'c_corp',
-          fein: '546232323',
-          legal_name: 'Test Corp LLC'
-        }
-      }
-
-      it '#valid? should return true' do
-        expect(subject.valid?).to be_truthy
-      end
-
-      it 'attribute_keys should be empty' do
-        expect(subject.attribute_keys).to be_empty
-      end
-
-      it 'should have all attributes' do
-        expect(subject.attributes).to eq attributes 
-      end
+    subject { event_class.new }
+    it 'attribute_keys should be empty' do
+      expect(subject.attribute_keys).to be_empty
     end
 
     context 'with no attributes passed' do
-      let(:attributes) { {} }
+      it '#event_errors should be empty' do
+        expect(subject.event_errors).to be_empty
+      end
 
       it '#valid? should return true' do
         expect(subject.valid?).to be_truthy
@@ -159,43 +135,123 @@ RSpec.describe EventSource::Event do
         expect(subject.attributes).to be_empty
       end
     end
+
+    context 'with attributes passed' do
+      let(:attributes) do
+        {
+          hbx_id: '553234',
+          entity_kind: 'c_corp',
+          fein: '546232323',
+          legal_name: 'Test Corp LLC'
+        }
+      end
+
+      subject { event_class.new(attributes: attributes) }
+
+      it '#event_errors should be empty' do
+        expect(subject.event_errors).to be_empty
+      end
+      it '#valid? should return true' do
+        expect(subject.valid?).to be_truthy
+      end
+      it 'should have all attributes' do
+        expect(subject.attributes).to eq attributes
+      end
+
+      it 'payload should include the attributes' do
+        expect(subject.payload[:attributes]).to eq attributes
+      end
+    end
+  end
+
+  context 'An initialized Event class with attribute_keys' do
+    let(:event_class) do
+      class MyEventTwo < EventSource::Event
+        publisher_key 'parties.organization_publisher'
+        attribute_keys :hbx_id, :entity_kind, :fein, :legal_name
+      end
+      MyEventThree
+    end
+
+    context 'with attributes passed' do
+      let(:attributes) do
+        {
+          hbx_id: '553234',
+          entity_kind: 'c_corp',
+          fein: '546232323',
+          legal_name: 'Test Corp LLC'
+        }
+      end
+
+      subject { event_class.new(attributes: attributes) }
+
+      it 'attribute_keys should be present' do
+        expect(subject.attribute_keys).to eq %i[
+             hbx_id
+             entity_kind
+             fein
+             legal_name
+           ]
+      end
+      it '#event_errors should be empty' do
+        expect(subject.event_errors).to be_empty
+      end
+      it '#valid? should return true' do
+        expect(subject.valid?).to be_true
+      end
+      it 'should have all attributes' do
+        expect(subject.attributes).to eq attributes
+      end
+
+      it 'payload should include the attributes' do
+        expect(subject.payload[:attributes]).to eq attributes
+      end
+    end
+
+    context 'with no attributes passed' do
+      it '#valid? should be false'
+      it '#event_errors should list missing attributes'
+    end
+
+    context 'with at least one missing attribute' do
+      it '#valid? should be false'
+      it '#event_errors should list missing attributes'
+    end
   end
 end
 
+# let(:attributes) do
+#   {
+#     old_state: {
+#       hbx_id: '553234',
+#       legal_name: 'Test Organization',
+#       entity_kind: 'c_corp',
+#       fein: '546232323'
+#     },
+#     new_state: {
+#       hbx_id: '553234',
+#       legal_name: 'Test Organization',
+#       entity_kind: 'c_corp',
+#       fein: '546232320'
+#     }
+#   }
+# end
 
-    # let(:attributes) do
-    #   {
-    #     old_state: {
-    #       hbx_id: '553234',
-    #       legal_name: 'Test Organization',
-    #       entity_kind: 'c_corp',
-    #       fein: '546232323'
-    #     },
-    #     new_state: {
-    #       hbx_id: '553234',
-    #       legal_name: 'Test Organization',
-    #       entity_kind: 'c_corp',
-    #       fein: '546232320'
-    #     }
-    #   }
-    # end
+# let(:metadata) do
+#   {
+#     command_name: 'parties.organziation.correct_or_update_fein',
+#     change_reason: 'corrected'
+#   }
+# end
 
-    # let(:metadata) do
-    #   {
-    #     command_name: 'parties.organziation.correct_or_update_fein',
-    #     change_reason: 'corrected'
-    #   }
-    # end
+# event 'parties.organization.fein_corrected', attributes: attributes
 
+# event = event 'parties.organization.fein_corrected'
+# event.attributes =  attributes
 
-      # event 'parties.organization.fein_corrected', attributes: attributes
-      
-      # event = event 'parties.organization.fein_corrected'
-      # event.attributes =  attributes
+# event = event 'parties.organization.fein_corrected'
+# event.fein = fein
+# event.hbx_id = hbx_id
 
-      # event = event 'parties.organization.fein_corrected'
-      # event.fein = fein
-      # event.hbx_id = hbx_id
-
-      # event.valid?
-      # event.publish
+# event.valid?
+# event.publish

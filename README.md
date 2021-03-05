@@ -28,13 +28,12 @@ Or install it yourself as:
 
 ## Usage
 
-EventSource uses five core components:
+EventSource enables these core components:
 
-1. Command
-1. Event
-1. Contract
-1. Publisher
-1. Subscriber
+1. Command - mixin to build and publish events
+1. Event - notifications with attribute payloads about notible system occurences
+1. Publisher - broadcasters of categorized events
+1. Subscriber - consumers or listeners of event notifications
 
 ### Command
 
@@ -51,7 +50,7 @@ Mix EventSource::Command into any class. This provides the on-ramp to accessing 
    end
 ```
 
-Define an event using the `event` keyword followed by a reference to its `event_key` - a unique, namespaced reference to an existing Event class. The system will raise a runtime error if the event isn't found.
+Define an event using the `event` keyword followed by a reference to its `event_key` - a unique, namespaced reference to an existing Event class. The system will raise a runtime error if an event matching the `event_key` isn't found.
 
 For the following `build_event` method, the Command will publish the event `Parties::Orgaznization::Create`. Assigning a hash to the `attributes` option adds those key/value pairs to the event's payload.
 
@@ -61,30 +60,25 @@ def build_event(values)
 end
 ```
 
-Defining an event
-Publish the Event after the Command has completed the intended operation. After succussful persistance to the data store in this case
+After the Command has completed the intended operation `publish` the Event. In this case following succussful persistance of the new organization to the data store.
 
 ```ruby
 def create(values, event)
-  event.publish if Parties::OrganizationModel.create(values)
+  event.publish if Parties::OrganizationModel.create!(values)
 end
 ```
 
-In addition to `#publish` he Command DSL includes methods for working with Events. For example:
+In addition to `#publish` the Command's DSL includes methods for working with Events. For example:
 
 <!-- prettier_ignore_start -->
 
 ```ruby
-self.events
-# => [#<Parties::Organization::Created:0x007fea1944b410>]
+org_created = Parties::Organization::Created.new
 
-created_event = events[0]
-# => <Parties::Organization::Created:0x007fea1944b410>
-
-created_event.valid?
+org_created.valid?
 # => true
 
-created_event.errors
+created_event.event_errors
 # => []
 ```
 
