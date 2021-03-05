@@ -68,7 +68,8 @@ module EventSource
       @contract_class = self.class.contract_class || ''
 
       @attributes = {}
-      attributes(options.dig(:attributes) || attributes({}))
+      send(:attributes=, options.dig(:attributes) || {})
+
       @metadata = {
         metadata: MetadataOptionDefaults.merge(options[:metadata] || {})
       }
@@ -94,24 +95,20 @@ module EventSource
     # {hbx_id: '52323', fein: '5232353434', entity_kind: :cca} everything valid
     # {}
 
+    # Set attributes
+    # @overload attributes=(attributes)
+    #   @param [Hash] attributes New attributes
+    #   @return [Event] A copy of the event with the provided attributes
+
     def attributes=(values)
       unless values.class == Hash
         raise ArgumentError, 'attributes must be a hash'
       end
-      attributes(values)
-    end
-
-    # Get or set attributes
-    # @overload
-    #   @return [Hash] attributes
-    # @overload attributes(attributes)
-    #   @param [Hash] attributes New attributes
-    #   @return [Event] A copy of the event with the provided attributes
-    def attributes(values = {})
+      
       @event_errors = []
 
       if values.empty?
-        if @attribute_keys
+        unless attribute_keys.empty?
           @event_errors.push ("missing required keys: #{attribute_keys}")
         end
         return @attributes = {}
@@ -119,13 +116,19 @@ module EventSource
 
       values.symbolize_keys!
       gapped_keys = attribute_keys - values.keys
+
       unless gapped_keys.empty?
         @event_errors.push("missing required keys: #{gapped_keys}")
       end
+
       @attributes =
         values.select do |key, value|
           attribute_keys.empty? || attribute_keys.include?(key)
         end
+    end
+
+    def attributes
+      @attributes
     end
 
     def validate_attribute_presence

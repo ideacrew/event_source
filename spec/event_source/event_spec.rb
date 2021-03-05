@@ -131,8 +131,12 @@ RSpec.describe EventSource::Event do
         expect(subject.valid?).to be_truthy
       end
 
-      it 'payload should be an empty hash' do
+      it 'attributes should be an empty hash' do
         expect(subject.attributes).to be_empty
+      end
+
+      it 'payload should be an empty hash' do
+        expect(subject.payload[:attributes]).to be_empty
       end
     end
 
@@ -146,7 +150,7 @@ RSpec.describe EventSource::Event do
         }
       end
 
-      subject { event_class.new(attributes: attributes) }
+      subject {event_class.new(attributes: attributes) }
 
       it '#event_errors should be empty' do
         expect(subject.event_errors).to be_empty
@@ -197,7 +201,7 @@ RSpec.describe EventSource::Event do
         expect(subject.event_errors).to be_empty
       end
       it '#valid? should return true' do
-        expect(subject.valid?).to be_true
+        expect(subject.valid?).to be_truthy
       end
       it 'should have all attributes' do
         expect(subject.attributes).to eq attributes
