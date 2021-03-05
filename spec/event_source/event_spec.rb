@@ -14,7 +14,7 @@
 
 RSpec.describe EventSource::Event do
   context 'A new Event class' do
-    context "and a publisher_key isn't defined" do
+    context "and a required publisher_key isn't provided" do
       let(:empty_event_class) do
         class MyEmptyEvent < EventSource::Event
           attribute_keys :hbx_id
@@ -30,24 +30,35 @@ RSpec.describe EventSource::Event do
       end
     end
 
-    context 'with a passed PublisherKey override' do
-      it 'should use the override PublisherKey rather than default PublisherKey'
-
-      context 'and a Publisher is not found for the override PublisherKey' do
-        it 'should raise an EventSource::PublisherNotFound'
+    context 'and the required publisher_key provided is invalid' do
+      let(:invalid_publisher_key) do
+        'undefined_module.undefined_event'
       end
-    end
+      let(:invalid_event_class) do
+        class InvalidEvent < EventSource::Event
+          publisher_key invalid_publisher_key
+        end
+        InvalidEvent
+      end
+        it 'should raise an EventSource::Errors::PublisherNotFound' do
+          expect { invalid_event_class.new }.to raise_error ArgumentError
+        end
+      end
 
-    context 'and a Publisher class is not found for the defined publisher_key' do
-      it 'should raise an EventSource::PublisherNotFound'
-    end
-
-    context 'with a valid publisher_key' do
+      context 'and the required publisher_key provided is valid' do
+        let(:valid_event_class) do
+          class MyEvent < EventSource::Event
+            publisher_key 'parties.organization_publisher'
+          end
+          MyEvent
+        end
+        it 'should initialize without error'
+      end
     end
 
     context 'with a defined contract_class' do
       context "and the contract_class isn't defined" do
-        it 'should raise an EventSource::ContractNotDefined'
+        it 'should raise an EventSource::Errors::ContractNotDefined'
       end
     end
   end
@@ -150,7 +161,7 @@ RSpec.describe EventSource::Event do
         }
       end
 
-      subject {event_class.new(attributes: attributes) }
+      subject { event_class.new(attributes: attributes) }
 
       it '#event_errors should be empty' do
         expect(subject.event_errors).to be_empty

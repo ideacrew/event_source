@@ -104,7 +104,7 @@ module EventSource
       unless values.class == Hash
         raise ArgumentError, 'attributes must be a hash'
       end
-      
+
       @event_errors = []
 
       if values.empty?
@@ -195,6 +195,7 @@ module EventSource
 
     def constant_for(value)
       constant_name = value.split('.').each { |f| f.upcase! }.join('_')
+      binding.pry
       return constant_name.constantize if Object.const_defined?(constant_name)
       raise EventSource::Error::ConstantNotDefined.new(
               "Constant not defined for: '#{constant_name}'"
