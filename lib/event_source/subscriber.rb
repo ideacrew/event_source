@@ -14,23 +14,22 @@ module EventSource
     end
 
     module ClassMethods
-      attr_reader :publishers, :async_publishers
+      attr_reader :sync_publishers, :async_publishers
 
       def subscriptions(*args)
-      	@publishers = [] unless defined? @publishers
-        @publishers += args
+      	@sync_publishers = [] unless defined? @sync_publishers
+        @sync_publishers += args
       end
 
       def subscription(key, options = {})
-        @publishers = [] unless defined? @publishers
+        @sync_publishers = [] unless defined? @sync_publishers
         @async_publishers = {} unless defined? @async_publishers
-
         is_async = options.dig(:async, :enabled) || true
 
         if is_async
           @async_publishers[key] = options
         else
-          @publishers << key
+          @sync_publishers << key
         end
       end
 
@@ -39,7 +38,7 @@ module EventSource
       end
 
       def subscribe
-        publishers.each do |publisher_key|
+        sync_publishers.each do |publisher_key|
           publisher = publisher_for(publisher_key)
           publisher.subscribe(self.new)
         end
