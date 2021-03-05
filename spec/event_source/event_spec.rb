@@ -136,7 +136,7 @@ RSpec.describe EventSource::Event do
       end
     end
 
-    context 'with attributes passed' do
+    context 'and with attributes passed' do
       let(:attributes) do
         {
           hbx_id: '553234',

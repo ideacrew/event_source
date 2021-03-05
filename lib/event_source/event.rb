@@ -101,12 +101,23 @@ module EventSource
       attributes(values)
     end
 
+    # Get or set attributes
+    # @overload
+    #   @return [Hash] attributes
+    # @overload attributes(attributes)
+    #   @param [Hash] attributes New attributes
+    #   @return [Event] A copy of the event with the provided attributes
     def attributes(values = {})
       @event_errors = []
 
-      # return @attributes = {} if values.empty?
-      values.symbolize_keys!
+      if values.empty?
+        if @attribute_keys
+          @event_errors.push ("missing required keys: #{attribute_keys}")
+        end
+        return @attributes = {}
+      end
 
+      values.symbolize_keys!
       gapped_keys = attribute_keys - values.keys
       unless gapped_keys.empty?
         @event_errors.push("missing required keys: #{gapped_keys}")
@@ -115,6 +126,15 @@ module EventSource
         values.select do |key, value|
           attribute_keys.empty? || attribute_keys.include?(key)
         end
+    end
+
+    def validate_attribute_presence
+      if @attribute_keys.present?
+        gapped_keys = attribute_keys - values.keys
+        unless gapped_keys.empty?
+          @event_errors.push("missing required keys: #{gapped_keys}")
+        end
+      end
     end
 
     # @return [Boolean]
