@@ -60,28 +60,22 @@ module EventSource
     attr_reader :attribute_keys,
                 :publisher_key,
                 :publisher_class,
-                :payload,
-                :contract_class
+                :payload
 
     def initialize(options = {})
       @attribute_keys = klass_var_for(:attribute_keys) || []
-      @contract_class = self.class.contract_class || ''
 
       @attributes = {}
       send(:attributes=, options.dig(:attributes) || {})
 
-      @metadata = {
-        metadata: MetadataOptionDefaults.merge(options[:metadata] || {})
-      }
+      metadata = (options[:metadata] || {}).merge(event_key: event_key)
+      @metadata = MetadataOptionDefaults.merge(metadata)
 
       @publisher_key = klass_var_for(:publisher_key) || nil
       if @publisher_key.eql?(nil)
         raise EventSource::Error::PublisherKeyMissing.new "add 'publisher_key' to #{self.class.name}"
       end
-      # super
-    end
 
-    def publisher_class
       @publisher_class = constant_for(@publisher_key)
     end
 
@@ -105,76 +99,37 @@ module EventSource
         raise ArgumentError, 'attributes must be a hash'
       end
 
-      @event_errors = []
-
-      if values.empty?
-        unless attribute_keys.empty?
-          @event_errors.push ("missing required keys: #{attribute_keys}")
-        end
-        return @attributes = {}
-      end
-
       values.symbolize_keys!
-      gapped_keys = attribute_keys - values.keys
-
-      unless gapped_keys.empty?
-        @event_errors.push("missing required keys: #{gapped_keys}")
-      end
 
       @attributes =
         values.select do |key, value|
           attribute_keys.empty? || attribute_keys.include?(key)
         end
+
+      validate_attribute_presence
+      attributes
     end
 
     def attributes
       @attributes
     end
 
-    def validate_attribute_presence
-      if @attribute_keys.present?
-        gapped_keys = attribute_keys - values.keys
-        unless gapped_keys.empty?
-          @event_errors.push("missing required keys: #{gapped_keys}")
-        end
-      end
-    end
-
     # @return [Boolean]
     def valid?
       @event_errors.empty?
-      # @event_errors.empty?
     end
 
     def publish
       if valid?
-        publisher_class.publish(publisher_event_key, payload)
+        publisher_class.publish(event_key, payload)
       else
         raise EventSource::Error::AttributesInvalid, @event_errors
       end
     end
 
-    def publisher_event_key
-      self.class.name.gsub('::', '.').underscore
-    end
-
-    # Get data from the payload
-    # @param [String, Symbol] name
-    def [](name)
-      @attributes.dig(:name)
-      # @attribute_keys.detect { |attribute_key| attribute_key.key == name }
-    end
-
-    # intialize/update_value on EventSource::Attribute
-    def []=(name, value)
-      @attributes.merge!(name.to_sym, value)
-      # detect EventSource::Attribute
-      #
-      # if self.class.attribute_keys.empty?
-      #   update or initialize
-      # else
-      #   update
-      # end
+    def event_key
+      return @event_key if defined? @event_key
+      @event_key = self.class.name.gsub('::', '.').underscore
     end
 
     def payload
@@ -191,11 +146,34 @@ module EventSource
       @payload
     end
 
+    # Get data from the payload
+    # @param [String, Symbol] name
+    def [](name)
+      attributes.dig(name)
+    end
+
+    def []=(name, value)
+      @attributes.merge!({"#{name}": value})
+      validate_attribute_presence
+      self[name]
+    end
+
     private
+
+    def validate_attribute_presence
+      @event_errors = []
+
+      if attribute_keys.present?
+        gapped_keys = attribute_keys - attributes.keys
+        
+        unless gapped_keys.empty?
+          @event_errors.push("missing required keys: #{gapped_keys}")
+        end
+      end
+    end
 
     def constant_for(value)
       constant_name = value.split('.').each { |f| f.upcase! }.join('_')
-      binding.pry
       return constant_name.constantize if Object.const_defined?(constant_name)
       raise EventSource::Error::ConstantNotDefined.new(
               "Constant not defined for: '#{constant_name}'"

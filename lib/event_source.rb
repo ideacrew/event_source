@@ -13,10 +13,8 @@ require 'dry-struct'
 require 'active_support/all'
 
 require 'event_source/inflector'
-require 'event_source/metadata'
 require 'event_source/command'
 require 'event_source/publisher'
-require 'event_source/attribute'
 require 'event_source/event'
 require 'event_source/subscriber'
 

@@ -34,25 +34,36 @@ RSpec.describe EventSource::Event do
       let(:invalid_publisher_key) do
         'undefined_module.undefined_event'
       end
-      let(:invalid_event_class) do
+      let(:invalid_event_class) do        
         class InvalidEvent < EventSource::Event
-          publisher_key invalid_publisher_key
+          publisher_key 'undefined_module.undefined_event'
         end
         InvalidEvent
       end
-        it 'should raise an EventSource::Errors::PublisherNotFound' do
-          expect { invalid_event_class.new }.to raise_error ArgumentError
+      it 'should raise an EventSource::Errors::PublisherNotFound' do
+        expect { invalid_event_class.new }.to raise_error EventSource::Error::ConstantNotDefined
+      end
+    end
+
+    context 'and the required publisher_key provided is valid' do
+      let(:valid_event_class) do
+        class MyValidEvent < EventSource::Event
+          publisher_key 'parties.organization_publisher'
         end
+        MyValidEvent
       end
 
-      context 'and the required publisher_key provided is valid' do
-        let(:valid_event_class) do
-          class MyEvent < EventSource::Event
-            publisher_key 'parties.organization_publisher'
-          end
-          MyEvent
-        end
-        it 'should initialize without error'
+      subject { valid_event_class.new }
+      it 'should initialize without error' do
+        expect(subject.publisher_class).to be_a(Parties::OrganizationPublisher)
+      end
+
+      it 'should have default metadata values' do
+        metadata = subject.payload[:metadata]
+
+        expect(metadata[:version]).to be_present
+        expect(metadata[:event_key]).to be_present
+        expect(metadata[:created_at]).to be_present
       end
     end
 
@@ -223,50 +234,50 @@ RSpec.describe EventSource::Event do
       end
     end
 
-    context 'with no attributes passed' do
-      it '#valid? should be false'
-      it '#event_errors should list missing attributes'
+    context 'with attribute setter' do
+       let(:attributes) do
+        {
+          hbx_id: '553234',
+          fein: '546232323',
+        }
+      end
+
+      let(:metadata) {
+        {event_key: 'parties.organization.created'}
+      }
+
+      subject {
+       event_class.new(attributes: attributes, metadata: metadata) }
+
+      context 'when a name value pair is passed' do
+        let(:legal_name) { 'Test Corp LLC' }
+
+        it 'should update attributes and errors' do
+          expect(subject.event_errors.first).to include('legal_name')
+          subject[:legal_name] = legal_name
+          expect(subject.event_errors.first).not_to include('legal_name')
+          expect(subject.attributes[:legal_name]).to eq legal_name
+        end
+      end
     end
 
-    context 'with at least one missing attribute' do
-      it '#valid? should be false'
-      it '#event_errors should list missing attributes'
+    context 'with attribute getter' do
+       let(:attributes) do
+        {
+          hbx_id: '553234',
+          fein: '546232323',
+        }
+      end
+
+      subject { event_class.new(attributes: attributes) }
+
+      context 'when attribute name is passed' do
+
+        it 'should return the value' do
+          expect(subject[:fein]).to eq attributes[:fein]
+          expect(subject[:hbx_id]).to eq attributes[:hbx_id]         
+        end
+      end
     end
   end
 end
-
-# let(:attributes) do
-#   {
-#     old_state: {
-#       hbx_id: '553234',
-#       legal_name: 'Test Organization',
-#       entity_kind: 'c_corp',
-#       fein: '546232323'
-#     },
-#     new_state: {
-#       hbx_id: '553234',
-#       legal_name: 'Test Organization',
-#       entity_kind: 'c_corp',
-#       fein: '546232320'
-#     }
-#   }
-# end
-
-# let(:metadata) do
-#   {
-#     command_name: 'parties.organziation.correct_or_update_fein',
-#     change_reason: 'corrected'
-#   }
-# end
-
-# event 'parties.organization.fein_corrected', attributes: attributes
-
-# event = event 'parties.organization.fein_corrected'
-# event.attributes =  attributes
-
-# event = event 'parties.organization.fein_corrected'
-# event.fein = fein
-# event.hbx_id = hbx_id
-
-# event.valid?
-# event.publish
