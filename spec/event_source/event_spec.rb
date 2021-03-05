@@ -166,7 +166,7 @@ RSpec.describe EventSource::Event do
 
   context 'An initialized Event class with attribute_keys' do
     let(:event_class) do
-      class MyEventTwo < EventSource::Event
+      class MyEventThree < EventSource::Event
         publisher_key 'parties.organization_publisher'
         attribute_keys :hbx_id, :entity_kind, :fein, :legal_name
       end

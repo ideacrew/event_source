@@ -5,7 +5,9 @@ module Parties
   	include ::EventSource::Subscriber
 
     # subscriptions 'parties.organization_publisher', 'parties.organization_publisher'#, async: true
-    subscription 'parties.organization_publisher', async: {enabled: true, event: 'parties.organization.fein_corrected'}
+    subscription 'parties.organization_publisher', async: {enabled: true, event: 'parties.organization.fein_corrected', job: 'ListenerJob'}
+    # subscription 'parties.organization_publisher', async: {enabled: true, event: 'parties.organization.fein_corrected', job: 'OrganizationJob'}
+    # subscription 'parties.organization_publisher', async: {enabled: true, event: ['parties.organization.fein_corrected', 'parties.organization.fein_updated'], job: 'ListenerJob'}
 
     def on_parties_organization_created(event)
       puts "Hello World #{event.inspect}"
