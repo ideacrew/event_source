@@ -118,7 +118,7 @@ end
 
 ### Publisher
 
-Publishers are responsible for broadcasting events to registered Subscribers. Mix Dry::Events::Publisher to definea pbulisher instance. For example, the following publisher manages events that reference the `publisher_key`: `'parties.organization_publisher'`.
+Publishers are responsible for broadcasting events to registered Subscribers. Mix Dry::Events::Publisher to define a publisher instance. For example, the following publisher manages events that reference the `publisher_key`: `'parties.organization_publisher'`.
 
 ```ruby
 # app/event_source/publishers/parties/organization_publisher.rb
@@ -140,32 +140,38 @@ The publisher class enumerates events it supports using the `register_event` key
 
 ### Subscriber
 
+Subscribers listen and enable reactors for Publisher-shared events. Mix EventSource::Subscriber to include the Subscriber DSL. For example, the following subscriber provides a block-level `subscription` listener hook along with three event listeners: `on_parties_organization_created`, `on_parties_organization_fein_corrected` and `on_parties_enrollment_premium_corrected`.
+
 ```ruby
+# app/event_source/subscribers/parties/organization_subscriber.rb
+
 module Parties
   class OrganizationSubscriber
     include ::EventSource::Subscriber
 
     subscription 'parties.organization_publisher',
                  async: {
-                   enabled: true,
-                   event: 'parties.organization.fein_corrected',
+                   event_key: 'parties.organization.fein_corrected',
                    job: 'ListenerJob',
+                   event: event,
                  }
 
     def on_parties_organization_created(event)
-      puts "Hello World #{event.inspect}"
+      Enterprise.Publish event
     end
 
     def on_parties_organization_fein_corrected(event)
-      puts "Corrected Hello World #{event.inspect}"
+      Enterprise.Publish event
     end
 
     def on_parties_enrollment_premium_corrected(event)
-      puts "Corrected Hello World #{event.inspect}"
+      Enterprise.Publish event
     end
   end
 end
 ```
+
+A `subscription` listener enables asyncronous reactors. The `subscrption` below will pick up `'parties.organization.fein_corrected'` events share on the `'parties.organization_publisher'` and forward the event to an ActiveJob named: `ListenerJob`:
 
 ```ruby
 subscription 'parties.organization_publisher',
@@ -173,12 +179,15 @@ subscription 'parties.organization_publisher',
                enabled: true,
                event: 'parties.organization.fein_corrected',
                job: 'ListenerJob',
+               event: event,
              }
 ```
 
+Create syncronous reactors by adding methods with the following nameing convention to the Subscriber class: `parties_created` event is handled by `#on_parties_created` method:
+
 ```ruby
 def on_parties_organization_created(event)
-  puts "Hello World #{event.inspect}"
+  Enterprise.Publish event
 end
 ```
 
