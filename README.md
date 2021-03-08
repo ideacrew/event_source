@@ -153,7 +153,6 @@ module Parties
                  async: {
                    event_key: 'parties.organization.fein_corrected',
                    job: 'ListenerJob',
-                   event: event,
                  }
 
     def on_parties_organization_created(event)
@@ -176,10 +175,8 @@ A `subscription` listener enables asyncronous reactors. The `subscrption` below 
 ```ruby
 subscription 'parties.organization_publisher',
              async: {
-               enabled: true,
                event: 'parties.organization.fein_corrected',
                job: 'ListenerJob',
-               event: event,
              }
 ```
 
