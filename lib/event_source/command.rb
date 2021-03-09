@@ -52,12 +52,13 @@ module EventSource
       # @return [Array<EventSource::Event>]
       attr_reader :events
 
-      def initialize
-        @events = []
-        # super
-      end
+      # def initialize
+      #   @events = []
+      #   # super
+      # end
 
       def event(event_key, options = {})
+        @events ||= []
         Try {
           event = __build_event__(event_key, options)
           @events.push(event)
