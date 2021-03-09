@@ -12,20 +12,27 @@ module EventSource
     def self.register_publishers(publisher_root = Pathname(__FILE__).dirname, engine_prefix = nil)
       Dir[publisher_root.join('**', '*_publisher.rb')].each do |file|
         relative_path = file.match(/^#{publisher_root}\/(.*)\.rb/)[1]
-
-        const_parts = [relative_path.split('/')]
-        const_parts = ([engine_prefix.upcase] + const_parts) if engine_prefix
-        constant_name = const_parts.reject(&:blank?).join('_').upcase
-
-        klass_name = if engine_prefix
-          [engine_prefix, relative_path].map{|ele| EventSource::Inflector.camelize(ele)}.join('::').constantize
-        else
-          EventSource::Inflector.camelize(relative_path).constantize
-        end
-
-        Object.const_set(constant_name, klass_name.new)
+        publisher_constant_name = publisher_constant_for(relative_path, engine_prefix)
+        publisher_klass_name = publisher_klass_for(relative_path, engine_prefix)
+        Object.const_set(publisher_constant_name, publisher_klass_name.new)
         # EventSource::Logger.info "Initialized Publisher: #{constant_name} = #{klass_name}"
       end
+    end
+
+    def self.publisher_constant_for(relative_path, engine_prefix = nil)
+      if engine_prefix
+        [engine_prefix] + relative_path.split('/')
+      else
+        relative_path.split('/')
+      end.reject(&:blank?).join('_').upcase
+    end
+
+    def self.publisher_klass_for(relative_path, engine_prefix = nil)
+      if engine_prefix
+        [engine_prefix, relative_path]
+      else
+        [relative_path]
+      end.map{|ele| EventSource::Inflector.camelize(ele)}.join('::').constantize
     end
   end
 end
