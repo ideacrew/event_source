@@ -4,13 +4,13 @@ module Parties
   class OrganizationSubscriber
     include ::EventSource::Subscriber
 
-    subscriptions 'parties.organization_publisher', 'parties.organization_publisher'
+    # subscriptions 'parties.organization_publisher', 'parties.organization_publisher'
     subscription 'parties.organization_publisher'
     subscription 'parties.organization_publisher',
-    async: {
-      event: 'parties.organization.fein_corrected',
-      job: 'ListenerJob'
-    }
+                  async: {
+                    event: 'parties.organization.fein_corrected',
+                    job: 'ListenerJob'
+                  }
 
     def on_parties_organization_created(event)
       puts "Hello World #{event.inspect}"

@@ -24,7 +24,7 @@ module EventSource
       def subscription(key, options = {})
         @sync_publishers = [] unless defined? @sync_publishers
         @async_publishers = {} unless defined? @async_publishers
-        is_async = options.dig(:async, :enabled) || false
+        is_async = options.key?(:async)
 
         if is_async
           @async_publishers[key] = options
