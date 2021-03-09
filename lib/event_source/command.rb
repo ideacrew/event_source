@@ -54,7 +54,7 @@ module EventSource
 
       def initialize
         @events = []
-        super
+        # super
       end
 
       def event(event_key, options = {})
