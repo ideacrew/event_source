@@ -43,9 +43,10 @@ module EventSource
   module Command
     send(:include, Dry::Monads[:result, :do])
     send(:include, Dry::Monads[:try])
-    extend ActiveSupport::Concern
 
-    included do
+    def self.included(base)
+      base.extend ClassMethods
+
       include Dry::Monads::Result::Mixin
 
       # @return [Array<EventSource::Event>]
@@ -81,6 +82,8 @@ module EventSource
               )
       end
     end
-    class_methods {}
+
+    module ClassMethods
+    end
   end
 end
