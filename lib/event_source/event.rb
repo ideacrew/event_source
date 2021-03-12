@@ -122,6 +122,7 @@ module EventSource
     def publish
       if valid?
         publisher_class.publish(event_key, payload)
+        EventSource.adapter.enqueue(self)
       else
         raise EventSource::Error::AttributesInvalid, @event_errors
       end
@@ -165,7 +166,7 @@ module EventSource
 
       if attribute_keys.present?
         gapped_keys = attribute_keys - attributes.keys
-        
+
         unless gapped_keys.empty?
           @event_errors.push("missing required keys: #{gapped_keys}")
         end

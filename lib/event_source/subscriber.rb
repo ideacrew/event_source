@@ -41,7 +41,7 @@ module EventSource
         sync_publishers.each do |publisher_key|
           publisher = publisher_for(publisher_key)
           publisher.subscribe(self.new)
-        end
+        end if sync_publishers.present?
 
         async_publishers.each do |publisher_key, options|
           publisher = publisher_for(publisher_key)
@@ -49,7 +49,7 @@ module EventSource
             listener_job = options.dig(:async, :job) || 'ListenerJob'
             listener_job.constantize.perform_now(event, self)
           end
-        end
+        end if async_publishers.present?
       end
 
       def publisher_for(publisher_key)
