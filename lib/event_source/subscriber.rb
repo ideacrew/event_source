@@ -2,6 +2,8 @@ require 'dry/inflector'
 
 module EventSource
   module Subscriber
+    # include ::QueueBus::Subscriber
+
     def self.included(base)
       base.extend ClassMethods
 
@@ -14,42 +16,32 @@ module EventSource
     end
 
     module ClassMethods
-      attr_reader :sync_publishers, :async_publishers
+      attr_reader :publishers
 
-      def subscriptions(*args)
-      	@sync_publishers = [] unless defined? @sync_publishers
-        @sync_publishers += args
-      end
-
-      def subscription(key, options = {})
-        @sync_publishers = [] unless defined? @sync_publishers
-        @async_publishers = {} unless defined? @async_publishers
-        is_async = options.key?(:async)
-
-        if is_async
-          @async_publishers[key] = options
-        else
-          @sync_publishers << key
-        end
-      end
-
-      def perform(event, subscriber)
-        subcriber.on_oraganization_create(event)
+      def subscription(queue, event_name = nil, &block)
+        @publishers = [] unless defined? @publishers
+        @publishers << {
+          queue: queue,
+          event_name: event_name,
+          block: block,
+          subscriber: self.new
+        }
       end
 
       def subscribe
-        sync_publishers.each do |publisher_key|
-          publisher = publisher_for(publisher_key)
-          publisher.subscribe(self.new)
-        end if sync_publishers.present?
+        # sync_publishers.each do |queue_name|
+        #   adapter.subscribe_listener(queue_name, self.new)
+        # end if sync_publishers.present?
 
-        async_publishers.each do |publisher_key, options|
-          publisher = publisher_for(publisher_key)
-          publisher.subscribe(options.dig(:async, :event)) do |event|
-            listener_job = options.dig(:async, :job) || 'ListenerJob'
-            listener_job.constantize.perform_now(event, self)
-          end
-        end if async_publishers.present?
+        publishers.each do |options|
+          adapter.dequeue(options[:queue], options[:event_name], options[:subscriber], options[:block])
+        end if publishers.present?
+
+        # async_publishers.each do |queue, options|
+        #   # EventSource.dispatch(:faa) do
+        #   #   subscribe options[:queue], options[:event_name], &options[:block]
+        #   # end
+        # end
       end
 
       def publisher_for(publisher_key)
@@ -58,6 +50,10 @@ module EventSource
         pub_const = pub_key_parts.map(&:upcase).join('_')
         pub_const.constantize
         # raise error PublisherNotDefined
+      end
+
+      def adapter
+        EventSource.adapter
       end
     end
   end

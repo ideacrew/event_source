@@ -1,11 +1,7 @@
 # frozen_string_literal: true
 
-# Creates a DSL for apps to define their blocks to run for event_types
-
 module EventSource
-  # A Dispatch object can be used to declare an application along with it's various subscriptions.
-  class Dispatch
-    attr_reader :app_key, :subscriptions
+  class Channel
 
     def initialize(app_key)
       @app_key = Application.normalize(app_key)
@@ -16,10 +12,8 @@ module EventSource
       @subscriptions.size
     end
 
-    def subscribe(queue, key, matcher_hash = nil, &block)
-      puts "--------->> #{key}---#{matcher_hash} #{block}"
-      EventSource.adapter.dequeue('default', key, matcher_hash, block)
-      dispatch_event(queue || 'default', key, matcher_hash, block)
+    def subscribe(key, matcher_hash = nil, &block)
+      dispatch_event('default', key, matcher_hash, block)
     end
 
     # allows definitions of other queues
@@ -53,15 +47,13 @@ module EventSource
     def dispatch_event(queue, key, matcher_hash, block)
       # if not matcher_hash, assume key is a event_type regex
       matcher_hash ||= { 'bus_event_type' => key }
-
-      puts "---> inside dispatch event"
       add_subscription("#{app_key}_#{queue}", key, '::QueueBus::Rider', matcher_hash, block)
     end
 
-    def add_subscription(queue_name, key, class_name, matcher_hash = nil, block)
-      sub = Subscription.register(queue_name, key, class_name, matcher_hash, block)
-      subscriptions.add(sub)
-      sub
-    end
+    # def add_subscription(queue_name, key, class_name, matcher_hash = nil, block)
+    #   sub = Subscription.register(queue_name, key, class_name, matcher_hash, block)
+    #   subscriptions.add(sub)
+    #   sub
+    # end
   end
 end

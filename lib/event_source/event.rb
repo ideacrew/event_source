@@ -121,7 +121,6 @@ module EventSource
 
     def publish
       if valid?
-        publisher_class.publish(event_key, payload)
         EventSource.adapter.enqueue(self)
       else
         raise EventSource::Error::AttributesInvalid, @event_errors

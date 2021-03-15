@@ -13,12 +13,18 @@ require 'dry-struct'
 
 # TODO Remove ActiveSupport dependency
 require 'active_support/all'
+# require 'sidekiq-bus'
 
 require 'event_source/config'
-require 'event_source/dispatch'
-require 'event_source/dispatchers'
+# require 'event_source/matcher'
+# require 'event_source/application'
+# require 'event_source/subscription_list'
+# require 'event_source/subscription'
+# require 'event_source/dispatch'
+# require 'event_source/dispatchers'
 require 'event_source/inflector'
 require 'event_source/command'
+# require 'event_source/publishing'
 require 'event_source/publisher'
 require 'event_source/event'
 require 'event_source/subscriber'
@@ -28,9 +34,10 @@ module EventSource
   class << self
     attr_writer :logger
     extend Forwardable
+    # include Publishing
 
     def_delegators :config, :adapter=, :adapter, :has_adapter?
-    def_delegators :_dispatchers, :dispatch, :dispatchers, :dispatcher_by_key, :dispatcher_execute
+    # def_delegators :_dispatchers, :dispatch, :dispatchers, :dispatcher_by_key, :dispatcher_execute
 
     # Set up logging: first attempt to attach to host application logger instance, otherwise
     # use local
@@ -39,11 +46,15 @@ module EventSource
     end
 
     def config
-      @config ||= ::EventSource::Config.new
+      @config ||= EventSource::Config.new
     end
 
-    def _dispatchers
-      @_dispatchers ||= ::EventSource::Dispatchers.new
-    end
+    # def adapter=(val)
+    #   ::QueueBus.adapter = val
+    # end
+
+    # def _dispatchers
+    #   @_dispatchers ||= ::QueueBus::Dispatchers.new
+    # end
   end
 end

@@ -44,7 +44,7 @@ module Parties
           new_state: new_state
         }
 
-        if params.fetch(:change_reason) == 'corrected'
+        if params.fetch(:change_reason) == 'correction'
           event 'parties.organization.fein_corrected', attributes: attributes[:new_state]
         else
           event 'parties.organization.fein_updated', attributes: attributes
