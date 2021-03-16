@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Organizations
   class Create
     include EventSource::Command
@@ -10,10 +12,10 @@ module Organizations
     # Use #build_event to hook into event source framework
     def build_event
       Created.new(
-        legal_name:   legal_name,
-        entity_kind:  entity_kind,
-        fein:         fein,
-        metadata:     metadata,
+        legal_name: legal_name,
+        entity_kind: entity_kind,
+        fein: fein,
+        metadata: metadata
       )
     end
 

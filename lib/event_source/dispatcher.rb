@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module EventSource
   class Dispatcher
     class << self
@@ -23,7 +25,7 @@ module EventSource
 
   class RuleSet
     def initialize
-      @rules ||= Hash.new { |h, k| h[k] = ListenerSet.new }
+      @rules = Hash.new { |h, k| h[k] = ListenerSet.new }
     end
 
     # Register events with their sync and async Listeners

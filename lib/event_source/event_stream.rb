@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Mongoid-based implementation of Martin Fowler's Event Sourcing Pattern where
 # application state is a result of sequence of events.
 # Based on Philippe Creux project at Kickstarter
@@ -13,7 +15,7 @@ module EventSource
     include Mongoid::Timestamps
     include Dry::Monads::Result::Mixin
 
-    belongs_to  :event_stream, 
+    belongs_to  :event_stream,
                 polymorphic: true,
                 inverse_of: :events
 
@@ -24,11 +26,11 @@ module EventSource
     field :data,      type: Hash, default: {}
 
     # Attributes associated with the state value changes
-    # For example: info available from controllers (e.g. submitted_at, 
+    # For example: info available from controllers (e.g. submitted_at,
     # user, device, ip address)
     field :metadata,  type: Hash, default: {}
 
-    scope :recent_first, ->{ reorder('created_at DESC') }
+    scope :recent_first, -> { reorder('created_at DESC') }
 
     after_initialize do
       preset_source_model
@@ -36,7 +38,6 @@ module EventSource
 
     before_create     :apply_and_persist
     after_create      :dispatch
-
 
     # Apply the event to the source_model passed in.
     # Must return the source_model.
@@ -48,7 +49,7 @@ module EventSource
       model.events << self
     end
 
-    alias_method :source_model, :event_stream
+    alias source_model event_stream
 
     def self.module_parent
       list = self.to_s.split('::')
@@ -95,11 +96,9 @@ module EventSource
       @data_attributes
     end
 
-
-
-    # The model associated with this event.  Uses the convention that the Event 
+    # The model associated with this event.  Uses the convention that the Event
     # class is in the model's namespace and that the model name is the same name
-    # as namespace in singular form.  For example: 
+    # as namespace in singular form.  For example:
     #   module_name       => Organizations
     #   model_class_name  => Organization
     def self.module_name

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # RSpec.describe EventSource do
 #   it "has a version number" do
 #     expect(EventSource::VERSION).not_to be nil
@@ -17,10 +19,10 @@ RSpec.describe Organizations::UpdateFein do
 
     let(:org_params) do
       {
-        legal_name:     legal_name,
-        entity_kind:    entity_kind,
-        fein:           bad_fein,
-        metadata:       metadata,
+        legal_name: legal_name,
+        entity_kind: entity_kind,
+        fein: bad_fein,
+        metadata: metadata
       }
     end
 
@@ -33,14 +35,14 @@ RSpec.describe Organizations::UpdateFein do
       let(:updated_event_type)  { 'Organizations::FeinUpdated' }
       let(:organization_class)  { 'Organizations::Organization'.constantize }
 
-      subject { described_class.call(
-                  organization: event.source_model,
-                  fein:         corrected_fein,
-                  metadata:     { created_at: event.source_model.created_at,
-                                  updated_at: updated_timestamp,
-                                  },
-      ) }
-
+      subject do
+        described_class.call(
+          organization: event.source_model,
+          fein: corrected_fein,
+          metadata: { created_at: event.source_model.created_at,
+                      updated_at: updated_timestamp }
+        )
+      end
 
       it "should return an Event instance of the correct type" do
         expect(subject).to be_a EventSource::EventStream
