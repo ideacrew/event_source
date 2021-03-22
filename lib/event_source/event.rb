@@ -9,7 +9,7 @@ module EventSource
   #   MyEvent.call(event_key, options)
   #   event = MyEvnet.new(event_key, options:)
   #
-  # (attributes:, metadata:, contract_class:)
+  # (attributes:, metadata:, contract_key:)
   #
   #   event.valid? # true or false
   #   event.errors # +> <Dry::Validation::Errors ... >
@@ -17,40 +17,36 @@ module EventSource
   class Event
     extend Dry::Initializer
 
-    MetadataOptionDefaults = {
+    HeaderDefaults = {
       version: '3.0',
-      created_at: DateTime.now
+      occurred_at: DateTime.now,
       # correlation_id: 'ADD CorrID Snowflake GUID',
       # command_name: '',
       # entity_kind: ''
     }
 
     class << self
-      attr_reader :publisher_key, :contract_class
+      attr_reader :publisher_key, :contract_key, :entity_key, :attribute_keys
 
-      def publisher_key(key = nil)
-        if defined?(@publisher_key)
-          @publisher_key
-        else
-          @publisher_key = key
-        end
+      def publisher_key(value = nil)
+        set_instance_variable_for(:publisher_key, value)
       end
 
-      def contract_class(klass = nil)
-        if defined?(@contract_class)
-          @contract_class
-        else
-          @contract_class = klass
-        end
+      def contract_key(value = nil)
+        set_instance_variable_for(:contract_key, value)
+      end
+
+      def entity_key(value = nil)
+        set_instance_variable_for(:entity_key, value)
       end
 
       def attribute_keys(*keys)
-        return @attribute_keys if defined?(@attribute_keys)
-        @attribute_keys =
-          keys.reduce([]) do |memo, key|
-            # attribute_key = EventSource::Attribute.new(key.to_sym)
-            memo << key.to_sym
-          end
+        set_instance_variable_for(:attribute_keys, keys.map(&:to_sym))
+      end
+
+      def set_instance_variable_for(element, value)
+        return instance_variable_get("@#{element}") if instance_variable_defined?("@#{element}")
+        instance_variable_set("@#{element}", value)
       end
     end
 
@@ -60,58 +56,47 @@ module EventSource
     attr_reader :attribute_keys,
                 :publisher_key,
                 :publisher_class,
+                :headers,
                 :payload
 
     def initialize(options = {})
       @attribute_keys = klass_var_for(:attribute_keys) || []
 
-      @attributes = {}
-      send(:attributes=, options.dig(:attributes) || {})
+      @payload = {}
+      send(:payload=, options.dig(:attributes) || {})
 
       metadata = (options[:metadata] || {}).merge(event_key: event_key)
-      @metadata = MetadataOptionDefaults.merge(metadata)
+      @headers = HeaderDefaults.merge(metadata)
 
-      @publisher_key = klass_var_for(:publisher_key) || nil
-      if @publisher_key.eql?(nil)
-        raise EventSource::Error::PublisherKeyMissing.new "add 'publisher_key' to #{self.class.name}"
-      end
+      # @publisher_key = klass_var_for(:publisher_key) || nil
+      # if @publisher_key.eql?(nil)
+      #   raise EventSource::Error::PublisherKeyMissing.new "add 'publisher_key' to #{self.class.name}"
+      # end
 
-      @publisher_class = constant_for(@publisher_key)
+      # @publisher_class = constant_for(@publisher_key)
     end
 
-    # attribute_keys [:hbx_id, :fein]
-    # {hbx_id: '52323'}
-    # {fein: '5232353434'}
-    # {hbx_id: '52323', fein: '5232353434'}
-    # {hbx_id: '52323', fein: '5232353434', entity_kind: :cca}
+    # Set payload
+    # @overload payload=(payload)
+    #   @param [Hash] payload New payload
+    #   @return [Event] A copy of the event with the provided payload
 
-    # attribute_keys []
-    # {hbx_id: '52323', fein: '5232353434', entity_kind: :cca} everything valid
-    # {}
-
-    # Set attributes
-    # @overload attributes=(attributes)
-    #   @param [Hash] attributes New attributes
-    #   @return [Event] A copy of the event with the provided attributes
-
-    def attributes=(values)
-      unless values.class == Hash
-        raise ArgumentError, 'attributes must be a hash'
-      end
+    def payload=(values)
+      raise ArgumentError, 'payload must be a hash' unless values.class == Hash
 
       values.symbolize_keys!
 
-      @attributes =
+      @payload =
         values.select do |key, value|
           attribute_keys.empty? || attribute_keys.include?(key)
         end
 
       validate_attribute_presence
-      attributes
+      @payload
     end
 
-    def attributes
-      @attributes
+    def payload
+      @payload
     end
 
     # @return [Boolean]
@@ -132,10 +117,6 @@ module EventSource
       @event_key = self.class.name.gsub('::', '.').underscore
     end
 
-    def payload
-      @payload = { attributes: @attributes, metadata: @metadata }
-    end
-
     def event_errors
       @event_errors ||= []
     end
@@ -149,11 +130,11 @@ module EventSource
     # Get data from the payload
     # @param [String, Symbol] name
     def [](name)
-      attributes.dig(name)
+      payload.dig(name)
     end
 
     def []=(name, value)
-      @attributes.merge!({"#{name}": value})
+      @payload.merge!({"#{name}": value})
       validate_attribute_presence
       self[name]
     end
@@ -164,7 +145,7 @@ module EventSource
       @event_errors = []
 
       if attribute_keys.present?
-        gapped_keys = attribute_keys - attributes.keys
+        gapped_keys = attribute_keys - payload.keys
 
         unless gapped_keys.empty?
           @event_errors.push("missing required keys: #{gapped_keys}")

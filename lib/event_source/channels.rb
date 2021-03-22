@@ -8,15 +8,9 @@ module EventSource
   class Channels
     # Fetches a channel for the application key and binds the provided block to it.
     def channel(app_key = nil, &block)
-      # binding.pry
       channel = channel_by_key(app_key)
       channel.instance_eval(&block)
       channel
-    end
-
-    def channels
-      @channels ||= {}
-      @channels.values
     end
 
     def channel_by_key(app_key)
@@ -30,18 +24,18 @@ module EventSource
       channel = @channels[app_key]
       channel&.execute(key, attributes)
     end
+
+    class << self
+
+      def channels
+        @__channels__ ||= Concurrent::Map.new
+      end
+
+      def add_channel(queue_name, key, attributes)
+        channels["#{queue_name}.#{key}"] = EventSource::ChannelItem.new
+        # puts channels.keys.inspect
+        # puts ::QueueBus.adapter.inspect
+      end
+    end
   end
 end
-# publisher_key == channel 
-#   - 
-
-# queue_bus
-#   - sideqick
-
-# publish
-
-# dispatch
-#   subscription
-#   subscription_list
-
-

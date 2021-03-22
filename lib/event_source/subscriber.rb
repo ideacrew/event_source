@@ -1,59 +1,61 @@
 require 'dry/inflector'
+require 'forwardable'
 
 module EventSource
   module Subscriber
-    # include ::QueueBus::Subscriber
 
     def self.included(base)
       base.extend ClassMethods
 
       TracePoint.trace(:end) do |t|
         if base == t.self
-          base.subscribe
+          base.load_subscribers
           t.disable
         end
       end
     end
 
     module ClassMethods
-      attr_reader :publishers
+      extend Forwardable
+      attr_reader :subscriptions
 
-      def subscription(queue, event_name = nil, &block)
-        @publishers = [] unless defined? @publishers
-        @publishers << {
-          queue: queue,
-          event_name: event_name,
+      def_delegators :adapter, :subscribe, :perform
+
+      def subscription(publisher_key, event_key = nil, &block)
+        verify_registered_event(publisher_key, event_key)
+
+        (@subscriptions ||= []) << {
+          publisher_key: publisher_key,
+          event_key: event_key,
           block: block,
-          subscriber: self.new
+          subscriber: self
         }
       end
 
-      def subscribe
-        # sync_publishers.each do |queue_name|
-        #   adapter.subscribe_listener(queue_name, self.new)
-        # end if sync_publishers.present?
+      def verify_registered_event(publisher_key, event_key)
+        channel_key = [publisher_key, event_key].join('.')
 
-        publishers.each do |options|
-          adapter.dequeue(options[:queue], options[:event_name], options[:subscriber], options[:block])
-        end if publishers.present?
+        app_key  = EventSource::Channel.app_key(channel_key)
+        channels = EventSource.connection.channels[app_key]
+        raise EventSource::Error::PublisherNotFound, "unable to find publisher '#{publisher_key}'" if channels.empty?
 
-        # async_publishers.each do |queue, options|
-        #   # EventSource.dispatch(:faa) do
-        #   #   subscribe options[:queue], options[:event_name], &options[:block]
-        #   # end
-        # end
+        matched = channels[channel_key]
+        raise EventSource::Error::RegisteredEventNotFound, "unable to find registered event '#{event_key}'" unless matched
       end
 
-      def publisher_for(publisher_key)
-        pub_key_parts = publisher_key.split('.')
-        # pub_klass = pub_key_parts.collect{|segment| EventSource::Inflector.camelize(segment)}.join('::').constantize
-        pub_const = pub_key_parts.map(&:upcase).join('_')
-        pub_const.constantize
-        # raise error PublisherNotDefined
+      def load_subscribers
+        subscriptions.each do |options|
+          subscribe(
+            options[:publisher_key],
+            options[:event_key],
+            options[:subscriber],
+            &options[:block]
+          )
+        end
       end
 
       def adapter
-        EventSource.adapter
+        @adapter ||= EventSource.adapter
       end
     end
   end

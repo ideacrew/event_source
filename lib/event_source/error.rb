@@ -1,3 +1,4 @@
+
 # frozen_string_literal: true
 
 module EventSource
@@ -23,6 +24,7 @@ module EventSource
     PublisherNotFound = Class.new(Error)
     ContractNotFound = Class.new(Error)
     AttributesInvalid = Class.new(Error)
-
+    RegisteredEventNotFound = Class.new(Error)
+    PublisherAlreadyRegisteredError = Class.new(Error)
   end
 end

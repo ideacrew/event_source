@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Parties
-  class DryEventAdapter < EventSource::Adapter
+  class DryEventAdapter #< EventSource::Adapter
 
 
     # EventSource.config do |config|

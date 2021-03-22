@@ -1,13 +1,14 @@
 event_source_root = Rails.root.join('app', 'event_source')
 
 publishers_dir = event_source_root.join('publishers')
-Dir[publishers_dir.join('parties', '*.rb')].each {|file| require file }
-EventSource::Publisher.register_publishers(publishers_dir)
+Dir[publishers_dir.join('parties', '*_publisher.rb')].each {|file| require file }
 
-require event_source_root.join('adapters', 'parties', 'dry_event_adapter.rb')
-EventSource.adapter = ::Parties::DryEventAdapter.new # unless EventSource.has_adapter?
+# EventSource::Publisher.register_publishers(publishers_dir)
 
-Dir[event_source_root.join('subscribers').join('parties', '*.rb')].each {|file| require file }
+# require event_source_root.join('adapters', 'parties', 'dry_event_adapter.rb')
+# EventSource.adapter = ::Parties::DryEventAdapter.new # unless EventSource.has_adapter?
+
+Dir[event_source_root.join('subscribers').join('parties', '*_subscriber.rb')].each {|file| require file }
 
 # FIX ME:
 # EventSource.initialize! { event_source_root: Rails.root.join('app', 'event_source') }
