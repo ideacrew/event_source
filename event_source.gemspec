@@ -38,6 +38,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'dry-initializer', '~> 3.0'
   spec.add_dependency 'dry-events'
   spec.add_dependency 'dry-transformer'
+  # spec.add_dependency 'resque-bus'
 
   # TODO Change to development dependency
   spec.add_dependency 'activesupport'
