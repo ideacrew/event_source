@@ -30,16 +30,18 @@ module EventSource
 
     class << self
 
-      def self.fanout(exchange_name = :default)
+      def fanout(exchange_name = :default)
         @channel = EventSource::Exchange.new(exchange_name, :fanout)
       end
 
       def app_key(key)
-        key.split('.')[0]
+        # key.split('.')[0]
+        EventSource.application
       end
 
       def event_namespace(key)
-        key.split(/#{app_key(key)}\./).last
+        # key.split(/#{app_key(key)}\./).last
+        key
       end
     end
   end
