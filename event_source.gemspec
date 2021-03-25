@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
@@ -9,11 +10,11 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Dan Thomas"]
   spec.email         = ["dan@ideacrew.com"]
 
-  spec.summary       = %q{Record changes to application state by storing updates as a sequence of events}
-  spec.description   = %q{This service uses Mogoid/MongoDB to create an event object to record a state change and 
+  spec.summary       = %q(Record changes to application state by storing updates as a sequence of events)
+  spec.description   = %q(This service uses Mogoid/MongoDB to create an event object to record a state change and
                           then processes it to update values in the underlying model. It's an implementation of
-                          Martin Fowler's Event Sourcing design pattern and adapted from code developed by 
-                          Philippe Creux}
+                          Martin Fowler's Event Sourcing design pattern and adapted from code developed by
+                          Philippe Creux)
   spec.homepage      = "https://github.com/ideacrew/event_source"
   spec.license       = "MIT"
 
@@ -22,7 +23,6 @@ Gem::Specification.new do |spec|
   spec.files         = Dir.chdir(File.expand_path('..', __FILE__)) do
     `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   end
-
 
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }

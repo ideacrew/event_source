@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Organizations
   class Organization
     include Mongoid::Document
@@ -8,7 +10,7 @@ module Organizations
     field :fein,        type: String
 
     # Track Events for this model
-    has_many :events, as: :event_stream , class_name: 'EventSource::EventStream'
+    has_many :events, as: :event_stream, class_name: 'EventSource::EventStream'
 
   end
 end

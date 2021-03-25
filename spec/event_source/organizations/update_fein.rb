@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Organizations
   class UpdateFein
     include EventSource::Command
@@ -9,8 +11,8 @@ module Organizations
     def build_event
       Organizations::FeinUpdated.new(
         event_stream: organization,
-        fein:         fein,
-        metadata:     metadata,
+        fein: fein,
+        metadata: metadata
       )
     end
 

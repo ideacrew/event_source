@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "bundler/setup"
 require "event_source"
 require "active_support"
@@ -7,7 +9,6 @@ require "pry-byebug"
 Mongoid.load!('./spec/config/mongoid.yml', :test)
 # Mongoid.logger.level = Logger::DEBUG
 # Mongo::Logger.logger.level = Logger::DEBUG
-
 
 # Set up the local context
 Dir['./spec/event_source/organizations/*.rb'].sort.each { |file| require file }

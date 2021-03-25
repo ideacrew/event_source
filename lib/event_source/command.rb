@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Mixin to add EventSource Commands
 #
 # A Command has the following public API.
@@ -59,11 +61,11 @@ module EventSource
         initialize_method_arguments = args.map { |arg| "#{arg}:" }.join(', ')
         initialize_method_body = args.map { |arg| "@#{arg} = #{arg}" }.join(";")
 
-        class_eval <<~CODE
-        def initialize(#{initialize_method_arguments})
-           #{initialize_method_body}
-           after_initialize
-        end
+        class_eval <<~CODE, __FILE__, __LINE__ + 1
+          def initialize(#{initialize_method_arguments})
+             #{initialize_method_body}
+             after_initialize
+          end
         CODE
       end
     end
@@ -82,6 +84,7 @@ module EventSource
     end
 
     private
+
     # Save the event. Should not be overwritten by the command as side effects
     # should be implemented via Listeners triggering other Events.
     def execute!
@@ -101,6 +104,6 @@ module EventSource
     def after_initialize
       # noop
     end
-    
+
   end
 end
