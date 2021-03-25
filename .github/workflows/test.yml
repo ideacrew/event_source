@@ -30,6 +30,9 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.5.1
+      - uses: wbari/start-mongoDB@v0.2
+        with:
+          mongoDBVersion: '3.6'
       - name: Cache Gems
         uses: actions/cache@v2
         with:
