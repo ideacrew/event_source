@@ -13,7 +13,7 @@ require 'dry-struct'
 
 # TODO Remove ActiveSupport dependency
 require 'active_support/all'
-
+require 'event_source/railtie' if defined? Rails
 require 'event_source/connection'
 require 'event_source/server'
 require 'event_source/channel'
