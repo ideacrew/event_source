@@ -7,8 +7,12 @@ module EventSource
 
       def self.subscribe_queue_with_class(queue_name, method_name, klass, matcher_hash = nil)
         matcher_hash ||= { 'bus_event_type' => method_name }
-        sub_key = "#{name}.#{method_name}"
+        sub_key = "#{klass.name}.#{method_name}"
         dispatcher = ::QueueBus.dispatcher_by_key(app_key)
+
+        # puts "subscribing .....>>>>#{app_key}"
+        # puts "#{queue_name}--#{sub_key}--#{klass.name}---#{matcher_hash}"
+
         dispatcher.add_subscription(queue_name, sub_key, klass.name.to_s, matcher_hash,
                                     ->(att) { klass.perform(att) })
       end

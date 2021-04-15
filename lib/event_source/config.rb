@@ -5,8 +5,8 @@ module EventSource
   class Config
 
     def adapter=(val)
-      raise "Adapter already set to #{@adapter_instance.class.name}" if has_adapter?
-
+      # raise "Adapter already set to #{@adapter_instance.class.name}" if has_adapter?
+      val = EventSource::Adapters::QueueBusAdapter if val.to_s == 'resque_bus'
       @adapter_instance =
         if val.is_a?(Class)
           val.new
@@ -27,7 +27,7 @@ module EventSource
     end
 
     def connection=(val)
-      raise "Adapter already set to #{@connection_instance.class.name}" if has_connection?
+      raise "Connection already set to #{@connection_instance.class.name}" if has_connection?
 
       @connection_instance =
         if val.is_a?(Class)
@@ -46,5 +46,40 @@ module EventSource
     def has_connection? # rubocop:disable Naming/PredicateName
       !@connection_instance.nil?
     end
+
+
+    def application=(application)
+      @application = application
+    end
+
+    def application
+      return @application if defined? @application
+      raise 'no application has been set'
+    end
+
+    def root=(path)
+      @root = path
+    end
+
+    def root
+      return @root if defined? @root
+      raise 'no root has been set'
+    end
+
+    def logger=(logger)
+      @logger = ::Logger.new(logger)
+    end
+
+    def logger
+      return @logger if defined? @logger
+      raise 'no logger has been set'
+    end
+
+    def load_configuration
+      adapter.logger = logger
+      adapter.application = application
+      adapter.load_components(root)
+    end
+
   end
 end

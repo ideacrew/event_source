@@ -13,7 +13,7 @@ require 'dry-struct'
 
 # TODO Remove ActiveSupport dependency
 require 'active_support/all'
-
+require 'event_source/railtie' if defined? Rails
 require 'event_source/connection'
 require 'event_source/server'
 require 'event_source/channel'
@@ -33,7 +33,13 @@ module EventSource
     attr_writer :logger
     extend Forwardable
 
-    def_delegators :config, :adapter=, :adapter, :has_adapter?, :connection=, :connection
+    def_delegators :config, :adapter=, :adapter, :has_adapter?, :connection=, :connection, :logger, :application, :root, :load_configuration
+    def_delegators :adapter, :publish, :publish_at
+
+    def configure(&block)
+      yield(config)
+      load_configuration
+    end
 
     # Set up logging: first attempt to attach to host application logger instance, otherwise
     # use local
@@ -47,8 +53,4 @@ module EventSource
   end
 end
 
-# config.adapter = :resque_bus
-# config.adapter = :rabbit_mq
-
-EventSource.adapter = EventSource::Adapters::QueueBusAdapter
 EventSource.connection = EventSource::Server.new_connection

@@ -19,7 +19,7 @@ module EventSource
 
     def self.[](id)
       # TODO: validate publisher already exists
-      raise EventSource::Error::PublisherAlreadyRegisteredError.new(id) if registry.key?(id)
+      # raise EventSource::Error::PublisherAlreadyRegisteredError.new(id) if registry.key?(id)
       new(id)
     end
 

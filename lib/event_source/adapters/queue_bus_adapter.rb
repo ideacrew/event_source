@@ -5,7 +5,7 @@ module EventSource
 
     class QueueBusAdapter
       # adapters need to define the NonImplemented methods in this class
-
+      attr_reader :application, :logger
       def initialize
         enabled!
       end
@@ -13,8 +13,6 @@ module EventSource
       def enabled!
         require 'resque-bus' # This initializes both QueueBus and ResqueBus
         require 'event_source/adapters/queue_bus_subscriber'
-       
-        ::QueueBus.local_mode = :inline
       end
 
       # def enqueue(queue_name, klass, json)
@@ -33,7 +31,6 @@ module EventSource
       #   ::ResqueBus.enqueue_at_with_queue(queue_name, epoch_seconds, klass, json)
       # end
 
-
       def publish(event_type, attributes = {})
         ::QueueBus.publish(event_type, attributes)
       end
@@ -43,20 +40,37 @@ module EventSource
       end
 
       def subscribe(publisher_key, event_key, klass, &block)
-        app_name = EventSource::Channel.app_key(publisher_key)
-        event_namespace = EventSource::Channel.event_namespace(publisher_key)
+        # app_name = EventSource::Channel.app_key(publisher_key)
+        # event_namespace = EventSource::Channel.event_namespace(publisher_key)
 
         if block_given?
           # ::QueueBus.dispatch(app_name || :event_source) do
           # end
         else
-          QueueBusSubscriber.application(app_name)
-          QueueBusSubscriber.subscribe_queue_with_class(event_namespace, "on_#{event_key.gsub('.', '_')}", klass)
+          QueueBusSubscriber.application(application)
+          QueueBusSubscriber.subscribe_queue_with_class(publisher_key, "on_#{event_key.gsub('.', '_')}", klass)
         end
       end
 
       def perform(attributes)
         QueueBusSubscriber.perform(attributes)
+      end
+
+      def logger=(logger)
+        @logger = logger
+        QueueBus.logger = logger
+      end
+
+      def application=(name)
+        @application = name
+      end
+
+      def load_components(root_path)
+        %w[publishers subscribers].each do |folder|
+          Dir["#{root_path}/#{folder}/*.rb"].each {|file| require file }
+        end
+
+        EventSource::Subscriber.register_subscribers
       end
     end
   end
