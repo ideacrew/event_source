@@ -31,18 +31,16 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'dry-monads', '~> 1.2'
-  spec.add_dependency 'dry-struct', '~> 1.0'
-  spec.add_dependency 'dry-types', '~> 1.0'
-  spec.add_dependency 'dry-validation', '~> 1.2'
+  spec.add_dependency 'dry-monads', '~> 1.3'
+  spec.add_dependency 'dry-struct', '~> 1.4'
+  spec.add_dependency 'dry-types', '~> 1.5'
+  spec.add_dependency 'dry-validation', '~> 1.6'
   spec.add_dependency 'dry-initializer', '~> 3.0'
-  spec.add_dependency 'dry-events'
-  spec.add_dependency 'dry-transformer'
-  spec.add_dependency 'resque-bus'
+  spec.add_dependency 'dry-events', '~> 0.3'
+  spec.add_dependency 'resque-bus', '~> 0.7.0'
 
   # TODO Change to development dependency
-  spec.add_dependency 'activesupport'
-
+  spec.add_development_dependency 'activesupport'
   spec.add_development_dependency 'database_cleaner'
   spec.add_development_dependency 'mongoid'
   spec.add_development_dependency 'yard'
