@@ -43,6 +43,9 @@ Event classes are predefined in the system, inheriting from the `EventSource::Ev
 
 For example, the following event has a `publisher_key` referencing the `Parties::OrganiztionPublisher` class. It also enumerates four `attribute_keys`: `:hbx_id, :legal_name, :fein, :entity_kind`.
 
+contract_key
+entity_key
+
 ```ruby
     # app/events/parties/organization/created.rb
 
