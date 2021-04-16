@@ -1,6 +1,6 @@
 # This yaml describes our current checks.
 AllCops:
-  TargetRubyVersion: 2.5
+  TargetRubyVersion: 2.6
   SuggestExtensions: false
   NewCops: enable
   Exclude:
@@ -13,9 +13,6 @@ Layout/EmptyLineAfterGuardClause:
 Layout/EmptyLinesAroundBlockBody:
   Enabled: false
 
-Layout/LeadingCommentSpace:
-  Enabled: true
-
 Layout/ExtraSpacing:
   Enabled: false
 
@@ -25,26 +22,11 @@ Layout/EmptyLinesAroundClassBody:
 Layout/EmptyLinesAroundModuleBody:
   Enabled: false
 
-Layout/SpaceBeforeBlockBraces:
-  Enabled: true
-
-Layout/SpaceInsideHashLiteralBraces:
-  Enabled: true
-
 Layout/SpaceInsideBlockBraces:
   Enabled: false
 
-Layout/IndentationWidth:
-  Enabled: true
-
-Layout/IndentationStyle:
-  Enabled: true
-
 Layout/TrailingEmptyLines:
   Enabled: false
-
-Layout/TrailingWhitespace:
-  Enabled: true
 
 Metrics/AbcSize:
   Max: 50
@@ -71,19 +53,16 @@ Metrics/PerceivedComplexity:
   Max: 15
 
 Naming/VariableNumber:
-  Enabled: true
+  Enabled: false
 
-Style/AndOr:
-  Enabled: true
+Naming/ConstantName:
+  Enabled: false
 
 Style/BlockComments:
   Enabled: false
 
-Style/Documentation:
-  Enabled: true
-
 Style/EachWithObject:
-  Enabled: true
+  Enabled: false
 
 Style/EmptyLiteral:
   Enabled: false

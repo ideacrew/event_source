@@ -6,5 +6,9 @@ source "https://rubygems.org"
 gemspec
 
 group :development, :test do
-  gem "rubocop"
+  gem "rails"
+  gem "rspec-rails"
+  gem "pry",        platform: :mri
+  gem "pry-byebug", platform: :mri
+  gem 'rubocop', '1.10.0'
 end

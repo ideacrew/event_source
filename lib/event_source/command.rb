@@ -1,109 +1,90 @@
 # frozen_string_literal: true
 
-# Mixin to add EventSource Commands
-#
-# A Command has the following public API.
-#
-# ```
-#   MyCommand.call(user: ..., post: ...) # shorthand to initialize, validate and execute the command
-#   command = MyCommand.new(user: ..., post: ...)
-#   command.valid? # true or false
-#   command.errors # +> <ActiveModel::Errors ... >
-#   command.call # validate and execute the command
-# ```
-#
-# `call` will raise an `ActiveModel::RecordInvalid` error if it fails validations.
-#
-# Commands including the `Command` mixin must:
-# * list the attributes the command takes
-# * implement `build_event` which returns a non-persisted event or nil for noop.
-#
-# Ex:
-#
-# ```
-#   class MyCommand
-#     include Command
-#
-#     attributes :user, :post
-#
-#     def build_event
-#       Event.new(...)
-#     end
-#   end
-# ```
-
 module EventSource
+  # Mixin to add EventSource Commands
+  # This module defines behavior for Events
+  #
+  # Commands including the `Command` mixin must:
+  # * implement an `event` which returns an event instance or nil for noop.
+  # * provide attribute values to include in Event payload
+  #
+  # @example
+  # An `EventSource::Errors::EventNameUndefined` error if raised if corresponding constant isn't found for the event_key
+  #
+  # ```
+  # class MyCommand
+  #   include EventSource::Command
+  #
+  #   def call(params)
+  #     values = yield validate(params)
+  #     event = yield build_event(values)
+  #     ...
+  #   end
+  #
+  #   private
+  #
+  #   def build_event
+  #     event 'organizations.organization.created', options: {
+  #       attributes: {
+  #         hbx_id: '12345',
+  #         legal_name: 'ACME Widgets',
+  #         entity_kind: 'c_corp',
+  #         fein: '987654321'
+  #       },
+  #       metadata: {
+  #         command_key: 'organizations.organization.create',
+  #         correlation_id: 'xv34nf6734',
+  #         created_at: DateTime.now
+  #       }
+  #     }
+  # ...
+  #   end
+  # end
   module Command
-    extend ActiveSupport::Concern
+    send(:include, Dry::Monads[:result, :do])
+    send(:include, Dry::Monads[:try])
 
-    included do
+    def self.included(base)
+      base.extend ClassMethods
+
       include Dry::Monads::Result::Mixin
-    end
 
-    class_methods do
-      # Run validations and persist the event.
-      #
-      # On success: returns the event
-      # On noop: returns nil
-      # On failure: raise an ActiveRecord::RecordInvalid error
-      def call(*args)
-        new(*args).call
+      # @return [Array<EventSource::Event>]
+      attr_reader :events
+
+      # def initialize
+      #   @events = []
+      #   # super
+      # end
+
+      def event(event_key, options = {})
+        @events ||= []
+        Try {
+          event = __build_event__(event_key, options)
+          @events.push(event)
+          event
+        }.to_result
       end
 
-      # Define the attributes.
-      # They are set when initializing the command as keyword arguments and
-      # are all accessible as getter methods.
-      #
-      # ex: `attributes :post, :user, :ability`
-      def attributes(*args)
-        attr_reader(*args)
-
-        initialize_method_arguments = args.map { |arg| "#{arg}:" }.join(', ')
-        initialize_method_body = args.map { |arg| "@#{arg} = #{arg}" }.join(";")
-
-        class_eval <<~CODE, __FILE__, __LINE__ + 1
-          def initialize(#{initialize_method_arguments})
-             #{initialize_method_body}
-             after_initialize
-          end
-        CODE
+      # @param [String] event_key
+      # @param [Hash] options
+      # @return [Event]
+      def __build_event__(event_key, options = {})
+        event_class = event_klass_for(event_key)
+        event_class.new(options)
       end
-    end
 
-    def call
-      return nil if event.nil?
-      Failure("Event should not be persisted at this stage: #{event}") if event.persisted?
-
-      execute!
-      event
-    end
-
-    # A new record or nil if noop
-    def event
-      @event ||= build_event
-    end
-
-    private
-
-    # Save the event. Should not be overwritten by the command as side effects
-    # should be implemented via Listeners triggering other Events.
-    def execute!
-      if event.save
-        Success(event)
-      else
-        Failure(event.messages)
+      def event_klass_for(event_key)
+        klass_name = event_key.split('.').map(&:camelcase).join('::')
+        klass_name.constantize
+      rescue
+        raise EventSource::Error::EventNameUndefined.new(
+                "Event not defined for: #{event_key}"
+              )
       end
     end
 
-    # Returns a new event record or nil if noop
-    def build_event
-      raise NotImplementedError
+    module ClassMethods
     end
-
-    # Hook to set default values
-    def after_initialize
-      # noop
-    end
-
   end
 end
