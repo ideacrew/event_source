@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # RSpec.describe EventSource do
 #   it "has a version number" do
 #     expect(EventSource::VERSION).not_to be nil
