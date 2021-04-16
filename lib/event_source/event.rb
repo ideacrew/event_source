@@ -19,7 +19,7 @@ module EventSource
 
     HeaderDefaults = {
       version: '3.0',
-      occurred_at: DateTime.now,
+      occurred_at: DateTime.now
       # correlation_id: 'ADD CorrID Snowflake GUID',
       # command_name: '',
       # entity_kind: ''
@@ -69,10 +69,8 @@ module EventSource
       @headers = HeaderDefaults.merge(metadata)
 
       # @publisher_key = klass_var_for(:publisher_key) || nil
-      # if @publisher_key.eql?(nil)
-      #   raise EventSource::Error::PublisherKeyMissing.new "add 'publisher_key' to #{self.class.name}"
-      # end
-
+      # raise EventSource::Error::PublisherKeyMissing, "add 'publisher_key' to #{self.class.name}" if @publisher_key.eql?(nil)
+      # TODO: Verify if needed
       # @publisher_class = constant_for(@publisher_key)
     end
 
@@ -82,20 +80,16 @@ module EventSource
     #   @return [Event] A copy of the event with the provided payload
 
     def payload=(values)
-      raise ArgumentError, 'payload must be a hash' unless values.class == Hash
+      raise ArgumentError, 'payload must be a hash' unless values.instance_of?(Hash)
 
       values.symbolize_keys!
 
       @payload =
-        values.select do |key, value|
+        values.select do |key, _value|
           attribute_keys.empty? || attribute_keys.include?(key)
         end
 
       validate_attribute_presence
-      @payload
-    end
-
-    def payload
       @payload
     end
 
@@ -106,7 +100,8 @@ module EventSource
 
     def publish
       if valid?
-        EventSource.adapter.enqueue(self)
+        # EventSource.adapter.enqueue(self)
+        EventSource.adapter.publish(event_key, payload)
       else
         raise EventSource::Error::AttributesInvalid, @event_errors
       end
@@ -134,7 +129,7 @@ module EventSource
     end
 
     def []=(name, value)
-      @payload.merge!({"#{name}": value})
+      @payload.merge!({ "#{name}": value })
       validate_attribute_presence
       self[name]
     end
@@ -147,18 +142,14 @@ module EventSource
       if attribute_keys.present?
         gapped_keys = attribute_keys - payload.keys
 
-        unless gapped_keys.empty?
-          @event_errors.push("missing required keys: #{gapped_keys}")
-        end
+        @event_errors.push("missing required keys: #{gapped_keys}") unless gapped_keys.empty?
       end
     end
 
     def constant_for(value)
       constant_name = value.split('.').each { |f| f.upcase! }.join('_')
       return constant_name.constantize if Object.const_defined?(constant_name)
-      raise EventSource::Error::ConstantNotDefined.new(
-              "Constant not defined for: '#{constant_name}'"
-            )
+      raise EventSource::Error::ConstantNotDefined, "Constant not defined for: '#{constant_name}'"
     end
 
     def klass_var_for(var_name)

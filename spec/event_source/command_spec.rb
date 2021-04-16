@@ -32,7 +32,7 @@ RSpec.describe EventSource::Command do
 
     context 'with a valid event_key' do
       let(:new_fein) { '546232320' }
-      let(:corrected_change_reason) { 'corrected' }
+      let(:corrected_change_reason) { 'correction' }
       let(:payload) {
         {
           organization: organization_params,
