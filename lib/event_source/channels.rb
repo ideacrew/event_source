@@ -27,12 +27,12 @@ module EventSource
 
     class << self
 
-      def channels
-        @__channels__ ||= Concurrent::Map.new
+      def channel_container
+        @channel_container ||= Concurrent::Map.new
       end
 
-      def add_channel(queue_name, key, attributes)
-        channels["#{queue_name}.#{key}"] = EventSource::ChannelItem.new
+      def add_channel(queue_name, key, _attributes)
+        channel_container["#{queue_name}.#{key}"] = EventSource::ChannelItem.new
         # puts channels.keys.inspect
         # puts ::QueueBus.adapter.inspect
       end

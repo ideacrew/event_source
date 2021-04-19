@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 class ListenerJob < ActiveJob::Base
   queue_as :default
 
-  def perform(*options)
-  	puts "-----listener job"
+  def perform(*_options)
+    puts "-----listener job"
     # Do something later
   end
 end

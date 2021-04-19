@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # # frozen_string_literal: true
 
 # module Parties
@@ -11,7 +12,6 @@
 #       # publishers_dir = event_source_root.join('publishers')
 #       # Dir[publishers_dir.join('parties', '*.rb')].each {|file| require file }
 #       # EventSource::Publisher.register_publishers(publishers_dir)
-
 
 #       # require 'active_support/notifications'
 #       # called the first time we know we are using this adapter

@@ -23,10 +23,9 @@ module EventSource
       # correlation_id: 'ADD CorrID Snowflake GUID',
       # command_name: '',
       # entity_kind: ''
-    }
+    }.freeze
 
     class << self
-      attr_reader :publisher_key, :contract_key, :entity_key, :attribute_keys
 
       def publisher_key(value = nil)
         set_instance_variable_for(:publisher_key, value)
@@ -41,12 +40,16 @@ module EventSource
       end
 
       def attribute_keys(*keys)
-        set_instance_variable_for(:attribute_keys, keys.map(&:to_sym))
+        value = (keys.empty? ? nil : keys.map(&:to_sym))
+        set_instance_variable_for(:attribute_keys, value)
       end
 
       def set_instance_variable_for(element, value)
-        return instance_variable_get("@#{element}") if instance_variable_defined?("@#{element}")
-        instance_variable_set("@#{element}", value)
+        if value.nil?
+          return instance_variable_get("@#{element}") if instance_variable_defined?("@#{element}")
+        else
+          instance_variable_set("@#{element}", value)
+        end
       end
     end
 
@@ -63,7 +66,7 @@ module EventSource
       @attribute_keys = klass_var_for(:attribute_keys) || []
 
       @payload = {}
-      send(:payload=, options.dig(:attributes) || {})
+      send(:payload=, options[:attributes] || {})
 
       metadata = (options[:metadata] || {}).merge(event_key: event_key)
       @headers = HeaderDefaults.merge(metadata)
@@ -90,21 +93,17 @@ module EventSource
         end
 
       validate_attribute_presence
-      @payload
     end
 
     # @return [Boolean]
     def valid?
-      @event_errors.empty?
+      event_errors.empty?
     end
 
     def publish
-      if valid?
-        # EventSource.adapter.enqueue(self)
-        EventSource.adapter.publish(event_key, payload)
-      else
-        raise EventSource::Error::AttributesInvalid, @event_errors
-      end
+      raise EventSource::Error::AttributesInvalid, @event_errors unless valid?
+      # EventSource.adapter.enqueue(self)
+      EventSource.adapter.publish(event_key, payload)
     end
 
     def event_key
@@ -125,7 +124,7 @@ module EventSource
     # Get data from the payload
     # @param [String, Symbol] name
     def [](name)
-      payload.dig(name)
+      payload[name]
     end
 
     def []=(name, value)
@@ -137,17 +136,14 @@ module EventSource
     private
 
     def validate_attribute_presence
+      return unless attribute_keys.present?
+      gapped_keys = attribute_keys - payload.keys
       @event_errors = []
-
-      if attribute_keys.present?
-        gapped_keys = attribute_keys - payload.keys
-
-        @event_errors.push("missing required keys: #{gapped_keys}") unless gapped_keys.empty?
-      end
+      event_errors.push("missing required keys: #{gapped_keys}") unless gapped_keys.empty?
     end
 
     def constant_for(value)
-      constant_name = value.split('.').each { |f| f.upcase! }.join('_')
+      constant_name = value.split('.').each(&:upcase!).join('_')
       return constant_name.constantize if Object.const_defined?(constant_name)
       raise EventSource::Error::ConstantNotDefined, "Constant not defined for: '#{constant_name}'"
     end

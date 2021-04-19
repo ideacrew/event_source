@@ -10,8 +10,8 @@ module EventSource
       @adapter_instance =
         if val.is_a?(Class)
           val.new
-        # elsif val.is_a?(::EventSource::Adapter)
-        #   val
+          # elsif val.is_a?(::EventSource::Adapter)
+          #   val
         end
     end
 
@@ -30,9 +30,10 @@ module EventSource
       raise "Connection already set to #{@connection_instance.class.name}" if has_connection?
 
       @connection_instance =
-        if val.is_a?(Class)
+        case val
+        when Class
           val.new
-        elsif val.is_a?(::EventSource::Connection)
+        when ::EventSource::Connection
           val
         end
     end
@@ -47,18 +48,11 @@ module EventSource
       !@connection_instance.nil?
     end
 
-
-    def application=(application)
-      @application = application
-    end
+    attr_writer :application, :root
 
     def application
       return @application if defined? @application
       raise 'no application has been set'
-    end
-
-    def root=(path)
-      @root = path
     end
 
     def root

@@ -2,6 +2,7 @@
 
 module EventSource
   module Adapters
+    # Subscriber for QueueBus
     class QueueBusSubscriber
       include ::QueueBus::Subscriber
 
@@ -22,11 +23,11 @@ module EventSource
         args = send(@transform, attributes) if @transform
         args = [args] unless args.is_a?(Array)
         me = if respond_to?(:subscriber_with_attributes)
-          subscriber_with_attributes(attributes)
-        else
-          # new
-          args.first['bus_rider_class_name'].constantize.new
-        end
+               subscriber_with_attributes(attributes)
+             else
+               # new
+               args.first['bus_rider_class_name'].constantize.new
+             end
         me.send(key, *args)
       end
     end

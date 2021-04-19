@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'forwardable'
 
 require 'event_source/version'
@@ -12,7 +14,7 @@ require 'dry/monads/result'
 require 'dry/validation'
 require 'dry-struct'
 
-# TODO Remove ActiveSupport dependency
+# TODO: Remove ActiveSupport dependency
 require 'active_support/all'
 require 'event_source/railtie' if defined? Rails
 require 'event_source/connection'
@@ -29,15 +31,17 @@ require 'event_source/event'
 require 'event_source/subscriber'
 require 'event_source/adapters/queue_bus_adapter'
 
+# Event source provides ability to compose, publish and subscribe to events
 module EventSource
   class << self
     attr_writer :logger
+
     extend Forwardable
 
     def_delegators :config, :adapter=, :adapter, :has_adapter?, :connection=, :connection, :logger, :application, :root, :load_configuration
     def_delegators :adapter, :publish, :publish_at
 
-    def configure(&block)
+    def configure
       yield(config)
       load_configuration
     end

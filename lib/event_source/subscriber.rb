@@ -1,8 +1,11 @@
+# frozen_string_literal: true
+
 require 'dry/inflector'
 require 'forwardable'
 require 'concurrent/map'
 
 module EventSource
+  # Subscribes to the events
   module Subscriber
 
     # Internal publisher registry, which is used to identify them globally
@@ -11,17 +14,17 @@ module EventSource
     # without having access to instances of publishers yet.
     #
     # @api private
-    def self.registry
-      @__registry__ ||= Concurrent::Map.new
+    def self.subscriber_container
+      @subscriber_container ||= Concurrent::Map.new
     end
 
     def self.reset_registry
-      @__registry__ = nil
+      @subscriber_container = nil
     end
 
     def self.register_subscribers
       # puts "<<subscriptions>>----#{registry.values.inspect}"
-      registry.values.each do |options|
+      subscriber_container.each_value do |options|
         EventSource.adapter.subscribe(
           options[:publisher_key],
           options[:event_key],
@@ -36,6 +39,7 @@ module EventSource
       base.extend ClassMethods
     end
 
+    # methods to register subscriptions
     module ClassMethods
       extend Forwardable
       attr_accessor :subscriptions
@@ -50,7 +54,7 @@ module EventSource
                    event_key: event_key,
                    block: block,
                    subscriber: self
-        })
+                 })
       end
 
       def verify_registered_event(publisher_key, event_key)
@@ -60,14 +64,14 @@ module EventSource
         # channels = EventSource.connection.channels[app_key]
         # raise EventSource::Error::PublisherNotFound, "unable to find publisher '#{publisher_key}'" if channels.empty?
 
-        matched = EventSource.connection.channels.values.any?{|channel_items| channel_items[channel_key].present? }
+        matched = EventSource.connection.channels.values.any? {|channel_items| channel_items[channel_key].present? }
 
         # matched = channels[channel_key]
         raise EventSource::Error::RegisteredEventNotFound, "unable to find registered event '#{event_key}'" unless matched
       end
 
       def registry(options)
-        Subscriber.registry["#{options[:publisher_key]}_#{options[:event_key]}"] = options
+        Subscriber.subscriber_registry["#{options[:publisher_key]}_#{options[:event_key]}"] = options
       end
 
       def adapter

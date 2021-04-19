@@ -82,6 +82,9 @@ Style/NumericPredicate:
 Style/RedundantPercentQ:
   Enabled: false
 
+Style/MultilineBlockChain:
+  Enabled: false
+
 Style/RedundantSelf:
   Enabled: false
 

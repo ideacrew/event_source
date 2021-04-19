@@ -1,7 +1,10 @@
+# frozen_string_literal: true
+
 require 'dry/inflector'
 require 'concurrent/map'
 
 module EventSource
+  # Publisher mixin to register events and create channels
   class Publisher < Module
     include Dry::Equalizer(:id)
 
@@ -11,8 +14,8 @@ module EventSource
     # without having access to instances of publishers yet.
     #
     # @api private
-    def self.registry
-      @__registry__ ||= Concurrent::Map.new
+    def self.publisher_container
+      @publisher_container ||= Concurrent::Map.new
     end
 
     attr_reader :id
@@ -26,11 +29,12 @@ module EventSource
     # @api private
     def initialize(id)
       @id = id
+      super
     end
 
     def included(base)
       base.extend(ClassMethods)
-      self.class.registry[id] = base
+      self.class.publisher_container[id] = base
 
       TracePoint.trace(:end) do |t|
         if base == t.self
@@ -40,7 +44,8 @@ module EventSource
       end
       super
     end
-   
+
+    # methods to register events
     module ClassMethods
       attr_reader :events
 
@@ -56,7 +61,7 @@ module EventSource
 
       def register
         # FIXME: .key works only for Ruby 1.9 or later
-        publisher_key = EventSource::Publisher.registry.key(self)
+        publisher_key = EventSource::Publisher.publisher_container.key(self)
         events.each do |event_key, options|
           EventSource.connection.create_channel(publisher_key, event_key, options)
         end
@@ -82,7 +87,7 @@ module EventSource
     #     # relative_path = file.match(/^#{publisher_root}\/(.*)\.rb/)[1]
     #     # publisher_constant_name = publisher_constant_for(relative_path, engine_prefix)
     #     # publisher_klass_name = publisher_klass_for(relative_path, engine_prefix)
-        
+
     #     # Object.const_set(publisher_constant_name, publisher_klass_name.new)
     #     # EventSource::Logger.info "Initialized Publisher: #{constant_name} = #{klass_name}"
     #   end

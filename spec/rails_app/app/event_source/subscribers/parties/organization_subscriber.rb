@@ -5,7 +5,7 @@
 #         puts "Enroll: receieved applicant_created event"
 #       end
 #     end
-    
+
 #     QueueBus.dispatch("financial_assistance") do
 #       people "person_created" do |attributes|
 #         puts "FAA: received person created event"
@@ -20,7 +20,6 @@
 #       end
 #     end
 
-
 # 1) create channels from publishers
 # 2) append subscription channels when subscriptions were loaded
 
@@ -33,7 +32,7 @@
 #     people.person_created
 #     crm.sugar_crm.people.person_created
 
-#     channels 
+#     channels
 #       people.person_created => {
 #         subscribe: {
 #           operation_id: :person_created
@@ -71,11 +70,10 @@
 #   }
 # }]
 
-
 # module Parties
 #   class ApplicationSubscriber
 #     include ::EventSource::Subscriber
-    
+
 #     subscription 'people', 'person_created' do |event|
 #       ApplicationJob.perform_now(event)
 #     end
@@ -85,14 +83,13 @@
 module Parties
   class OrganizationSubscriber
     include ::EventSource::Subscriber
-    
 
-     # channels 
-     #  enroll.people.person_created => {
-     #    publish: {
-     #      operation_id: on_person_created
-     #    }
-     #  }
+    # channels
+    #  enroll.people.person_created => {
+    #    publish: {
+    #      operation_id: on_person_created
+    #    }
+    #  }
 
     # subscription 'enroll.people', 'person_created' do |event|
     #   ListenerJob.perform_now(event)

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module EventSource
+  # Publish operation interface
   class PublishOperation
 
     attr_accessor :operation_key, :summary, :description, :tags, :bindings, :traits, :message

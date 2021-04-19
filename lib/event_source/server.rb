@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
 module EventSource
+  # Server interface
   class Server
 
     def connection
-      # returns EventSource::Connection instance 
+      # returns EventSource::Connection instance
       return @connection if defined? @connection
       @connection = EventSource::Connection.new
     end
@@ -43,7 +44,7 @@ module EventSource
 
     # variables Attribute
     # A map between a variable name and its value. The value is used for substitution in the
-    # server’s URL template.
+    # server's URL template.
     # @return [Array<Variable>]
     def variables
     end
@@ -87,7 +88,7 @@ module EventSource
     end
 
     def active?
-      @connection && @connection.open?
+      @connection&.open?
     end
 
     def connection_status

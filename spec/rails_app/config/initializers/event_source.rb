@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 EventSource.configure do |config|
   config.application = :enroll
   config.adapter = :resque_bus

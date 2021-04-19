@@ -20,6 +20,7 @@ Gem::Specification.new do |spec|
                           Philippe Creux"
   spec.homepage = 'https://github.com/ideacrew/event_source'
   spec.license = 'MIT'
+  spec.required_ruby_version = Gem::Requirement.new('>= 2.6')
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
@@ -42,7 +43,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'dry-events', '~> 0.3'
   spec.add_dependency 'resque-bus', '~> 0.7.0'
 
-  # TODO Change to development dependency
+  # TODO: Change to development dependency
   spec.add_development_dependency 'activesupport'
   spec.add_development_dependency 'database_cleaner'
   spec.add_development_dependency 'mongoid'

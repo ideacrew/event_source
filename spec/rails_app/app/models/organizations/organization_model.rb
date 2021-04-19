@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Organizations
   class OrganizationModel
     include Mongoid::Document

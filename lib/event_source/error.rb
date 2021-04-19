@@ -1,4 +1,3 @@
-
 # frozen_string_literal: true
 
 module EventSource
@@ -7,7 +6,7 @@ module EventSource
     module ErrorInitalizer
       attr_reader :original
 
-      def initialize(msg, original = $!)
+      def initialize(msg, original = $ERROR_INFO)
         super(msg)
         @original = original
       end

@@ -11,7 +11,7 @@ module Parties
       # @param [String] fein
       # @param [Hash] meta
       # @return [Dry::Monad::Result] result
-      def call(params)
+      def call(_params)
         # subscribe(Organizations::OrganizationCreatedListener.new)
         created.publish('organization.created', fein: '52532333')
 
@@ -44,21 +44,18 @@ module Parties
       end
 
       def create(values)
-        organization =
-          BenefitSponsors::Organizations::Organization.new(values).save
+        organization = BenefitSponsors::Organizations::Organization.new(values).save
+        return unless organization
 
-        if organization
-          Dispatcher.dispatch(self)
-          dispatch(:organization_created)
-          dispatch(:organization_created, :organization_updated)
-          dispatch
-          dispatch_all
-
-          dispatch_events
-        end
+        Dispatcher.dispatch(self)
+        dispatch(:organization_created)
+        dispatch(:organization_created, :organization_updated)
+        dispatch
+        dispatch_all
+        dispatch_events
       end
 
-      def build_event(params)
+      def build_event(_params)
         # Try() { Organizations::Created.new(values) }
         created =
           build_event 'parties.organization.created',

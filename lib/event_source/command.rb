@@ -43,27 +43,23 @@ module EventSource
   module Command
     send(:include, Dry::Monads[:result, :do])
     send(:include, Dry::Monads[:try])
+    send(:include, Dry::Monads::Result::Mixin)
 
     def self.included(base)
-      base.extend ClassMethods
+      base.include InstanceMethods
+    end
 
-      include Dry::Monads::Result::Mixin
-
-      # @return [Array<EventSource::Event>]
+    # instance methods for constructing events
+    module InstanceMethods
       attr_reader :events
-
-      # def initialize
-      #   @events = []
-      #   # super
-      # end
 
       def event(event_key, options = {})
         @events ||= []
-        Try {
+        Try() do
           event = __build_event__(event_key, options)
           @events.push(event)
           event
-        }.to_result
+        end.to_result
       end
 
       # @param [String] event_key
@@ -77,14 +73,9 @@ module EventSource
       def event_klass_for(event_key)
         klass_name = event_key.split('.').map(&:camelcase).join('::')
         klass_name.constantize
-      rescue
-        raise EventSource::Error::EventNameUndefined.new(
-                "Event not defined for: #{event_key}"
-              )
+      rescue StandardError
+        raise EventSource::Error::EventNameUndefined, "Event not defined for: #{event_key}"
       end
-    end
-
-    module ClassMethods
     end
   end
 end

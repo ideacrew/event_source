@@ -10,6 +10,7 @@
 # After create, it calls `apply` to apply changes.
 
 module EventSource
+  # Event Stream interface
   class EventStream
     include Mongoid::Document
     include Mongoid::Timestamps

@@ -18,7 +18,7 @@ module Parties
         new_state = yield validate(params)
         event = yield build_event(new_state, params)
         organization = yield new_entity(new_state)
-        notification = yield publish_event(event)
+        yield publish_event(event)
 
         Success(organization)
       end
@@ -29,9 +29,7 @@ module Parties
         result =
           Try() do
             params.fetch(:organization).merge(fein: params.fetch(:fein))
-          end.bind do |new_state|
-            Parties::Organization::CreateContract.new.call(new_state)
-          end
+          end.bind {|new_state| Parties::Organization::CreateContract.new.call(new_state)}
 
         result.success? ? Success(result.to_h) : Failure(result.errors)
       end

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module EventSource
+  # This provides dsl for channel
   class Channel
 
     attr_reader :key, :publish, :subscribe
@@ -24,8 +25,8 @@ module EventSource
       @publish = EventSource::PublishOperation.new(event_key)
     end
 
-    def init_subscribe_operation(event_key)
-      @subscribe = EventSource::SubscribeOperation.new#(event_namespace)
+    def init_subscribe_operation(_event_key)
+      @subscribe = EventSource::SubscribeOperation.new # (event_namespace)
     end
 
     class << self
@@ -34,7 +35,7 @@ module EventSource
         @channel = EventSource::Exchange.new(exchange_name, :fanout)
       end
 
-      def app_key(key)
+      def app_key(_key)
         # key.split('.')[0]
         EventSource.application
       end
@@ -85,7 +86,6 @@ end
 
 #   #    on_person_updated
 
-
 #   # faa.publisher
 #   #    channel_id: faa.applicant_publisher
 #   #      register_event: :applicant_updated
@@ -95,12 +95,9 @@ end
 #   #      	 queue_id: enroll.person_publisher
 #   #      	   event_key: person_updated
 
-
-
 #   # enroll.person_events
 
 #   # faa.applicant_events
-
 
 #   # class PublishOperation
 
@@ -122,7 +119,7 @@ end
 #   # class SubscribeOperation
 
 #   # 	attr_reader :event_key, :bindings, :traits, :event
-#   # 	attr_accessor :summary, :description, :tags, 
+#   # 	attr_accessor :summary, :description, :tags,
 
 #   #     # subscribe operation bindings:
 # 	 #  #   amqp:
@@ -142,7 +139,6 @@ end
 #   # 	attr_reader :headers, :payload, :correlation_id, :contract_key, :content_type,
 #   # 	:name, :bindings, :traits
 #   # 	attr_accessor :summary, :title, :description, :tags
-
 
 #   #   event: {
 #   #     content_type: 'application/json',
@@ -164,7 +160,7 @@ end
 #   #   #     bindingVersion: 0.1.0
 #   # end
 
-#   # Channel 
+#   # Channel
 #   #   RoutingKey/Queue
 
 #   #      Operation

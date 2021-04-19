@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # require 'spec_helper'
 
 # 0. EventSource Gem supports domain model entities
@@ -11,6 +13,26 @@
 # 3.1 Use RuleSet and ListenerSet to register observers and distribute events
 # 4. EventStream
 # 4.1 Future: v0.3.0 will not include persistence
+
+module EventSource
+  class MyValidEvent < EventSource::Event
+    publisher_key 'parties.organization_publisher'
+  end
+
+  class MyEvent < EventSource::Event
+    publisher_key 'parties.organization_publisher'
+    attribute_keys :hbx_id, :fein, :entity_kind
+  end
+
+  class MyEventTwo < EventSource::Event
+    publisher_key 'parties.organization_publisher'
+  end
+
+  class MyEventThree < EventSource::Event
+    publisher_key 'parties.organization_publisher'
+    attribute_keys :hbx_id, :entity_kind, :fein, :legal_name
+  end
+end
 
 RSpec.describe EventSource::Event do
   context 'A new Event class' do
@@ -47,10 +69,7 @@ RSpec.describe EventSource::Event do
 
     context 'and the required publisher_key provided is valid' do
       let(:valid_event_class) do
-        class MyValidEvent < EventSource::Event
-          publisher_key 'parties.organization_publisher'
-        end
-        MyValidEvent
+        EventSource::MyValidEvent
       end
 
       subject { valid_event_class.new }
@@ -76,11 +95,7 @@ RSpec.describe EventSource::Event do
 
   context 'An initialized Event class with defined attribute_keys' do
     let(:event_class) do
-      class MyEvent < EventSource::Event
-        publisher_key 'parties.organization_publisher'
-        attribute_keys :hbx_id, :fein, :entity_kind
-      end
-      MyEvent
+      EventSource::MyEvent
     end
 
     it 'keys should be initialized for each attribute' do
@@ -133,10 +148,7 @@ RSpec.describe EventSource::Event do
 
   context 'An initialized Event class with no attribute_keys' do
     let(:event_class) do
-      class MyEventTwo < EventSource::Event
-        publisher_key 'parties.organization_publisher'
-      end
-      MyEventTwo
+      EventSource::MyEventTwo
     end
 
     subject { event_class.new }
@@ -184,11 +196,7 @@ RSpec.describe EventSource::Event do
 
   context 'An initialized Event class with attribute_keys' do
     let(:event_class) do
-      class MyEventThree < EventSource::Event
-        publisher_key 'parties.organization_publisher'
-        attribute_keys :hbx_id, :entity_kind, :fein, :legal_name
-      end
-      MyEventThree
+      EventSource::MyEventThree
     end
 
     context 'with attributes passed' do

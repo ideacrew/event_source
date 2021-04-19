@@ -2,10 +2,12 @@
 
 module EventSource
   module Adapters
-
+    # Adapter for processing events through QueueBus
     class QueueBusAdapter
       # adapters need to define the NonImplemented methods in this class
-      attr_reader :application, :logger
+      attr_accessor :application
+      attr_reader :logger
+
       def initialize
         enabled!
       end
@@ -39,7 +41,7 @@ module EventSource
         ::QueueBus.publish(timestamp_or_epoch, event_type, attributes)
       end
 
-      def subscribe(publisher_key, event_key, klass, &block)
+      def subscribe(publisher_key, event_key, klass)
         # app_name = EventSource::Channel.app_key(publisher_key)
         # event_namespace = EventSource::Channel.event_namespace(publisher_key)
 
@@ -61,13 +63,9 @@ module EventSource
         QueueBus.logger = logger
       end
 
-      def application=(name)
-        @application = name
-      end
-
       def load_components(root_path)
         %w[publishers subscribers].each do |folder|
-          Dir["#{root_path}/#{folder}/*.rb"].each {|file| require file }
+          Dir["#{root_path}/#{folder}/*.rb"].sort.each {|file| require file }
         end
 
         EventSource::Subscriber.register_subscribers
