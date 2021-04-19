@@ -14,6 +14,7 @@ require 'dry/monads/result'
 require 'dry/validation'
 require 'dry-struct'
 
+require 'event_source/uris/amqp_uri'
 require 'event_source/types'
 require 'event_source/async_api/async_api'
 

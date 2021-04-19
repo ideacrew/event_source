@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'dry-types'
+Dry::Types.load_extensions(:maybe)
 
 module EventSource
   module AsyncApi
@@ -18,6 +19,12 @@ module EventSource
         Coercible::String.constrained(
           format: /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z]+)*\.[a-z]+\z/i
         )
+
+      Emails                = Array.of(Email)
+      HashOrNil             = Types::Hash | Types::Nil
+      StringOrNil           = Types::String | Types::Nil
+      CallableDateTime      = Types::DateTime.default { DateTime.now }
+      PositiveInteger       = Coercible::Integer.constrained(gteq: 0)
 
       SecuritySchemeKind =
         Coercible::Symbol.enum(

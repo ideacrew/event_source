@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    event_source (0.3.0)
+    event_source (0.4.0)
       bunny
       dry-events (~> 0.3)
       dry-initializer (~> 3.0)

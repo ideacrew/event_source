@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 require 'bundler/setup'
+require 'pry'
 require 'event_source'
-require 'pry-byebug'
 
 # Set up the local context
 

@@ -1,24 +1,26 @@
 # frozen_string_literal: true
 
-module Multidapter
-  module Operations
-    module Channels
+module EventSource
+  module AsyncApi
+    module Operations
+      module Channels
 
-      class Open
-        send(:include, Dry::Monads[:result, :do])
+        class Open
+          send(:include, Dry::Monads[:result, :do])
 
-        def call(params)
-          result = yield verify(params)
-          Success(result)
-        end
+          def call(params)
+            result = yield verify(params)
+            Success(result)
+          end
 
-        private
+          private
 
-        def verify(params)
+          def verify(params)
+          end
+
         end
 
       end
-
     end
   end
 end

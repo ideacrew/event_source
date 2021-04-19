@@ -3,7 +3,7 @@ require 'spec_helper'
 
 RSpec.describe Types do
   describe 'Types::Uri' do
-    subject(:type) { Types::Uri }
+    subject(:type) { EventSource::AsyncApi::Types::Uri }
     let(:valid_value) { 'amqp://' }
     let(:invalid_value) { 'silly uri' }
 
@@ -17,7 +17,7 @@ RSpec.describe Types do
   end
 
   describe 'Types::PositiveInteger' do
-    subject(:type) { Types::PositiveInteger }
+    subject(:type) { EventSource::AsyncApi::Types::PositiveInteger }
     let(:valid_value) { 0 }
     let(:invalid_value) { -1 }
     let(:valid_value_string) { '2'.freeze }
@@ -36,7 +36,7 @@ RSpec.describe Types do
   end
 
   describe 'Types::SecuritySchemeKind' do
-    subject(:type) { Types::SecuritySchemeKind }
+    subject(:type) { EventSource::AsyncApi::Types::SecuritySchemeKind }
     let(:valid_value) { :symmetric_encryption }
     let(:invalid_value) { :unsecure }
     let(:valid_value_string) { 'x509'.freeze }
