@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
-module Multidapter
+module EventSource
+  module AsyncApi
   module Operations
+      # @param [EventSource::AsyncApi::Server] params The {AsyncApi::Server}
+      # @return [Dry::Monads::Result] Operation Success or Failure
     module Servers
       # Create a {Server} instance
       class Create
@@ -36,7 +39,7 @@ module Multidapter
 
         def create_server(values)
           # returns Success(server) or Failure(:server_not_created)
-          server = EventSource::AsyncApi::Server.new(values.to_h)
+          server = EventSource::AsyncApi::ConnectionManager.new(values.to_h)
           Success(server)
         end
       end
