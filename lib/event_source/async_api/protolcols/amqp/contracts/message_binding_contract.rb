@@ -13,9 +13,7 @@ module EventSource
         end
 
         rule(:content_encoding) do
-          unless ::MIME::Types[value].size > 0
-            key.failure("unknown Mime type: #{value}")
-          end
+          key.failure("unknown Mime type: #{value}") if ::MIME::Types[value].empty?
         end
       end
     end

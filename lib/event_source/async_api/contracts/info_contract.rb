@@ -22,28 +22,24 @@ module EventSource
           optional(:terms_of_service).maybe(:string)
 
           required(:contact)
-          .maybe(:hash) do
+            .maybe(:hash) do
             optional(:name).maybe(:string)
-            optional(:url).maybe(:string) #(Types::Url)
+            optional(:url).maybe(:string) # (Types::Url)
             optional(:email).maybe(Types::Email)
           end
 
           required(:license)
-          .maybe(:hash) do
+            .maybe(:hash) do
             optional(:name).maybe(:string)
-            optional(:url).maybe(:string) #(Types::Url)
+            optional(:url).maybe(:string) # (Types::Url)
           end
 
           # @!macro [attach] beforehook
           #   @!method $0($1)
           #   Coerce contact and license attributes to empty hash if nil
           before(:value_coercer) do |result|
-            unless result.to_h.has_key?(:contact)
-              result.to_h.merge!({ contact: {} })
-            end
-            unless result.to_h.has_key?(:license)
-              result.to_h.merge!({ license: {} })
-            end
+            result.to_h.merge!({ contact: {} }) unless result.to_h.key?(:contact)
+            result.to_h.merge!({ license: {} }) unless result.to_h.key?(:license)
           end
         end
       end

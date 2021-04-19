@@ -18,7 +18,7 @@ require 'event_source/uris/amqp_uri'
 require 'event_source/types'
 require 'event_source/async_api/async_api'
 
-# TODO Remove ActiveSupport dependency
+# TODO: Remove ActiveSupport dependency
 require 'active_support/all'
 require 'event_source/railtie' if defined?(Rails)
 require 'event_source/connection'

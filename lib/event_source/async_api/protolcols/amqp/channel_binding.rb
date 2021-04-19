@@ -51,7 +51,7 @@ module EventSource
           # @return [EventSource::AsyncApi::Types::ExchangeTypeKind]
           attribute :type,
                     EventSource::AsyncApi::Types::ExchangeTypeKind.optional
-                      .meta(omittable: true)
+                                                                  .meta(omittable: true)
 
           # @!attribute [r] queue
           # When is=queue, this object defines the queue properties.

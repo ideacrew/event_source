@@ -9,7 +9,7 @@ RSpec.describe EventSource::AsyncApi::Contracts::MessageContract do
   let(:description) { 'A longer description' }
   let(:contentType) { 'application/json' }
   let(:tags) do
-    [{ "name": 'user' }, { "name": 'signup' }, { "name": 'register' }]
+    [{ name: 'user' }, { name: 'signup' }, { name: 'register' }]
   end
 
   let(:header_type) { 'object' }

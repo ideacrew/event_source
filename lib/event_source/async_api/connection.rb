@@ -12,19 +12,19 @@ module EventSource
       end
 
       def url
-      	@client.url
+        @client.url
       end
 
       def connect
-      	@client.connect
+        @client.connect
       end
 
       def active?
-      	@client.active?
+        @client.active?
       end
 
       def close
-      	@client.close
+        @client.close
       end
     end
   end
@@ -32,14 +32,14 @@ end
 
 class QuebusClient
 
-  def initialize(uri, options)
-  	@queue_bus = queue_bus
+  def initialize(_uri, _options)
+    @queue_bus = queue_bus
   end
 
   # def close
   # 	@queue_bus.close
   # end
-  
+
   # def active?
   #   @queue_bus.active?
   # end
@@ -47,25 +47,23 @@ end
 
 class BunnyClient
 
-  def initialize(url, options)
-  	@bunny_client = Bunny.new(uri, options)
-  	@bunny_connection = @bunny_client.session
+  def initialize(_url, options)
+    @bunny_client = Bunny.new(uri, options)
+    @bunny_connection = @bunny_client.session
   end
 
-  def url
-  	@url
-  end
+  attr_reader :url
 
   def connect
-  	return if active?
+    return if active?
 
-	begin
+    begin
       @bunny_connection.start
-  	rescue Bunny::TCPConnectionFailed => e
+    rescue Bunny::TCPConnectionFailed => e
       raise Multidapter::Error::ConnectionError, "Connection failed to: #{uri}"
-  	rescue Bunny::PossibleAuthenticationFailureError => e
+    rescue Bunny::PossibleAuthenticationFailureError => e
       raise Multidapter::Error::AuthenticationError, "Likely athentication failure for account: #{@bunny_connection.user}"
-  	ensure
+    ensure
       close
     end
 
@@ -75,14 +73,14 @@ class BunnyClient
   end
 
   def close
-  	@bunny_connection.close if active?
+    @bunny_connection.close if active?
   end
 
   def active?
-    @bunny_connection && @bunny_connection.open?
+    @bunny_connection&.open?
   end
 
   def reconnect
-  	@bunny_connection.reconnect!
+    @bunny_connection.reconnect!
   end
 end

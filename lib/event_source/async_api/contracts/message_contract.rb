@@ -37,10 +37,9 @@ module EventSource
           optional(:traits).array(Types::HashOrNil)
 
           before(:value_coercer) do |result|
-            if (
-                result.to_h.has_key?(:external_docs) &&
-                result.to_h[:external_docs].nil?
-              )
+            if result.to_h.key?(:external_docs) &&
+               result.to_h[:external_docs].nil?
+
               result.to_h.merge!({ external_docs: Array.new })
             end
           end

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'json'
 
 module EventSource
@@ -32,9 +33,7 @@ module EventSource
         end
 
         rule(:protocol) do
-          unless URI.scheme_list.keys.include?(value.to_s.upcase)
-            key.failure('unsupported protocol')
-          end
+          key.failure('unsupported protocol') unless URI.scheme_list.keys.include?(value.to_s.upcase)
         end
 
         rule(:security) do
@@ -42,7 +41,7 @@ module EventSource
             result = SecuritySchemeContract.new.call(value)
 
             # Use dry-validation metadata form to pass error hash along with text to calling service
-            if result && result.failure?
+            if result&.failure?
               key.failure(
                 text: 'invalid security_scheme',
                 error: result.errors.to_h

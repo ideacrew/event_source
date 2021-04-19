@@ -22,9 +22,9 @@ module EventSource
 
           def validate(params)
             result =
-            EventSource::AsyncApi::Contracts::ChannelItemContract.new.call(
-              params
-            )
+              EventSource::AsyncApi::Contracts::ChannelItemContract.new.call(
+                params
+              )
             result.success? ? Success(result) : Failure(result)
           end
 

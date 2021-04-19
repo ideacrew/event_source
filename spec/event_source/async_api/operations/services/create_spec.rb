@@ -46,8 +46,8 @@ RSpec.describe EventSource::AsyncApi::Operations::Services::Create do
           result.value!.channels.first
         ).to be_a EventSource::AsyncApi::Channel
         expect(result.value!.channels.first.to_h).to eq Hash(
-             channel_id: channel_id
-           )
+          channel_id: channel_id
+        )
       end
     end
   end

@@ -38,7 +38,7 @@ module EventSource
           # verify keys for queue schema are present
 
           else
-          # verify keys for exchange schema are present
+            # verify keys for exchange schema are present
 
           end
         end

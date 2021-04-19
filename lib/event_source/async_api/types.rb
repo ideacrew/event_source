@@ -56,8 +56,8 @@ module EventSource
       Vhost = Types::Coercible::String.default('/')
       ChannelTypeKind =
         Types::Coercible::Symbol
-          .default(:routing_key)
-          .enum(:routing_key, :queue)
+        .default(:routing_key)
+        .enum(:routing_key, :queue)
       ExchangeTypeKind =
         Types::Coercible::Symbol.enum(
           :topic,
