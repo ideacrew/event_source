@@ -2,13 +2,11 @@
 
 module Multidapter
   module Validators
-
-    # Schema and validation rules for {Multidapter::SecurityScheme}
+    # Schema and validation rules for {EventSource::AsyncApi::SecurityScheme}
     class SecuritySchemeContract < Contract
-
       # @!method call(opts)
       # @param [Hash] opts the parameters to validate using this contract
-      # @option opts [Types::SecuritySchemeType] :type required
+      # @option opts [Types::SecuritySchemeKind] :type required
       # @option opts [String] :description optional
       # @option opts [String] :name optional
       # @option opts [Symbol] :in optional
@@ -18,7 +16,7 @@ module Multidapter
       # @option opts [Hash] :flows optional
       # @return [Dry::Monads::Result::Success, Dry::Monads::Result::Failure]
       params do
-        required(:type).value(Types::SecuritySchemeType)
+        required(:type).value(Types::SecuritySchemeKind)
         optional(:description).maybe(:string)
         optional(:name).maybe(:string)
         optional(:in).maybe(:symbol)
@@ -28,6 +26,5 @@ module Multidapter
         optional(:flows).maybe(:hash)
       end
     end
-
   end
 end

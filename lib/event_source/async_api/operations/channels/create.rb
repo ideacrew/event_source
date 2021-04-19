@@ -3,7 +3,6 @@
 module Multidapter
   module Operations
     module Channels
-
       # Create a {Channel} instance
       class Create
         send(:include, Dry::Monads[:result, :do])
@@ -23,17 +22,16 @@ module Multidapter
         private
 
         def validate(params)
-          result = Multidapter::Validators::ChannelContract.new.call(params)
+          result =
+            EventSource::AsyncApi::Contracts::ChannelContract.new.call(params)
           result.success? ? Success(result) : Failure(result)
         end
 
         def create(values)
-          result = Multidapter::Channel.call(values.to_h)
+          result = EventSource::AsyncApi::Channel.call(values.to_h)
           Success(result)
         end
-
       end
-
     end
   end
 end

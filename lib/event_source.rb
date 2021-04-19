@@ -14,9 +14,12 @@ require 'dry/monads/result'
 require 'dry/validation'
 require 'dry-struct'
 
-# TODO: Remove ActiveSupport dependency
+require 'event_source/types'
+require 'event_source/async_api/async_api'
+
+# TODO Remove ActiveSupport dependency
 require 'active_support/all'
-require 'event_source/railtie' if defined? Rails
+require 'event_source/railtie' if defined?(Rails)
 require 'event_source/connection'
 require 'event_source/server'
 require 'event_source/channel'
@@ -38,7 +41,16 @@ module EventSource
 
     extend Forwardable
 
-    def_delegators :config, :adapter=, :adapter, :has_adapter?, :connection=, :connection, :logger, :application, :root, :load_configuration
+    def_delegators :config,
+                   :adapter=,
+                   :adapter,
+                   :has_adapter?,
+                   :connection=,
+                   :connection,
+                   :logger,
+                   :application,
+                   :root,
+                   :load_configuration
     def_delegators :adapter, :publish, :publish_at
 
     def configure

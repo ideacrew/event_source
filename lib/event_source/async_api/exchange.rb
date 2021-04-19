@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module EventSource
-  module AsynApi
+  module AsyncApi
     class Exchange < Dry::Struct
       # @!attribute [r] name
       # The name of the exchange. It MUST NOT exceed 255 characters long.

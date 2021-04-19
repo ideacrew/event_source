@@ -1,5 +1,5 @@
 ---
-# Representation of the AsynApi Specification (A2S)
+# Representation of the AsyncApi Specification (A2S)
 
 # The version of the AsyncAPI Specification that the document complies to
 asyncapi: 2.0.0

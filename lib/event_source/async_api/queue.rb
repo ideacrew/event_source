@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module EventSource
-  module AsynApi
+  module AsyncApi
     class Queue < Dry::Struct
       BUNNY_OPTION_DEFAULTS = {
         passive: false,

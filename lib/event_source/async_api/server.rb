@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module EventSource
-  module AsynApi
+  module AsyncApi
     # Domain entity for Server: an object representing a message broker, a server or any other kind of
     # computer program capable of sending and/or receiving data.
     # This object captures details such as URIs, protocols and security configuration.

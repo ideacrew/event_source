@@ -2,10 +2,8 @@
 
 module Multidapter
   module Validators
-
-    # Schema and validation rules for {Multidapter::Tag} domain object
+    # Schema and validation rules for {EventSource::AsyncApi::Tag} domain object
     class TagContract < Contract
-
       # @!method call(opts)
       # @param [Hash] opts the parameters to validate using this contract
       # @option opts [String] :name required
@@ -18,7 +16,6 @@ module Multidapter
         optional(:description).maybe(:string)
         optional(:external_docs).array(:hash)
       end
-
     end
   end
 end

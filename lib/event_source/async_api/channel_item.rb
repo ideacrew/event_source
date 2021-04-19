@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module EventSource
-  module AsynApi
+  module AsyncApi
     # A relative path to an individual channel. The field name MUST be in the form of a
     # RFC 6570 URI template. Query parameters and fragments SHALL NOT be used, instead
     # use bindings to define them

@@ -3,7 +3,6 @@
 module Multidapter
   module Operations
     module Servers
-
       # Create a {Server} instance
       class Create
         send(:include, Dry::Monads[:result, :do])
@@ -21,8 +20,8 @@ module Multidapter
         # @return [Dry::Monads::Result::Success<Server>] if Server is created
         # @return [Dry::Monads::Result::Failure<Hash>] if Server creation fails
         def call(params)
-          values  = yield validate(params)
-          server  = yield create_server(values)
+          values = yield validate(params)
+          server = yield create_server(values)
 
           Success(server)
         end
@@ -31,18 +30,16 @@ module Multidapter
 
         def validate(params)
           # returns Success(values) or Failure(:invalid_data)
-          contract = Multidapter::Validators::ServerContract.new
+          contract = EventSource::AsyncApi::Contracts::ServerContract.new
           Success(contract.call(params))
         end
 
         def create_server(values)
           # returns Success(server) or Failure(:server_not_created)
-          server  = Multidapter::Server.new(values.to_h)
+          server = EventSource::AsyncApi::Server.new(values.to_h)
           Success(server)
         end
-
       end
-
     end
   end
 end

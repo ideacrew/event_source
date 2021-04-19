@@ -3,10 +3,8 @@ require 'json'
 
 module Multidapter
   module Validators
-
-    # Schema and validation rules for {Multidapter::Server} domain object
+    # Schema and validation rules for {EventSource::AsyncApi::Server} domain object
     class ServerContract < Contract
-
       # @!method call(opts)
       # @param [Hash] opts the parameters to validate using this contract
       # @option opts [String] :url required
@@ -38,15 +36,19 @@ module Multidapter
         end
       end
 
-
       rule(:security) do
         if key? && value
           result = SecuritySchemeContract.new.call(value)
+
           # Use dry-validation metadata form to pass error hash along with text to calling service
-          key.failure(text: "invalid security_scheme", error: result.errors.to_h) if result && result.failure?
+          if result && result.failure?
+            key.failure(
+              text: 'invalid security_scheme',
+              error: result.errors.to_h
+            )
+          end
         end
       end
-
     end
   end
 end

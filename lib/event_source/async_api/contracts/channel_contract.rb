@@ -2,10 +2,8 @@
 
 module Multidapter
   module Validators
-
-    # Schema and validation rules for {Multidapter::Channel}
+    # Schema and validation rules for {EventSource::AsyncApi::Channel}
     class ChannelContract < Contract
-
       # @!method call(opts)
       # @param [Hash] opts the parameters to validate using this contract
       # @option opts [Symbol] :channel_id required
@@ -13,10 +11,10 @@ module Multidapter
       # @return [Dry::Monads::Result::Success, Dry::Monads::Result::Failure]
       params do
         required(:channel_id).value(:symbol)
-        # optional(:channel_item).maybe(Multidapter::Channel)
+
+        # optional(:channel_item).maybe(EventSource::AsyncApi::Channel)
         optional(:channel_item).maybe(:hash)
       end
-
     end
   end
 end

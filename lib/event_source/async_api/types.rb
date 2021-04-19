@@ -5,6 +5,47 @@ require 'dry-types'
 module EventSource
   module AsyncApi
     module Types
+      send(:include, Dry.Types)
+      include Dry::Logic
+
+      Uri =
+        Types.Constructor(::URI) do |val|
+          (val.is_a? URI) ? val : ::URI.parse(val)
+        end
+      Url = Uri
+
+      Email =
+        Coercible::String.constrained(
+          format: /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z]+)*\.[a-z]+\z/i
+        )
+
+      SecuritySchemeKind =
+        Coercible::Symbol.enum(
+          :user_password,
+          :api_key,
+          :x509,
+          :symmetric_encryption,
+          :asymmetric_encryption,
+          :http_api_key,
+          :http,
+          :oauth2,
+          :open_id_connect
+        )
+
+      ComponentTypes =
+        Coercible::Symbol.enum(
+          :schemas,
+          :messages,
+          :security_schemes,
+          :parameters,
+          :correlation_ids,
+          :operation_traits,
+          :messaage_traits,
+          :server_bindings,
+          :channel_bindings,
+          :operation_bindings,
+          :message_bindings
+        )
       Vhost = Types::Coercible::String.default('/')
       ChannelTypeKind =
         Types::Coercible::Symbol
@@ -22,7 +63,8 @@ module EventSource
       RoutingKeyKind = Types::Coercible::String
       RoutingKeyKinds = Types::Array.of(RoutingKeyKind)
       QueueName = Types::Coercible::String
-      AmqpBindingVersionKind = Types::Coercible::String.default('0.2.0').enum('0.2.0')
+      AmqpBindingVersionKind =
+        Types::Coercible::String.default('0.2.0').enum('0.2.0')
 
       # PatternedFieldName  = String.constrained(format: /^[A-Za-z0-9_\-]+$/)
     end

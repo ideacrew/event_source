@@ -2,10 +2,8 @@
 
 module Multidapter
   module Validators
-
-    # Schema and validation rules for {Multidapter::Message}
+    # Schema and validation rules for {EventSource::AsyncApi::Message}
     class MessageContract < Contract
-
       # @!method call(opts)
       # @param [Hash] opts the parameters to validate using this contract
       # @option opts [Hash] :headers optional
@@ -38,11 +36,14 @@ module Multidapter
         optional(:traits).array(Types::HashOrNil)
 
         before(:value_coercer) do |result|
-          result.to_h.merge!({ external_docs: Array.new }) if (result.to_h.has_key?(:external_docs) && result.to_h[:external_docs].nil?)
+          if (
+               result.to_h.has_key?(:external_docs) &&
+                 result.to_h[:external_docs].nil?
+             )
+            result.to_h.merge!({ external_docs: Array.new })
+          end
         end
       end
-
     end
-
   end
 end
