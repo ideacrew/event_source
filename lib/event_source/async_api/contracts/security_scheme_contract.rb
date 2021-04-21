@@ -23,7 +23,7 @@ module EventSource
           optional(:in).maybe(:symbol)
           optional(:scheme).maybe(:string)
           optional(:bearer_format).maybe(:string)
-          optional(:open_id_connect_url).maybe(:string) #(Types::Url)
+          optional(:open_id_connect_url).maybe(:string) # (Types::Url)
           optional(:flows).maybe(:hash)
         end
       end

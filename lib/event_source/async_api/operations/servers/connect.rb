@@ -21,9 +21,9 @@ module EventSource
             Create.new.call(params)
           end
 
-          def create_connection(server)
+          def create_connection(_server)
             connection = EventSource::AsyncApi::ConnectionManager.new(values.to_h)
-            
+
             Success(connection)
           end
         end

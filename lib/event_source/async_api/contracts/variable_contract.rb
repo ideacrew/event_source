@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'json'
 
 module EventSource
@@ -12,12 +13,12 @@ module EventSource
       # @option opts [Hash] :examples (optional)
       # @return [Dry::Monads::Result::Success, Dry::Monads::Result::Failure]
       ServerVariableSchema =
-      Dry::Schema.Params do
-        optional(:enum).maybe(:any)
-        optional(:default).maybe(:any)
-        optional(:description).maybe(:any)
-        optional(:examples).maybe(:hash)
-      end
+        Dry::Schema.Params do
+          optional(:enum).maybe(:any)
+          optional(:default).maybe(:any)
+          optional(:description).maybe(:any)
+          optional(:examples).maybe(:hash)
+        end
 
       # Schema and validation rules for {EventSource::AsyncApi::Variable} domain object
       class VariableContract < Contract

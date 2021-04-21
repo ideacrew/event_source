@@ -9,18 +9,17 @@ module EventSource
       attr_reader :connections
 
       def initialize
-      	@connections = {}
+        @connections = {}
       end
 
       def self.add_connection(server)
-      	url = url_for(server)
-      	raise "Active connection exists for #{url} with protocol #{server.protocol}" if @connections[url]&.active?
-		client = client_klass_for(server).new(url, server.to_h)
-      	@connections[url] = Connection.new(client)
+        url = url_for(server)
+        raise "Active connection exists for #{url} with protocol #{server.protocol}" if @connections[url]&.active?
+        client = client_klass_for(server).new(url, server.to_h)
+        @connections[url] = Connection.new(client)
       end
 
       def self.reconnect!
-
       end
 
       def self.close_connection(connection)
@@ -28,28 +27,23 @@ module EventSource
       end
 
       def self.connection_status
-
       end
 
-      private 
+      private
 
       def uri_for(server)
-
       end
 
       def client_klass_for(server)
-        
       end
 
     end
   end
 end
 
-
 # Servers.create returning a dry struct
 # Servers.connect with server struct
 #   - ConnectionManager.connect(server)
-
 
 # servers:
 #   production:

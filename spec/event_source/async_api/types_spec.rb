@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
 RSpec.describe Types do
@@ -20,7 +21,7 @@ RSpec.describe Types do
     subject(:type) { EventSource::AsyncApi::Types::PositiveInteger }
     let(:valid_value) { 0 }
     let(:invalid_value) { -1 }
-    let(:valid_value_string) { '2'.freeze }
+    let(:valid_value_string) { '2' }
 
     it 'a correct value is valid' do
       expect(type[valid_value]).to be_truthy
@@ -39,7 +40,7 @@ RSpec.describe Types do
     subject(:type) { EventSource::AsyncApi::Types::SecuritySchemeKind }
     let(:valid_value) { :symmetric_encryption }
     let(:invalid_value) { :unsecure }
-    let(:valid_value_string) { 'x509'.freeze }
+    let(:valid_value_string) { 'x509' }
 
     it 'a correct value is valid' do
       expect(type[valid_value]).to be_truthy

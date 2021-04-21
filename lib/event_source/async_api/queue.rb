@@ -9,7 +9,7 @@ module EventSource
         arguments: nil,
         nowait: false,
         no_declare: true
-      }
+      }.freeze
 
       # @!attribute [r] name
       # The name of the queue. It MUST NOT exceed 255 characters long.

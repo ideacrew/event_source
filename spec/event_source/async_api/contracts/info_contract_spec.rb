@@ -18,8 +18,8 @@ RSpec.describe EventSource::AsyncApi::Contracts::InfoContract do
 
   let(:license) do
     {
-      "name": 'Apache 2.0',
-      "url": 'http://www.apache.org/licenses/LICENSE-2.0.html'
+      name: 'Apache 2.0',
+      url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
     }
   end
 

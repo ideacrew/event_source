@@ -42,10 +42,10 @@ module EventSource
           #   @!method $0($1)
           #   Coerce contact and license attributes to empty hash if nil
           before(:value_coercer) do |result|
-            unless result.to_h.has_key?(:contact)
+            unless result.to_h.key?(:contact)
               result.to_h.merge!({ contact: {} })
             end
-            unless result.to_h.has_key?(:license)
+            unless result.to_h.key?(:license)
               result.to_h.merge!({ license: {} })
             end
           end

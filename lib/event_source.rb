@@ -20,7 +20,7 @@ require 'event_source/types'
 require 'event_source/async_api/async_api'
 require 'event_source/async_api/protocols/protocol'
 
-# TODO Remove ActiveSupport dependency
+# TODO: Remove ActiveSupport dependency
 require 'active_support/all'
 require 'event_source/railtie' if defined?(Rails)
 require 'event_source/connection'
