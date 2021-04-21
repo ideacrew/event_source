@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-
 require 'dry-types'
 Dry::Types.load_extensions(:maybe)
 
@@ -9,22 +8,33 @@ module EventSource
       send(:include, Dry.Types)
       include Dry::Logic
 
-      Uri =
-        Types.Constructor(::URI) do |val|
-          (val.is_a? URI) ? val : ::URI.parse(val)
+      # UriKind =
+      #   Types.Constructor(::URI) do |val|
+      #     binding.pry
+      #     (val.is_a? ::URI) ? val : ::URI.parse(val)
+      #   end
+      UriKind =
+        Types.Constructor(EventSource::Uris::Uri) do |val|
+          binding.pry
+          EventSource::Uris::Uri.new(uri: val)
         end
-      Url = Uri
+
+      # UriKind = Types.Constructor(::URI, &:parse)
+      UrlKind = UriKind
+
+      # TypeContainer = Dry::Schema::TypeContainer.new
+      # TypeContainer.register('params.uri', UriKind)
 
       Email =
         Coercible::String.constrained(
           format: /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z]+)*\.[a-z]+\z/i
         )
 
-      Emails                = Array.of(Email)
-      HashOrNil             = Types::Hash | Types::Nil
-      StringOrNil           = Types::String | Types::Nil
-      CallableDateTime      = Types::DateTime.default { DateTime.now }
-      PositiveInteger       = Coercible::Integer.constrained(gteq: 0)
+      Emails = Array.of(Email)
+      HashOrNil = Types::Hash | Types::Nil
+      StringOrNil = Types::String | Types::Nil
+      CallableDateTime = Types::DateTime.default { DateTime.now }
+      PositiveInteger = Coercible::Integer.constrained(gteq: 0)
 
       SecuritySchemeKind =
         Coercible::Symbol.enum(

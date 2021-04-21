@@ -12,7 +12,7 @@ module EventSource
       # @!attribute [r] url
       # The URL pointing to the contact information. Must be in the format of a URL.
       # @return [String]
-      attribute :url, Types::Url.optional.meta(omittable: true)
+      attribute :url, Types::UrlKind.optional.meta(omittable: true)
 
       # @!attribute [r] email
       # The email address of the contact person/organization. Must be in the format of an email address.

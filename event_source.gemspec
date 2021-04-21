@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-lib = File.expand_path("../lib", __FILE__)
+lib = File.expand_path('../lib', __FILE__)
 
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'event_source/version'
@@ -35,12 +35,13 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'bunny'
+  spec.add_dependency 'bunny', '~> 2.17'
   spec.add_dependency 'dry-monads', '~> 1.3'
   spec.add_dependency 'dry-struct', '~> 1.4'
   spec.add_dependency 'dry-types', '~> 1.5'
   spec.add_dependency 'dry-validation', '~> 1.6'
   spec.add_dependency 'dry-initializer', '~> 3.0'
+  spec.add_dependency 'dry-schema', '1.5.6'
   spec.add_dependency 'dry-events', '~> 0.3'
   spec.add_dependency 'resque-bus', '~> 0.7.0'
 

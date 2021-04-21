@@ -21,7 +21,7 @@ module EventSource
       # @!attribute [r] terms_of_service
       # URL to the Terms of Service for the API. MUST be in the format of a URL
       # @return [Types::Url]
-      attribute :terms_of_service, Types::Url.optional.meta(omittable: true)
+      attribute :terms_of_service, Types::UrlKind.optional.meta(omittable: true)
 
       # @!attribute [r] contact
       # Contact information for the exposed API

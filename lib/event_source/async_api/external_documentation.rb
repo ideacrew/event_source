@@ -13,7 +13,7 @@ module EventSource
       # @!attribute [r] url
       # URL for the target documentation
       # @return [Types::Url]
-      attribute :url, Types::Url
+      attribute :url, Types::UrlKind
     end
   end
 end

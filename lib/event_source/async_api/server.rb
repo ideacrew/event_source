@@ -12,7 +12,7 @@ module EventSource
       # URL to the target host (required). Variable substitutions will be made when a variable is
       # enclosed in braces ({}).
       # @return [Types::Url]
-      attribute :url, EventSource::AsyncApi::Types::Url.meta(omittable: false)
+      attribute :url, Types::String.meta(omittable: false)
 
       # @!attribute [r] protocol
       # Protocol this URL supports for connection. Supported protocol include, but are not limited to:

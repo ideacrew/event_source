@@ -60,7 +60,7 @@ module EventSource
       # Applies to: openIdConnect. REQUIRED. OpenId Connect URL to discover OAuth2 configuration values.
       # This MUST be in the form of a URL
       # @return [Types::Url]
-      attribute :open_id_connect_url, Types::Url.meta(omittable: true)
+      attribute :open_id_connect_url, Types::UrlKind.meta(omittable: true)
 
       # @!attribute [r] flows
       # Applies to: oauth2 (OAuth Flows Object).  REQUIRED. An object containing configuration information

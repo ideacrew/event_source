@@ -3,86 +3,37 @@
 module EventSource
   module AsyncApi
     class Connection
-
-      def initialize(client)
-        @client = client
-
-        # Bunny.new(uri, @options)
-        # AmqpConnection.new
+      def initialize(protocol_client)
+        @client = protocol_client
       end
 
       def url
-      	@client.url
+        @client.url
       end
 
       def connect
-      	@client.connect
+        @client.connect
       end
 
       def active?
-      	@client.active?
+        @client.active?
       end
 
       def close
-      	@client.close
+        @client.close
+      end
+
+      def connection_url
+        @client.connecion_url
+      end
+
+      def protocol_version
+        @client.protocol_version
+      end
+
+      def client_version
+        @client.client_version
       end
     end
-  end
-end
-
-class QuebusClient
-
-  def initialize(uri, options)
-  	@queue_bus = queue_bus
-  end
-
-  # def close
-  # 	@queue_bus.close
-  # end
-  
-  # def active?
-  #   @queue_bus.active?
-  # end
-end
-
-class BunnyClient
-
-  def initialize(url, options)
-  	@bunny_client = Bunny.new(uri, options)
-  	@bunny_connection = @bunny_client.session
-  end
-
-  def url
-  	@url
-  end
-
-  def connect
-  	return if active?
-
-	begin
-      @bunny_connection.start
-  	rescue Bunny::TCPConnectionFailed => e
-      raise Multidapter::Error::ConnectionError, "Connection failed to: #{uri}"
-  	rescue Bunny::PossibleAuthenticationFailureError => e
-      raise Multidapter::Error::AuthenticationError, "Likely athentication failure for account: #{@bunny_connection.user}"
-  	ensure
-      close
-    end
-
-    sleep 1.0
-    # logger "#{name} connection active"
-    active?
-  end
-
-  def close
-  	@bunny_connection.close if active?
-  end
-
-  def active?
-    @bunny_connection && @bunny_connection.open?
-  end
-
-  def reconnect
-  	@bunny_connection.reconnect!
   end
 end
