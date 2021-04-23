@@ -15,7 +15,7 @@ module EventSource
           attr_reader :connection_params,
                       :protocol_version,
                       :server_options,
-                      :connection_url
+                      :connection_uri
 
           ProtocolVersion = '0.9.1'
           ClientVersion = Bunny.version
@@ -61,7 +61,8 @@ module EventSource
             @protocol_version = ProtocolVersion
             @client_version = ClientVersion
             @server_options = RabbitMqOptionDefaults.merge! options
-            @connection_params = connection_params_for(server)
+            @connection_params = self.class.connection_params_for(server)
+            @connection_uri = self.class.connection_uri_for(@connection_params)
             @bunny_session = Bunny.new(@connection_params)
           end
 
@@ -112,55 +113,60 @@ module EventSource
             ClientVersion
           end
 
+          class << self
+            # Construct connection hash for RabbitMQ server.
+            # Uses Server, AMQP URI and class default values in that orrder
+            # of precendence to resolve values.
+            # Host name may be in DNS ("example.com") or number ("127.0.0.1") form
+            # but when in number form it doesn't support including the port value
+            # (e.g. 127.0.0.1:5672).
+            # param [EventSource::AsyncApi::Server] server
+            # param [Hash] Build URL for AMQP connection
+            # Build protocol-appropriate URL for the specified server
+            def connection_params_for(server)
+              if URI(server[:url])
+                amqp_url = URI.parse(server[:url])
+                host = amqp_url.host || amqp_url.path # url w/single string parses into path
+                port = amqp_url.port || ConnectDefaults[:port]
+                if amqp_url.path.present? && amqp_url.path != host
+                  vhost = amqp_url.path
+                else
+                  vhost = ConnectDefaults[:vhost]
+                end
+              else
+                host = server[:url] || ConnectDefaults[:host]
+                port = server[:port] || ConnectDefaults[:port]
+                vhost = ConnectDefaults[:vhost]
+              end
+
+              {
+                host: host,
+                port: port,
+                vhost: vhost,
+                ssl: false,
+                auth_mechanism: 'PLAIN',
+                user: 'guest',
+                pass: 'guest',
+                heartbeat: :server, # will use RabbitMQ setting
+                frame_max: 131_072
+              }
+            end
+
+            def connection_uri_for(connection_params)
+              scheme = 'amqp'
+              host = connection_params[:host]
+              port = connection_params[:port]
+              path = connection_params[:vhost]
+              "#{scheme}://#{host}:#{port}#{path}"
+            end
+          end
+
           private
 
           def validate_protcol(); end
 
           def security_for(server)
             security = server[:security] || BINDINGS_DEFAULT[:security]
-          end
-
-          # Construct connection hash for RabbitMQ server.
-          # Uses Server, AMQP URI and class default values in that orrder
-          # of precendence to resolve values.
-          # Host name may be in DNS ("example.com") or number ("127.0.0.1") form
-          # but when in number form it doesn't support including the port value
-          # (e.g. 127.0.0.1:5672).
-          # param [EventSource::AsyncApi::Server] server
-          # param [Hash] Build URL for AMQP connection
-          # Build protocol-appropriate URL for the specified server
-          def connection_params_for(server)
-            if URI(server[:url])
-              amqp_url = URI.parse(server[:url])
-              host = amqp_url.host || amqp_url.path # url w/single string parses into path
-              port = amqp_url.port || ConnectDefaults[:port]
-              if amqp_url.path.present? && amqp_url.path != host
-                vhost = amqp_url.path
-              else
-                vhost = ConnectDefaults[:vhost]
-              end
-            else
-              host = server[:url] || ConnectDefaults[:host]
-              port = server[:port] || ConnectDefaults[:port]
-              vhost = ConnectDefaults[:vhost]
-            end
-
-            {
-              host: host,
-              port: port,
-              vhost: vhost,
-              ssl: false,
-              auth_mechanism: 'PLAIN',
-              user: 'guest',
-              pass: 'guest',
-              heartbeat: :server, # will use RabbitMQ setting
-              frame_max: 131_072
-            }
-          end
-
-          def connection_url_for(connection_params)
-            scheme = 'amqp'
-            @connection_url = "#{scheme}://#{host}:#{port}#{path}"
           end
 
           BINDINGS_DEFAULT = {

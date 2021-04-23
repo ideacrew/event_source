@@ -22,11 +22,11 @@ RSpec.describe EventSource::AsyncApi::Protocols::Amqp::BunnyClient do
         connect
         active?
         close
-        connection_url
+        connection_params
         protocol_version
         server_options
         client_version
-        reconnect
+        connection_uri
       ]
     end
 
@@ -35,7 +35,7 @@ RSpec.describe EventSource::AsyncApi::Protocols::Amqp::BunnyClient do
     end
   end
 
-  context 'Server URLs in various forms are parsed for connection_url' do
+  context 'Server URLs in various forms are parsed for connection_uri' do
     let(:protocol) { :amqp }
     let(:protocol_version) { '0.9.1' }
     let(:description) { 'Development RabbitMQ Server' }
@@ -47,27 +47,27 @@ RSpec.describe EventSource::AsyncApi::Protocols::Amqp::BunnyClient do
         description: description
       }
     end
-    let(:valid_url) { 'amqp://localhost:5672/' }
+    let(:valid_uri) { 'amqp://localhost:5672/' }
 
     it 'should properly parse the URL', :aggregate_failures do
       expect(
-        described_class.new((my_server.merge!(url: 'localhost'))).connection_url
-      ).to eq valid_url
+        described_class.new((my_server.merge!(url: 'localhost'))).connection_uri
+      ).to eq valid_uri
 
       expect(
         described_class.new((my_server.merge!(url: 'amqp://localhost/')))
           .connection_url
-      ).to eq valid_url
+      ).to eq valid_uri
 
       expect(
         described_class.new((my_server.merge!(url: 'amqp://127.0.0.1/')))
           .connection_url
-      ).to eq valid_url
+      ).to eq valid_uri
 
       expect(
         described_class.new((my_server.merge!(url: 'amqp://localhost')))
           .connection_url
-      ).to eq valid_url
+      ).to eq valid_uri
     end
   end
 

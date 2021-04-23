@@ -3,6 +3,7 @@
 module EventSource
   module AsyncApi
     require 'event_source/uris/amqp_uri'
+    require_relative 'error'
     require_relative 'types'
     require_relative 'external_documentation'
     require_relative 'schema'

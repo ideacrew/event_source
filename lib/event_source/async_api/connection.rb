@@ -2,13 +2,10 @@
 
 module EventSource
   module AsyncApi
+    # Adapter interface for AsyncAPI protocol clients
     class Connection
       def initialize(protocol_client)
         @client = protocol_client
-      end
-
-      def url
-        @client.url
       end
 
       def connect
@@ -20,11 +17,16 @@ module EventSource
       end
 
       def close
+        binding.pry
         @client.close
       end
 
-      def connection_url
-        @client.connecion_url
+      def connection_params
+        @client.connection_params
+      end
+
+      def connection_uri
+        @client.connection_uri
       end
 
       def protocol_version
@@ -33,6 +35,10 @@ module EventSource
 
       def client_version
         @client.client_version
+      end
+
+      def server_option
+        @client.server_option
       end
     end
   end

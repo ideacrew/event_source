@@ -9,34 +9,46 @@ module EventSource
       attr_reader :connections
 
       def initialize
-        @connections = {}
+        @connections = Hash.new
       end
 
-      def self.add_connection(server)
-        url = url_for(server)
-        raise "Active connection exists for #{url} with protocol #{server.protocol}" if @connections[url]&.active?
-        client = client_klass_for(server).new(url, server.to_h)
-        @connections[url] = Connection.new(client)
+      def add_connection(server)
+        client_klass = protocol_klass_for(server[:protocol])
+
+        params = client_klass.connection_params_for(server)
+        connection_uri = client_klass.connection_uri_for(params)
+
+        if connections.key? connection_uri
+          raise EventSource::AsyncApi::Error::DuplicateConnectionError,
+                "Connection already exists for #{connection_uri}"
+        else
+          client = client_klass.new(server)
+          connections[connection_uri] =
+            EventSource::AsyncApi::Connection.new(client)
+        end
       end
 
-      def self.reconnect!
+      def drop_connection(connection_uri)
+        connection = connections[connection_uri]
+        connection.close if connection.active?
+        connections.delete connection_uri
+        connections
       end
 
-      def self.close_connection(connection)
-        @connections.delete(connection.url)
-      end
-
-      def self.connection_status
-      end
+      # TODO do we need a method to gracefully close all open connections at shutdown?
 
       private
 
-      def uri_for(server)
+      def protocol_klass_for(protocol)
+        case protocol
+        when :amqp, :amqps
+          EventSource::AsyncApi::Protocols::Amqp::BunnyClient
+          # when :http, :https
+        else
+          raise EventSource::AsyncApi::Error::UnknownConnectionProtocolError,
+                "unknown protocol: #{protocol}"
+        end
       end
-
-      def client_klass_for(server)
-      end
-
     end
   end
 end
