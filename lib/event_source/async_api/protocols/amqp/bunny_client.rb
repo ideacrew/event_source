@@ -1,12 +1,21 @@
 # frozen_string_literal: true
 require 'bunny'
+require 'uri'
 
 module EventSource
   module AsyncApi
     module Protocols
       module Amqp
+        # Connect to RabbitMQ server instance using Bunny client
+        # @attr_reader [String] connection_params Connection string used to contact broker server
+        # @attr_reader [Hash] server_options Bibding options used to connect with broker server
+        # @attr_reader [String] protocol_version AMQP protocol release supported by this broker client
+        # @attr_reader [Bunny::Session] connection the server Connection object
         class BunnyClient
-          attr_reader :connection_url, :protocol_version
+          attr_reader :connection_params,
+                      :protocol_version,
+                      :server_options,
+                      :connection_url
 
           ProtocolVersion = '0.9.1'
           ClientVersion = Bunny.version
@@ -31,77 +40,72 @@ module EventSource
             description: 'RabbitMQ Server'
           }
 
-          ConnectionOptionDefaults = {
-            protocol: :amqp,
-            url: 'amqp://localhost',
-            description: 'RabbitMQ AMQP host',
-            security_scheme: {
-              type: :user_password
-            },
-            variables: [
-              port: {
-                default: 5472
-              },
-              vhost: {
-                default: '/'
-              },
-              auth_mechanism: {
-                default: 'PLAIN'
-              },
-              user: {
-                default: 'guest'
-              },
-              password: {
-                default: 'guest'
-              },
-              ssl: {
-                default: false
-              },
-              heartbeat: {
-                default: :server
-              }
-            ]
+          ConnectDefaults = {
+            host: 'localhost',
+            port: 5672, # (Integer) — default: 5672 — Port RabbitMQ listens on
+            tls: false,
+            username: 'guest',
+            password: 'guest',
+            vhost: '/' # (String) — default: "/" — Virtual host to use
           }
 
-          def initialize(server_params, options = {})
-            connection_options = options.merge!(ConnectionOptionDefaults)
-            @connection_url = url_for(server_params, connection_options)
+          # def initialize
+          #   @protocol_version = ProtocolVersion
+          #   @client_version = ClientVersion
+          # end
+
+          # @param [Hash] opts AMQP Server in hash form
+          # @param [Hash] opts binding options for RabbitMQ server
+          # @return Bunny::Session
+          def initialize(server, options = {})
             @protocol_version = ProtocolVersion
-            @bunny_connection = Bunny.new(@connection_url, options)
-            EventSource::AsyncApi::Connection.new(self)
+            @client_version = ClientVersion
+            @server_options = RabbitMqOptionDefaults.merge! options
+            @connection_params = connection_params_for(server)
+            @bunny_session = Bunny.new(@connection_params)
+          end
+
+          def connection
+            @bunny_session
           end
 
           def connect
             return if active?
 
             begin
-              @bunny_connection.start
+              @bunny_session.start
+            rescue Errno::ECONNRESET
+              raise EventSource::AsyncApi::Protocols::Amqp::Error::ConnectionError,
+                    "Connection failed. network error to: #{connection_params}"
             rescue Bunny::TCPConnectionFailed
-              raise EventSource::AsyncApi::Amqp::Error::ConnectionError,
-                    "Connection failed to: #{uri}"
+              raise EventSource::AsyncApi::Protocols::Amqp::Error::ConnectionError,
+                    "Connection failed to: #{connection_params}"
             rescue Bunny::PossibleAuthenticationFailureError
-              raise EventSource::AsyncApi::Amqp::Error::AuthenticationError,
-                    "Likely athentication failure for account: #{@bunny_connection.user}"
+              raise EventSource::AsyncApi::Protocols::Amqp::Error::AuthenticationError,
+                    "Likely athentication failure for account: #{@bunny_session.user}"
+            rescue StandardError
+              raise EventSource::AsyncApi::Protocols::Amqp::Error::ConnectionError,
+                    "Unable to connect to: #{connection_params}"
+            else
+              sleep 1.0
+
+              # logger "#{name} connection active "
+              active?
             ensure
-              close
+              # logger "#{name} connection failed"
             end
-
-            sleep 1.0
-
-            # logger "#{name} connection active"
-            active?
           end
 
           def active?
-            @bunny_connection && @bunny_connection.open?
+            @bunny_session && @bunny_session.open?
           end
 
           def close
-            @bunny_connection.close if active?
+            @bunny_session.close if active?
           end
 
           def reconnect
-            @bunny_connection.reconnect!
+            @bunny_session.reconnect!
           end
 
           def client_version
@@ -110,17 +114,53 @@ module EventSource
 
           private
 
-          # param [EventSource::AsyncApi::Server] server
-          # param [Hash] connection options
-          # Build protocol-appropriate URL for the specified server
-          def url_for(server, options)
-            'amqp://127.0.0.1:5672'
+          def validate_protcol(); end
 
-            # url ||= server[:url]
-            # protocol ||= server[:protocol]
-            # protocol_version ||= server[:protocol_version]
-            # security ||= server[:security]
-            # URI.AMQP(uri)
+          def security_for(server)
+            security = server[:security] || BINDINGS_DEFAULT[:security]
+          end
+
+          # Construct connection hash for RabbitMQ server.
+          # Uses Server, AMQP URI and class default values in that orrder
+          # of precendence to resolve values.
+          # Host name may be in DNS ("example.com") or number ("127.0.0.1") form
+          # but when in number form it doesn't support including the port value
+          # (e.g. 127.0.0.1:5672).
+          # param [EventSource::AsyncApi::Server] server
+          # param [Hash] Build URL for AMQP connection
+          # Build protocol-appropriate URL for the specified server
+          def connection_params_for(server)
+            if URI(server[:url])
+              amqp_url = URI.parse(server[:url])
+              host = amqp_url.host || amqp_url.path # url w/single string parses into path
+              port = amqp_url.port || ConnectDefaults[:port]
+              if amqp_url.path.present? && amqp_url.path != host
+                vhost = amqp_url.path
+              else
+                vhost = ConnectDefaults[:vhost]
+              end
+            else
+              host = server[:url] || ConnectDefaults[:host]
+              port = server[:port] || ConnectDefaults[:port]
+              vhost = ConnectDefaults[:vhost]
+            end
+
+            {
+              host: host,
+              port: port,
+              vhost: vhost,
+              ssl: false,
+              auth_mechanism: 'PLAIN',
+              user: 'guest',
+              pass: 'guest',
+              heartbeat: :server, # will use RabbitMQ setting
+              frame_max: 131_072
+            }
+          end
+
+          def connection_url_for(connection_params)
+            scheme = 'amqp'
+            @connection_url = "#{scheme}://#{host}:#{port}#{path}"
           end
 
           BINDINGS_DEFAULT = {
