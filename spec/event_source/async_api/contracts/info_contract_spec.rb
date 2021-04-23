@@ -71,7 +71,6 @@ RSpec.describe EventSource::AsyncApi::Contracts::InfoContract do
       let(:contact_result) { contact.merge!(url: URI(contact[:url])) }
 
       it 'should successfully return all optional params as attributes' do
-        binding.pry
         result = subject.call(all_params)
 
         expect(result.success?).to be_truthy

@@ -48,25 +48,23 @@ RSpec.describe EventSource::AsyncApi::Protocols::Amqp::BunnyClient do
       }
     end
     let(:valid_uri) { 'amqp://localhost:5672/' }
+    let(:valid_octet_uri) { "amqp://127.0.0.1:5672/" }
 
     it 'should properly parse the URL', :aggregate_failures do
       expect(
-        described_class.new((my_server.merge!(url: 'localhost'))).connection_uri
+        described_class.connection_uri_for(my_server.merge!(url: 'localhost'))
       ).to eq valid_uri
 
       expect(
-        described_class.new((my_server.merge!(url: 'amqp://localhost/')))
-          .connection_url
+        described_class.connection_uri_for(my_server.merge!(url: 'amqp://localhost/'))
       ).to eq valid_uri
 
       expect(
-        described_class.new((my_server.merge!(url: 'amqp://127.0.0.1/')))
-          .connection_url
-      ).to eq valid_uri
+        described_class.connection_uri_for(my_server.merge!(url: 'amqp://127.0.0.1/'))
+      ).to eq valid_octet_uri
 
       expect(
-        described_class.new((my_server.merge!(url: 'amqp://localhost')))
-          .connection_url
+        described_class.connection_uri_for(my_server.merge!(url: 'amqp://localhost'))
       ).to eq valid_uri
     end
   end
@@ -98,7 +96,7 @@ RSpec.describe EventSource::AsyncApi::Protocols::Amqp::BunnyClient do
 
       it 'should raise an error' do
         expect {
-          described_class.new(invalid_server)
+          described_class.new(invalid_server).connect
         }.to raise_error EventSource::AsyncApi::Protocols::Amqp::Error::ConnectionError
       end
     end

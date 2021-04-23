@@ -14,9 +14,7 @@ module EventSource
 
       def add_connection(server)
         client_klass = protocol_klass_for(server[:protocol])
-
-        params = client_klass.connection_params_for(server)
-        connection_uri = client_klass.connection_uri_for(params)
+        connection_uri = client_klass.connection_uri_for(server)
 
         if connections.key? connection_uri
           raise EventSource::AsyncApi::Error::DuplicateConnectionError,
