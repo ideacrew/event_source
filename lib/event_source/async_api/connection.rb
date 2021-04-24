@@ -4,8 +4,11 @@ module EventSource
   module AsyncApi
     # Adapter interface for AsyncAPI protocol clients
     class Connection
+      attr_reader :channels
+
       def initialize(protocol_client)
         @client = protocol_client
+        @channels = {}
       end
 
       def connect
@@ -16,9 +19,17 @@ module EventSource
         @client.active?
       end
 
-      def close
+      def disconnect
         binding.pry
         @client.close
+      end
+
+      def add_channel(channel_item)
+
+      end
+
+      def drop_channel(channel_item_uri)
+
       end
 
       def connection_params

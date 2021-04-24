@@ -26,7 +26,7 @@ module EventSource
                # constantize
                # verify object is kind_of? object
 
-               result = ChannelContract.new.call(value)
+               result = ChannelsContract.new.call(value)
 
                # Use dry-validation metadata form to pass error hash along with text to calling service
                key.failure(text: 'invalid channel', error: result.errors.to_h) if result&.failure?

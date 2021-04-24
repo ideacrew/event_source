@@ -24,12 +24,12 @@ module EventSource
 
           def validate(params)
             result =
-              EventSource::AsyncApi::Contracts::ChannelContract.new.call(params)
+              EventSource::AsyncApi::Contracts::ChannelsContract.new.call(params)
             result.success? ? Success(result) : Failure(result)
           end
 
           def create(values)
-            result = EventSource::AsyncApi::Channel.call(values.to_h)
+            result = EventSource::AsyncApi::Channels.call(values.to_h)
             Success(result)
           end
         end

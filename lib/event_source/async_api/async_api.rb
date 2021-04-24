@@ -19,7 +19,7 @@ module EventSource
     require_relative 'operation'
     require_relative 'channel_binding'
     require_relative 'channel_item'
-    require_relative 'channel'
+    require_relative 'channels'
     require_relative 'security_scheme'
     require_relative 'server_variable'
     require_relative 'variable'

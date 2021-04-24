@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe EventSource::AsyncApi::Operations::Channels::Create do
-  let(:contract) { EventSource::AsyncApi::Contracts::ChannelContract.new }
+  let(:contract) { EventSource::AsyncApi::Contracts::ChannelsContract.new }
 
   context 'Given valid required parameters' do
     let(:channel_id) { :user_enrollments }
