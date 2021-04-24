@@ -1,6 +1,4 @@
 # frozen_string_literal: true
-require 'bunny'
-require 'uri'
 
 module EventSource
   module AsyncApi
@@ -161,11 +159,7 @@ module EventSource
                 vhost = ConnectDefaults[:vhost]
               end
 
-              {
-                host: host,
-                port: port,
-                vhost: vhost
-              }
+              { host: host, port: port, vhost: vhost }
             end
           end
 
