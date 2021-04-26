@@ -44,6 +44,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'dry-schema', '1.5.6'
   spec.add_dependency 'dry-events', '~> 0.3'
   spec.add_dependency 'resque-bus', '~> 0.7.0'
+  spec.add_dependency 'mime-types'
 
   # TODO: Change to development dependency
   spec.add_development_dependency 'activesupport'

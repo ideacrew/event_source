@@ -6,7 +6,7 @@ module EventSource
   module Protocols
     module Amqp
       module Contracts
-        class MessageBindingContract < EventSource::Amqp::Contracts::Contract
+        class MessageBindingContract < Contract
           params do
             optional(:content_encoding).maybe(:string)
             optional(:message_type).maybe(:string)

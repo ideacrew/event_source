@@ -10,6 +10,9 @@ require_relative 'amqp/bunny_queue_proxy'
 require_relative 'amqp/bunny_channel_proxy'
 require_relative 'amqp/bunny_client'
 
+Dir[File.expand_path('lib/event_source/protocols/amqp/contracts/**/*.rb')]
+      .each { |f| require(f) }
+
 module EventSource
   module AsyncApi
     module Protocols

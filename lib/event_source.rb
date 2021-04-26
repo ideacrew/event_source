@@ -16,6 +16,7 @@ require 'dry-struct'
 
 require 'event_source/uris/uri'
 require 'event_source/types'
+require 'event_source/async_api/types'
 require 'event_source/protocols/protocols'
 require 'event_source/async_api/async_api'
 

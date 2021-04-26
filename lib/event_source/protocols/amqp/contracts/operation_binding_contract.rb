@@ -4,10 +4,10 @@ module EventSource
   module Protocols
     module Amqp
       module Contracts
-        class OperationBindingContract < EventSource::Amqp::Contracts::Contract
+        class OperationBindingContract < Contract
           params do
             optional(:expiration).value(
-              EventSource::AsyncApi::Types::PositiveIntegerKind
+              EventSource::AsyncApi::Types::PositiveInteger
             )
             optional(:user_id).maybe(:string)
             optional(:cc).maybe(EventSource::AsyncApi::Types::RoutingKeyKinds)
