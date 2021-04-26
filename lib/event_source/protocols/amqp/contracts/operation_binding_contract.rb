@@ -20,7 +20,7 @@ module EventSource
             optional(:reply_to).maybe(EventSource::AsyncApi::Types::QueueName)
             optional(:timestamp).maybe(:bool)
             optional(:ack).maybe(:bool)
-            optional(:binding_version).maybe(:string)
+            optional(:binding_version).maybe(EventSource::AsyncApi::Types::AmqpBindingVersionKind)
           end
         end
       end
