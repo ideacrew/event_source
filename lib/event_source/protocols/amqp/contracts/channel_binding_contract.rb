@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module EventSource
-  module AsyncApi
+  module Amqp
     module Contracts
       ExchangeHashSchema =
         Dry::Schema.Params do
@@ -23,10 +23,12 @@ module EventSource
           required(:vhost).filled(:string)
         end
 
-      class ChannelBindingContract < EventSource::AsysnApi::Contracts::Contract
+      class ChannelBindingContract < EventSource::Amqp::Contracts::Contract
         params do
           required(:is).value(EventSource::AsyncApi::Types::ChannelTypeKind)
-          required(:binding_version).value(EventSource::AsyncApi::Types::AmqpBindingVersionKind)
+          required(:binding_version).value(
+            EventSource::AsyncApi::Types::AmqpBindingVersionKind
+          )
           optional(:exchange).maybe(ExchangeHashSchema)
           optional(:queue).maybe(QueueHashSchema)
         end
@@ -35,11 +37,9 @@ module EventSource
       rule(:is) do
         if key? && value?
           if value[:queue]
-          # verify keys for queue schema are present
-
+            # verify keys for queue schema are present
           else
             # verify keys for exchange schema are present
-
           end
         end
       end

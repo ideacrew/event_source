@@ -16,24 +16,28 @@ RSpec.describe EventSource::AsyncApi::Contracts::ChannelsContract do
   # end
 
   context 'Given valid required parameters' do
+    # hash = {"crm.contact_created"=>
+    #   {"subscribe"=>{"operationId"=>"on_crm_contacts_contact_created", "summary"=>"CRM Contact Created", "message"=>{"$ref"=>"#/components/messages/crm_contacts_contact_created_event"}}},
+    #  "crm.sugar_crm.contacts.contact_created"=>
+    #   {"publish"=>
+    #     {"operationId"=>"on_crm_sugarcrm_contacts_contact_created",
+    #      "summary"=>"SugarCRM Contact Created",
+    #      "message"=>{"$ref"=>"#/components/messages/crm_sugar_crm_contacts_contact_created_event", "payload"=>{"type"=>"object"}}},
+    #    "subscribe"=>
+    #     {"operationId"=>"crm_sugarcrm_contacts_contact_created",
+    #      "summary"=>"SugarCRM Contact Created",
+    #      "message"=>{"$ref"=>"#/components/messages/crm_sugar_crm_contacts_contact_created_event", "payload"=>{"type"=>"object"}}}}}
 
-  # hash = {"crm.contact_created"=>
-  #   {"subscribe"=>{"operationId"=>"on_crm_contacts_contact_created", "summary"=>"CRM Contact Created", "message"=>{"$ref"=>"#/components/messages/crm_contacts_contact_created_event"}}},
-  #  "crm.sugar_crm.contacts.contact_created"=>
-  #   {"publish"=>
-  #     {"operationId"=>"on_crm_sugarcrm_contacts_contact_created",
-  #      "summary"=>"SugarCRM Contact Created",
-  #      "message"=>{"$ref"=>"#/components/messages/crm_sugar_crm_contacts_contact_created_event", "payload"=>{"type"=>"object"}}},
-  #    "subscribe"=>
-  #     {"operationId"=>"crm_sugarcrm_contacts_contact_created",
-  #      "summary"=>"SugarCRM Contact Created",
-  #      "message"=>{"$ref"=>"#/components/messages/crm_sugar_crm_contacts_contact_created_event", "payload"=>{"type"=>"object"}}}}}
+    let(:channel_id) { 'crm.contact_created' }
+    let(:operation_id) { 'on_crm_contacts_contact_created' }
+    let(:summary) { 'CRM Contact Created' }
 
-    let(:channel_id) { :user_enrollments }
-    let(:channel_item) { { subscribe: { summary: 'A customer enrolled' } } }
+    let(:channel_item) do
+      { channel_id: channel_id, operation_id: operation_id, summary: summary }
+    end
 
-    let(:required_params) { { channel_id: channel_id } }
-    let(:all_params) { { channel_id: channel_id, channel_item: channel_item } }
+    let(:all_params) { { channels: { channel_item: channel_item } } }
+    let(:required_params) { all_params }
 
     context 'with a Channel only' do
       it 'should pass validation' do

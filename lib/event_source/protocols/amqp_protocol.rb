@@ -2,6 +2,7 @@
 require 'bunny'
 require 'uri'
 
+require 'event_source/uris/amqp_uri'
 require_relative 'amqp/error'
 require_relative 'amqp/bunny_message_proxy'
 require_relative 'amqp/bunny_exchange_proxy'

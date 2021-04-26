@@ -3,10 +3,8 @@
 module EventSource
   module AsyncApi
     module Contracts
-
       # Schema and validation rules for {ChannelItem}
       class ChannelItemContract < Contract
-
         # @!method call(opts)
         # @param [Hash] opts the parameters to validate using this contract
         # @option opts [String] :ref optional
@@ -24,9 +22,7 @@ module EventSource
           optional(:parameters).value(Types::HashOrNil)
           optional(:bindings).value(Types::HashOrNil)
         end
-
       end
-
     end
   end
 end

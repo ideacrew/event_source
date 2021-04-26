@@ -3,9 +3,9 @@
 require 'mime/types'
 
 module EventSource
-  module AsyncApi
+  module Amqp
     module Contracts
-      class MessageBindingContract < EventSource::AsysnApi::Contracts::Contract
+      class MessageBindingContract < EventSource::Amqp::Contracts::Contract
         params do
           optional(:content_encoding).maybe(:string)
           optional(:message_type).maybe(:string)
@@ -13,7 +13,9 @@ module EventSource
         end
 
         rule(:content_encoding) do
-          key.failure("unknown Mime type: #{value}") if ::MIME::Types[value].empty?
+          if ::MIME::Types[value].empty?
+            key.failure("unknown Mime type: #{value}")
+          end
         end
       end
     end

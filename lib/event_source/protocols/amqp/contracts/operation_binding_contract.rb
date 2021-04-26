@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 module EventSource
-  module AsyncApi
+  module Amqp
     module Contracts
-      class OperationBindingContract < EventSource::AsysnApi::Contracts::Contract
+      class OperationBindingContract < EventSource::Amqp::Contracts::Contract
         params do
           optional(:expiration).value(
             EventSource::AsyncApi::Types::PositiveIntegerKind

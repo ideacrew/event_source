@@ -35,7 +35,7 @@ RSpec.describe EventSource::AsyncApi::ConnectionManager do
         it 'should raise an error' do
           expect {
             connection_manager.add_connection(invalid_server)
-          }.to raise_error EventSource::AsyncApi::Error::UnknownConnectionProtocolError
+          }.to raise_error EventSource::Protocols::Amqp::Error::UnknownConnectionProtocolError
         end
       end
 
@@ -72,7 +72,7 @@ RSpec.describe EventSource::AsyncApi::ConnectionManager do
             it 'should raise an error' do
               expect {
                 connection_manager.add_connection(my_server)
-              }.to raise_error EventSource::AsyncApi::Error::DuplicateConnectionError
+              }.to raise_error EventSource::Protocols::Amqp::Error::DuplicateConnectionError
             end
           end
 

@@ -17,7 +17,7 @@ module EventSource
         connection_uri = client_klass.connection_uri_for(server)
 
         if connections.key? connection_uri
-          raise EventSource::AsyncApi::Error::DuplicateConnectionError,
+          raise EventSource::Protocols::Amqp::Error::DuplicateConnectionError,
                 "Connection already exists for #{connection_uri}"
         else
           client = client_klass.new(server)
@@ -40,10 +40,10 @@ module EventSource
       def protocol_klass_for(protocol)
         case protocol
         when :amqp, :amqps
-          EventSource::AsyncApi::Protocols::Amqp::BunnyClient
+          EventSource::Protocols::Amqp::BunnyClient
           # when :http, :https
         else
-          raise EventSource::AsyncApi::Error::UnknownConnectionProtocolError,
+          raise EventSource::Protocols::Amqp::Error::UnknownConnectionProtocolError,
                 "unknown protocol: #{protocol}"
         end
       end

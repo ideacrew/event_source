@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe EventSource::AsyncApi::Protocols::Amqp::BunnyClient do
+RSpec.describe EventSource::Protocols::Amqp::BunnyClient do
   let(:protocol) { :amqp }
   let(:url) { 'amqp://localhost:5672/' }
   let(:protocol_version) { '0.9.1' }
@@ -31,7 +31,7 @@ RSpec.describe EventSource::AsyncApi::Protocols::Amqp::BunnyClient do
     end
 
     it 'should have all the required methods' do
-      expect(described_class.new(my_server)).to respond_to *adapter_methods
+      expect(described_class.new(my_server)).to respond_to(*adapter_methods)
     end
   end
 
@@ -48,7 +48,7 @@ RSpec.describe EventSource::AsyncApi::Protocols::Amqp::BunnyClient do
       }
     end
     let(:valid_uri) { 'amqp://localhost:5672/' }
-    let(:valid_octet_uri) { "amqp://127.0.0.1:5672/" }
+    let(:valid_octet_uri) { 'amqp://127.0.0.1:5672/' }
 
     it 'should properly parse the URL', :aggregate_failures do
       expect(
@@ -56,15 +56,21 @@ RSpec.describe EventSource::AsyncApi::Protocols::Amqp::BunnyClient do
       ).to eq valid_uri
 
       expect(
-        described_class.connection_uri_for(my_server.merge!(url: 'amqp://localhost/'))
+        described_class.connection_uri_for(
+          my_server.merge!(url: 'amqp://localhost/')
+        )
       ).to eq valid_uri
 
       expect(
-        described_class.connection_uri_for(my_server.merge!(url: 'amqp://127.0.0.1/'))
+        described_class.connection_uri_for(
+          my_server.merge!(url: 'amqp://127.0.0.1/')
+        )
       ).to eq valid_octet_uri
 
       expect(
-        described_class.connection_uri_for(my_server.merge!(url: 'amqp://localhost'))
+        described_class.connection_uri_for(
+          my_server.merge!(url: 'amqp://localhost')
+        )
       ).to eq valid_uri
     end
   end
@@ -97,11 +103,11 @@ RSpec.describe EventSource::AsyncApi::Protocols::Amqp::BunnyClient do
       it 'should raise an error' do
         expect {
           described_class.new(invalid_server).connect
-        }.to raise_error EventSource::AsyncApi::Protocols::Amqp::Error::ConnectionError
+        }.to raise_error EventSource::Protocols::Amqp::Error::ConnectionError
       end
     end
 
-    context "and there's a RabbitMq server accesssible but the security credentials are invalid" do
+    context "and there's a RabbitMQ server accesssible but the security credentials are invalid" do
       let(:invalid_creds) do
         {
           security_scheme: {
@@ -172,9 +178,7 @@ RSpec.describe EventSource::AsyncApi::Protocols::Amqp::BunnyClient do
       let(:result) { described_class.new(valid_server) }
       after { result.close }
       it 'should successfully connect to RabbitMQ Server' do
-        expect(
-          result
-        ).to be_a EventSource::AsyncApi::Protocols::Amqp::BunnyClient
+        expect(result).to be_a EventSource::Protocols::Amqp::BunnyClient
         expect(result.connect).to be_truthy
         expect(result.active?).to be_truthy
       end

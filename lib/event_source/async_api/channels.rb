@@ -7,13 +7,13 @@ module EventSource
     # paths are relative to servers.
     # Channels are also known as “topics”, “routing keys”, “event types” or “paths”
     class Channels < Dry::Struct
-
       # @!attribute [r] channel_item
       # A relative path to an individual channel. The field name MUST be in the form of a
       # RFC 6570 URI template. Query parameters and fragments SHALL NOT be used, instead use
       # bindings to define them
       # @return [ChannelItem]
       attribute :channels, Types::Hash.meta(omittable: false)
+      # attribute :channel_item_names, Types::Array.of(String) # => channels.keys
     end
   end
 end

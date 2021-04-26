@@ -20,7 +20,7 @@ info: {}
 servers: []
 
 # Holds the relative paths to the individual channel and their operations
-channels: []
+channels: {}
 
 # Holds various schemas (contracts) for the specification
 components: []
