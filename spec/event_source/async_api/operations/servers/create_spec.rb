@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe EventSource::AsyncApi::Operations::Servers::Create do
-  let(:url) { URI('amqp://example.com') }
+  let(:url) { 'amqp://example.com' }
   let(:protocol) { :amqp }
   let(:protocol_version) { '0.9.1' }
   let(:description) { 'RabbitMQ server' }
@@ -37,9 +37,8 @@ RSpec.describe EventSource::AsyncApi::Operations::Servers::Create do
     it 'should have attributes that match input params' do
       result = subject.call(required_params).value!.to_h
 
-      expect(result[:url]).to be_a URI::AMQP
       expect(result.reject { |k, _v| k == :url }).to eq required_params
-        .reject { |k, _v| k == :url }
+           .reject { |k, _v| k == :url }
     end
   end
 
@@ -54,9 +53,8 @@ RSpec.describe EventSource::AsyncApi::Operations::Servers::Create do
     it 'should have attributes that match input params' do
       result = subject.call(all_params).value!.to_h
 
-      expect(result[:url]).to be_a URI::AMQP
       expect(result.reject { |k, _v| k == :url }).to eq all_params
-        .reject { |k, _v| k == :url }
+           .reject { |k, _v| k == :url }
     end
   end
 

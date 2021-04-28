@@ -32,7 +32,10 @@ RSpec.describe EventSource::AsyncApi::Contracts::ServerContract do
 
   context 'validate required parameters' do
     let(:required_params_error) do
-      { url: ['is missing'], protocol: ['is missing'] }
+      {
+        protocol: ['is missing', 'must be Symbol'],
+        url: ['is missing', 'must be a string']
+      }
     end
 
     context 'sending no parameters should fail with :errors' do

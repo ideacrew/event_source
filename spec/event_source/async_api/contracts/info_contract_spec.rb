@@ -67,9 +67,6 @@ RSpec.describe EventSource::AsyncApi::Contracts::InfoContract do
     end
 
     context 'and required and optional parameters' do
-      let(:license_result) { license.merge!(url: URI(license[:url])) }
-      let(:contact_result) { contact.merge!(url: URI(contact[:url])) }
-
       it 'should successfully return all optional params as attributes' do
         result = subject.call(all_params)
 
@@ -77,8 +74,8 @@ RSpec.describe EventSource::AsyncApi::Contracts::InfoContract do
         expect(result[:terms_of_service]).to eq terms_of_service
         expect(result[:description]).to eq description
 
-        expect(result[:contact]).to eq contact_result
-        expect(result[:license]).to eq license_result
+        expect(result[:contact]).to eq contact
+        expect(result[:license]).to eq license
       end
     end
   end

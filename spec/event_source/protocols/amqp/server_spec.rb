@@ -5,7 +5,7 @@ require 'json'
 require 'uri'
 
 RSpec.describe EventSource::AsyncApi::Server do
-  let(:url) { URI('amqp://example.com') }
+  let(:url) { 'amqp://example.com' }
   let(:protocol) { :amqp }
   let(:protocol_version) { '0.9.1' }
   let(:description) { 'development environment server' }

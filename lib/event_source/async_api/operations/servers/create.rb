@@ -39,7 +39,7 @@ module EventSource
 
           def create_server(values)
             # returns Success(server) or Failure(:server_not_created)
-            server = EventSource::AsyncApi::Server.new(values)
+            server = EventSource::AsyncApi::Server.new(values.to_h)
 
             Success(server)
           end
