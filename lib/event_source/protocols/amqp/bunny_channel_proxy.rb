@@ -6,8 +6,8 @@ module EventSource
       # Create and manage a RabbitMQ channel instance using Bunny client
       # @attr_reader [Bunny::Channel] channel Channel connection to broker server
       # @since 0.4.0
-      class BunnyChannel
-        attr_reader :connection, :key, :consumers, :exchanges, :queues
+      class BunnyChannelProxy
+        attr_reader :connection
 
         # @param [EventSource::AsyncApi::Connection] Connection instance
         # @param [Hash] AsyncApi::ChannelItem
@@ -16,29 +16,69 @@ module EventSource
         # @option opts [Hash] :rabbit_mq_queue_bindings
         # @return Bunny::Channel
         def initialize(
-          async_api_connection,
+          bunny_connection_proxy,
           async_api_channel_item,
           options = {}
         )
-          @consumers = []
-          @exchanges = []
-          @queues = []
-          @key = self.class.key_for(channel_item)
-          @connection = connection_for(async_api_connection)
-          @subject = build_bunny_channel_for(channel_item, options)
+          # @consumers = []
+          # @exchanges = []
+          # @queues = []
+          # @key = self.class.key_for(async_api_channel_item)
+          @connection = bunny_connection_proxy.connection
+          @subject = Bunny::Channel.new(connection)
+          build_bunny_channel_for(async_api_channel_item)
         end
 
-        def build_bunny_channel_for(async_api_channel_item, options)
-          type = async_api_channel_item[:type]
-          Bunny::Channel.new(connection, nil, work_pool, options)
+        def build_bunny_channel_for(async_api_channel_item)
+          # type = async_api_channel_item[:type]
+          # Bunny::Channel.new(connection, nil, work_pool, options)
+          # channel = Bunny::Channel.new(connection)
+          channel_bindings = async_api_channel_item[:bindings][:amqp]
+          type = amqp_bindings[:is]
+
+          exchange = build_exchange(channel_bindings[:exchange]) if channel_bindings[:exchange]
+          queue = build_queue(channel_bindings[:queue]) if channel_bindings[:queue]
+
+          bind_queue(channel_bindings[:queue][:name], exchange) if exchange && queue
         end
 
-        def self.key_for(channel_item)
-          channel_item.key.to_s
+        def build_exchange(bindings)
+          add_exchange(
+            bindings[:type],
+            bindings[:name],
+            bindings.slice(:durable, :auto_delete, :vhost)
+          )
         end
+
+        def build_queue(bindings)
+          add_queue(
+            bindings[:name],
+            bindings.slice(:durable, :auto_delete, :vhost, :exclusive)
+          )
+        end
+
+        def queues
+          @subject.queues
+        end
+
+        def exchanges
+          @subject.exchanges
+        end
+
+        def add_queue(queue_name, options = {})
+          Bunny::Queue.new(@subject, queue_name, options)
+        end
+
+        def add_exchange(type, exchange_name, options = {})
+          Bunny::Exchange.new(@subject, type, exchange_name, options)
+        end
+
+        # def self.key_for(channel_item)
+        #   channel_item.key.to_s
+        # end
 
         def method_missing(name, *args)
-          @subject.send(name, *args)
+          @channel.send(name, *args)
         end
 
         # crm.contact_created:

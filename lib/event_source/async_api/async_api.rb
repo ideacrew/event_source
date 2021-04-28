@@ -11,6 +11,7 @@ module EventSource
     require_relative 'tag'
     require_relative 'component'
     require_relative 'contact'
+    require_relative 'channel'
     require_relative 'connection'
     require_relative 'info'
     require_relative 'message_trait'
