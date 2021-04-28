@@ -8,7 +8,11 @@ module EventSource
 
       def initialize(protocol_client)
         @client = protocol_client
-        @channels = {}
+        @channels = []
+      end
+
+      def connection
+        @client.connection
       end
 
       def connect
@@ -20,16 +24,12 @@ module EventSource
       end
 
       def disconnect
-        binding.pry
         @client.close
       end
 
       def add_channel(channel_item)
-
-      end
-
-      def drop_channel(channel_item_uri)
-
+        channel = Channel.new(@client.add_channel(channel_item))
+        @channels.push channel
       end
 
       def connection_params
