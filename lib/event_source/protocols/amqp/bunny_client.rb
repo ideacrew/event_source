@@ -95,8 +95,7 @@ module EventSource
         end
 
         def add_channel(async_api_channel_item)
-          new_channel = Bunny::Channel.new(@bunny_session)
-          BunnyChannelProxy.new(new_channel, async_api_channel_item)
+          BunnyChannelProxy.new(@bunny_session, async_api_channel_item)
         end
 
         def active?

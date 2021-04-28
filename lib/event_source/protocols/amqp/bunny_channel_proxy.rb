@@ -7,7 +7,7 @@ module EventSource
       # @attr_reader [Bunny::Channel] channel Channel connection to broker server
       # @since 0.4.0
       class BunnyChannelProxy
-        attr_reader :connection
+        attr_reader :connection, :subject
 
         # @param [EventSource::AsyncApi::Connection] Connection instance
         # @param [Hash] AsyncApi::ChannelItem
@@ -25,7 +25,8 @@ module EventSource
           # @queues = []
           # @key = self.class.key_for(async_api_channel_item)
           @connection = bunny_connection_proxy.connection
-          @subject = Bunny::Channel.new(connection)
+          @subject = Bunny::Channel.new(connection).open
+
           build_bunny_channel_for(async_api_channel_item)
         end
 
@@ -34,8 +35,6 @@ module EventSource
           # Bunny::Channel.new(connection, nil, work_pool, options)
           # channel = Bunny::Channel.new(connection)
           channel_bindings = async_api_channel_item[:bindings][:amqp]
-          type = amqp_bindings[:is]
-
           exchange = build_exchange(channel_bindings[:exchange]) if channel_bindings[:exchange]
           queue = build_queue(channel_bindings[:queue]) if channel_bindings[:queue]
 
@@ -188,7 +187,8 @@ module EventSource
         # In order to receive messages, a queue needs to be
         # bound to at least one exchange
         def bind_queue(name, exchange, options = {})
-          queue_bind(name, exchange, options)
+          # queue.bind(exchange)
+          @subject.queue_bind(name, exchange, options)
         end
 
         # Unbind a queue from an exchange

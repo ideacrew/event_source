@@ -16,19 +16,9 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyClient do
       description: description
     }
   end
+  
   context 'Adapter pattern methods are present' do
-    let(:adapter_methods) do
-      %i[
-        connect
-        active?
-        close
-        connection_params
-        protocol_version
-        server_options
-        client_version
-        connection_uri
-      ]
-    end
+    let(:adapter_methods) { EventSource::AsyncApi::Connection::ADAPTER_METHODS }
 
     it 'should have all the required methods' do
       expect(described_class.new(my_server)).to respond_to(*adapter_methods)

@@ -6,6 +6,17 @@ module EventSource
     class Connection
       attr_reader :channels
 
+      ADAPTER_METHODS = %i[
+        connection
+        connect
+        active?
+        connection_params
+        protocol_version
+        client_version
+        connection_uri
+        add_channel
+      ]
+
       def initialize(protocol_client)
         @client = protocol_client
         @channels = []
@@ -27,9 +38,10 @@ module EventSource
         @client.close
       end
 
-      def add_channel(channel_item)
-        channel = Channel.new(@client.add_channel(channel_item))
-        @channels.push channel
+      def add_channel(*args)
+        channel_proxy = @client.add_channel(*args)
+        async_api_channel = Channel.new(channel_proxy)
+        @channels.push async_api_channel
       end
 
       def connection_params
@@ -46,10 +58,6 @@ module EventSource
 
       def client_version
         @client.client_version
-      end
-
-      def server_option
-        @client.server_option
       end
     end
   end

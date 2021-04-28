@@ -66,8 +66,15 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
         amqp: {
           is: :routing_key,
           binding_version: '0.2.0',
+          queue: {
+            name: 'on_contact_created',
+            durable: true,
+            auto_delete: true,
+            vhost: '/',
+            exclusive: true
+          },
           exchange: {
-            name: 'crm.contact_created',
+            name: 'crm_contact_created',
             type: :fanout,
             durable: true,
             auto_delete: true,
@@ -87,18 +94,27 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
 
   let(:channels) { { channels: Hash[channel_id, channel_item] } }
 
+  before { connection.connect unless connection.active? }
+  after { connection.disconnect if connection.active? }
+
+  let(:channel_proxy) do
+    described_class.new(connection, channel_item)
+  end
+
   context 'Adapter pattern methods are present' do
-
-    before { connection.connect unless connection.active? }
-    after { connection.close if connection.active? }
-
-    let(:proxy) do
-      described_class.new(client, channel_item)
-    end
+    let(:adapter_methods) { EventSource::AsyncApi::Channel::ADAPTER_METHODS }
 
     it 'should have all the required methods' do
-      proxy
-      # expect(described_class.new(my_server)).to respond_to(*adapter_methods)
+      expect(channel_proxy).to respond_to(*adapter_methods)
+    end
+  end
+
+  context 'When a connection and channel item passted' do
+    it 'should create queues and exchanges' do
+      channel = channel_proxy.subject
+
+      expect(channel.queues).to be_present
+      expect(channel.exchanges).to be_present
     end
   end
 end
