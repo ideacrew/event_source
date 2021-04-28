@@ -43,9 +43,43 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
       summary: "SugarCRM Contact Created",
       message: {
         "$ref": "#/components/messages/crm_sugar_crm_contacts_contact_created_event",
-        payload: {"type"=>"object"}
+        payload: {"hello"=>"world!!"}
       },
-      bindings: {} #operation bindings
+      bindings:  {
+        binding_version: '0.2.0',
+        timestamp: Time.now.to_i,
+        expiration: 1,
+        # cc: ['user.logs'],
+        priority: 1,
+        # bcc: ['external.audit'],
+        mandatory: true,
+        # delivery_mode: 2,
+        reply_to: 'crm.contact_created',
+        user_id: 'guest'
+      }
+    }
+  end
+
+  let(:publish_operation2) do
+    {
+      operation_id: "on_crm_sugarcrm_contacts_contact_created",
+      summary: "SugarCRM Contact Created",
+      message: {
+        "$ref": "#/components/messages/crm_sugar_crm_contacts_contact_created_event",
+        payload: {"hurray"=>"world!!"}
+      },
+      bindings:  {
+        binding_version: '0.2.0',
+        timestamp: Time.now.to_i,
+        expiration: 1,
+        # cc: ['user.logs'],
+        priority: 1,
+        # bcc: ['external.audit'],
+        mandatory: true,
+        # delivery_mode: 2,
+        reply_to: 'crm.contact_created',
+        user_id: 'guest'
+      }
     }
   end
 
@@ -53,11 +87,35 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
     {
       operation_id: "crm_sugarcrm_contacts_contact_created",
       summary: "SugarCRM Contact Created",
-      message: {
-        "$ref": "#/components/messages/crm_sugar_crm_contacts_contact_created_event",
-        payload: {"type"=>"object"}
-      },
-      bindings: {} #operation bindings
+      bindings: {
+        binding_version: '0.2.0',
+        timestamp: true,
+        ack: true,
+        expiration: 1,
+        # cc: ['user.logs'],
+        priority: 1,
+        delivery_mode: 2,
+        # reply_to: 'crm.contact_created',
+        # user_id: 'enroll_app.system'
+      }
+    }
+  end
+
+  let(:subscribe_operation2) do
+    {
+      operation_id: "crm_sugarcrm_logger",
+      summary: "SugarCRM Logger",
+      bindings: {
+        binding_version: '0.2.0',
+        timestamp: true,
+        ack: true,
+        expiration: 1,
+        # cc: ['user.logs'],
+        priority: 1,
+        delivery_mode: 2,
+        # reply_to: 'crm.contact_created',
+        # user_id: 'enroll_app.system'
+      }
     }
   end
 
@@ -92,13 +150,20 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
     }
   end
 
-  let(:channels) { { channels: Hash[channel_id, channel_item] } }
+  let(:channel_item2) do
+    {
+      publish: publish_operation2,
+      subscribe: subscribe_operation2,
+      bindings: channel_bindings
+    }
+  end
 
   before { connection.connect unless connection.active? }
   after { connection.disconnect if connection.active? }
 
   let(:channel_proxy) do
     described_class.new(connection, channel_item)
+    described_class.new(connection, channel_item2)
   end
 
   context 'Adapter pattern methods are present' do
@@ -112,7 +177,6 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
   context 'When a connection and channel item passted' do
     it 'should create queues and exchanges' do
       channel = channel_proxy.subject
-
       expect(channel.queues).to be_present
       expect(channel.exchanges).to be_present
     end
