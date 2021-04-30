@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe EventSource::Protocols::Amqp::BunnyClient do
+RSpec.describe EventSource::Protocols::Amqp::BunnyConnectionProxy do
   let(:protocol) { :amqp }
   let(:url) { 'amqp://localhost:5672/' }
   let(:protocol_version) { '0.9.1' }
@@ -168,7 +168,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyClient do
       let(:result) { described_class.new(valid_server) }
       after { result.close }
       it 'should successfully connect to RabbitMQ Server' do
-        expect(result).to be_a EventSource::Protocols::Amqp::BunnyClient
+        expect(result).to be_a EventSource::Protocols::Amqp::BunnyConnectionProxy
         expect(result.connect).to be_truthy
         expect(result.active?).to be_truthy
       end

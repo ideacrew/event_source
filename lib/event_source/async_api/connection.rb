@@ -38,6 +38,9 @@ module EventSource
         @client.close
       end
 
+      # @param [Hash] args Protocol Server in hash form
+      # @param [Hash] args binding options for Protocol server
+      # @return Bunny::Session
       def add_channel(*args)
         channel_proxy = @client.add_channel(*args)
         async_api_channel = Channel.new(channel_proxy)

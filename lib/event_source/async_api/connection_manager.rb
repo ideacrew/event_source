@@ -12,15 +12,17 @@ module EventSource
         @connections = Hash.new
       end
 
-      def add_connection(server)
-        client_klass = protocol_klass_for(server[:protocol])
-        connection_uri = client_klass.connection_uri_for(server)
+      # @param [Hash] async_api_server Protocol Server in hash form
+      # @return [EventSource::AsyncApi::Connection] Connection
+      def add_connection(async_api_server)
+        client_klass = protocol_klass_for(async_api_server[:protocol])
+        connection_uri = client_klass.connection_uri_for(async_api_server)
 
         if connections.key? connection_uri
           raise EventSource::Protocols::Amqp::Error::DuplicateConnectionError,
                 "Connection already exists for #{connection_uri}"
         else
-          client = client_klass.new(server)
+          client = client_klass.new(async_api_server)
           connections[connection_uri] =
             EventSource::AsyncApi::Connection.new(client)
         end
@@ -40,7 +42,7 @@ module EventSource
       def protocol_klass_for(protocol)
         case protocol
         when :amqp, :amqps
-          EventSource::Protocols::Amqp::BunnyClient
+          EventSource::Protocols::Amqp::BunnyConnectionProxy
           # when :http, :https
         else
           raise EventSource::Protocols::Amqp::Error::UnknownConnectionProtocolError,

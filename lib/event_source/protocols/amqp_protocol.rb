@@ -8,7 +8,7 @@ require_relative 'amqp/bunny_message_proxy'
 require_relative 'amqp/bunny_exchange_proxy'
 require_relative 'amqp/bunny_queue_proxy'
 require_relative 'amqp/bunny_channel_proxy'
-require_relative 'amqp/bunny_client'
+require_relative 'amqp/bunny_connection_proxy'
 
 Dir[File.expand_path('lib/event_source/protocols/amqp/contracts/**/*.rb')]
       .each { |f| require(f) }

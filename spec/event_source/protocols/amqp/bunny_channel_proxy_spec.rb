@@ -32,7 +32,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
     }
   end
 
-  let(:client) { EventSource::Protocols::Amqp::BunnyClient.new(my_server) } 
+  let(:client) { EventSource::Protocols::Amqp::BunnyConnectionProxy.new(my_server) }
   let(:connection) { EventSource::AsyncApi::Connection.new(client) }
   
   let(:channel_id) { 'crm.contact_created' }

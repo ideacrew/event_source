@@ -8,7 +8,7 @@ module EventSource
       # @attr_reader [Hash] server_options Bibding options used to connect with broker server
       # @attr_reader [String] protocol_version AMQP protocol release supported by this broker client
       # @attr_reader [Bunny::Session] connection the server Connection object
-      class BunnyClient
+      class BunnyConnectionProxy
         attr_reader :connection_params,
                     :protocol_version,
                     :server_options,

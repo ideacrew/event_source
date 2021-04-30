@@ -15,15 +15,7 @@ module EventSource
         # @option opts [Hash] :rabbit_mq_exchange_bindings
         # @option opts [Hash] :rabbit_mq_queue_bindings
         # @return Bunny::Channel
-        def initialize(
-          bunny_connection_proxy,
-          async_api_channel_item,
-          options = {}
-        )
-          # @consumers = []
-          # @exchanges = []
-          # @queues = []
-          # @key = self.class.key_for(async_api_channel_item)
+        def initialize(bunny_connection_proxy, async_api_channel_item)
           @connection = bunny_connection_proxy.connection
           @subject = Bunny::Channel.new(connection).open
 
@@ -62,6 +54,7 @@ module EventSource
           manual_ack = subscribe_options[:ack]
 
           queue.subscribe({manual_ack: manual_ack}) do |delivery_info, properties, payload|
+
             puts "Received #{payload}, message properties are #{properties.inspect}"
           end
         end
@@ -76,8 +69,8 @@ module EventSource
 
           bind_queue(channel_bindings[:queue][:name], exchange) if exchange && queue
 
-          build_bunny_publish_for(exchange, async_api_channel_item[:publish]) if exchange
           build_bunny_subscriber_for(queue, async_api_channel_item[:subscribe]) if queue
+          build_bunny_publish_for(exchange, async_api_channel_item[:publish]) if exchange
         end
 
         def build_exchange(bindings)
