@@ -19,10 +19,20 @@ servers:
 channels:
   crm.contact_created:
     subscribe:
-      operationId: on_crm_contacts_contact_created
+      operationId: on_crm_contact_created
       summary: CRM Contact Created
       message:
         $ref: "#/components/messages/crm_contacts_contact_created_event"
+    bindings:
+      amqp:
+        is: :routing_key
+        binding_version: "0.2.0"
+        exchange:
+          name: "crm_contact_created"
+          type: :fanout
+          durable: true
+          auto_delete: true
+          vhost: "/"
   crm.sugar_crm.contacts.contact_created:
     publish:
       operationId: on_crm_sugarcrm_contacts_contact_created
@@ -38,6 +48,22 @@ channels:
         $ref: "#/components/messages/crm_sugar_crm_contacts_contact_created_event"
         payload:
           type: object
+    bindings:
+      amqp:
+        is: :routing_key
+        binding_version: '0.2.0'
+        queue:
+          name: 'on_crm_sugarcrm_contacts_contact_created'
+          durable: true
+          auto_delete: true
+          vhost: '/'
+          exclusive: true
+        exchange:
+          name: 'crm_sugarcrm_contacts_contact_created'
+          type: :fanout
+          durable: true
+          auto_delete: true
+          vhost: '/'
 components:
   messages:
     crm_contacts_contact_created_event:

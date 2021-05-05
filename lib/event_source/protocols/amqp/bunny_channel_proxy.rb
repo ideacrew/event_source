@@ -16,10 +16,11 @@ module EventSource
         # @option opts [Hash] :rabbit_mq_queue_bindings
         # @return Bunny::Channel
         def initialize(bunny_connection_proxy, async_api_channel_item)
-          @connection = bunny_connection_proxy.connection
-          @subject = Bunny::Channel.new(connection).open
+          # @connection = bunny_connection_proxy
+          # binding.pry
+          @subject =  Bunny::Channel.new(bunny_connection_proxy).open
 
-          build_bunny_channel_for(async_api_channel_item)
+          build_bunny_channel_for(async_api_channel_item) unless async_api_channel_item.empty?
         end
 
         def build_bunny_publish_for(exchange, publish_options)
@@ -70,7 +71,7 @@ module EventSource
           bind_queue(channel_bindings[:queue][:name], exchange) if exchange && queue
 
           build_bunny_subscriber_for(queue, async_api_channel_item[:subscribe]) if queue
-          build_bunny_publish_for(exchange, async_api_channel_item[:publish]) if exchange
+          # build_bunny_publish_for(exchange, async_api_channel_item[:publish]) if exchange
         end
 
         def build_exchange(bindings)

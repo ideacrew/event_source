@@ -13,7 +13,6 @@ module EventSource
       # bindings to define them
       # @return [ChannelItem]
       attribute :channels, Types::Hash.meta(omittable: false)
-      # attribute :channel_item_names, Types::Array.of(String) # => channels.keys
     end
   end
 end

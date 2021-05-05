@@ -17,9 +17,9 @@ module EventSource
         add_channel
       ]
 
-      def initialize(protocol_client)
-        @client = protocol_client
-        @channels = []
+      def initialize(connection_proxy)
+        @client = connection_proxy
+        @channels = {}
       end
 
       def connection
@@ -38,13 +38,21 @@ module EventSource
         @client.close
       end
 
+      # async api channels entity
+      def add_channels(async_api_channels)
+        async_api_channels[:channels].each do |key, async_api_channel_item|
+          @channels[key] = add_channel(async_api_channel_item) unless @channels.key?(key)
+        end
+
+        @channels
+      end
+
       # @param [Hash] args Protocol Server in hash form
       # @param [Hash] args binding options for Protocol server
       # @return Bunny::Session
       def add_channel(*args)
         channel_proxy = @client.add_channel(*args)
         async_api_channel = Channel.new(channel_proxy)
-        @channels.push async_api_channel
       end
 
       def connection_params
