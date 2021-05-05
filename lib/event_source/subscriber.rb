@@ -71,7 +71,7 @@ module EventSource
       end
 
       def registry(options)
-        Subscriber.subscriber_registry["#{options[:publisher_key]}_#{options[:event_key]}"] = options
+        Subscriber.subscriber_container["#{options[:publisher_key]}_#{options[:event_key]}"] = options
       end
 
       def adapter

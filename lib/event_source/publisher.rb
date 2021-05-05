@@ -29,7 +29,7 @@ module EventSource
     # @api private
     def initialize(id)
       @id = id
-      super
+      # super
     end
 
     def included(base)

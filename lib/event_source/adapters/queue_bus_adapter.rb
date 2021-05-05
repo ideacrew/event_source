@@ -65,7 +65,7 @@ module EventSource
 
       def load_components(root_path)
         %w[publishers subscribers].each do |folder|
-          Dir["#{root_path}/#{folder}/*.rb"].sort.each {|file| require file }
+          Dir["#{root_path}/#{folder}/**/*.rb"].sort.each {|file| require file }
         end
 
         EventSource::Subscriber.register_subscribers

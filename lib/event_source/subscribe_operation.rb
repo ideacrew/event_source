@@ -7,8 +7,8 @@ module EventSource
     attr_reader :operation_key, :bindings, :traits, :event
     attr_accessor :summary, :description, :tags
 
-    def initialize(key)
-      @operation_key = key
+    def initialize
+      # @operation_key = key
     end
 
     # subscribe operation bindings:
