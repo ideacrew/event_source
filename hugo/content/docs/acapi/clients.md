@@ -52,11 +52,11 @@ The standard retry method requires the following objects to be created:
 {{<mermaid align="left">}}
 graph LR;
   CQueue[Client Queue] -->|4 - explicitly dead lettered| RetryExchange[Client Retry Exchange];
+  CQueue -->|3 - max errors reached| ErrorExchange[Client Error Exchange];
+  ErrorExchange -->|fanout binding| ErrorQueue[Client Error Queue];
   RetryExchange -->|5 - fanout binding| RetryQueue[Client Retry Queue];
   RetryQueue -->|6 - deadletter via ttl| RetryRequeueExchange[Client Retry/Requeue Exchange];
   RetryRequeueExchange -->|7 - fanout binding| CQueue;
-  CQueue -->|3 - max errors reached| ErrorExchange[Client Error Exchange];
-  ErrorExchange -->|fanout binding| ErrorQueue[Client Error Queue];
 {{< /mermaid >}}
 
 The standard RabbitMQ/AMQP retry workflow consists of the following steps:
