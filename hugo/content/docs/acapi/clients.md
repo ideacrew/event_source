@@ -1,6 +1,7 @@
 ---
 title: Clients
 mermaid: true
+description: Describes AMQP clients and their conventions.
 
 ---
 

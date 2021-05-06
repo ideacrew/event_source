@@ -1,6 +1,7 @@
 ---
 title: Exchanges
 mermaid: true
+description: Describes how exchanges are configured and our routing patterns.
 
 ---
 

@@ -1,5 +1,6 @@
 ---
 title: Worker Hosts
+description: Describes how client workers are run and managed.
 
 ---
 

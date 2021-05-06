@@ -1,6 +1,7 @@
 ---
 title: AMQP Basics
 mermaid: truet
+description: "Describes basic concepts in AMQP."
 
 ---
 
