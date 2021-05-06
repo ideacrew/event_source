@@ -28,6 +28,7 @@ module EventSource
 
     # @api private
     def initialize(id)
+      super()
       @id = id
       # super
     end
