@@ -1,0 +1,60 @@
+asyncapi: "2.0.0"
+info:
+  title: Google Map Geocoder
+  version: "0.1.0"
+  description: An example documented AsyncApi HTTP service
+
+servers:
+  production:
+    url: https://maps.googleapis.com
+    protocol: http
+    protocolVersion: "0.1.0"
+    description: Google Server
+    security:
+      - apiKey: []
+
+defaultContentType: application/json
+
+channels:
+  maps/api/geocode/json:
+    subscribe:
+      message:
+        $ref: "#/components/messages/google_message"
+
+      bindings:
+        http:
+          type: request
+          method: GET
+          query:
+            type: object
+            required:
+              - address
+              - key
+            properties:
+              address:
+                type: string
+                description: The site address to find the corresponding lat/lon
+              key:
+                type: string
+                description: google API key
+            additionalProperties: false
+          bindingVersion: "0.1.0"
+components:
+  messages:
+    google_message:
+      payload:
+        $ref: "#/components/schemas/google_schema"
+  schemas:
+    google_schema:
+      properties:
+        key:
+          type: string
+        email:
+          type: string
+          format: email
+          description: user's email
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: user
+      description: Provide your API key as the user and leave the password empty.

@@ -1,0 +1,124 @@
+asyncapi: "2.0.0"
+info:
+  title: Medicaid Gateway Service
+  version: "0.1.0"
+  description: An example documented AsyncApi service
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  production:
+    url: https://production.ideacrew.com/medicaid_gateway
+    protocol: amqp
+    protocolVersion: "0.9.2"
+    description: Medicaid Gateway Production Server
+    variables:
+      port:
+        description: Secure connection (TLS) is available through port 8883.
+        default: "1883"
+        enum:
+          - "1883"
+          - "8883"
+    security:
+      - apiKey: []
+      - supportedOauthFlows:
+          - eligibility_determination:post
+          - eligibility_determinations:get
+      - openIdConnectWellKnown: []
+
+defaultContentType: application/json
+
+channels:
+  magi_medicaid:
+    publish:
+      operationId: eligibility_determination
+      summary: Post MAGI Medicaid eligibility determination results
+      message:
+        $ref: "#/components/messages/magi_medicaid_output"
+    bindings:
+      amqp:
+        is: routingKey
+        exchange:
+          name: eligibility_determination
+          type: direct
+          durable: true
+          autoDelete: false
+          vhost: /
+        bindingVersion: 0.1.0
+        queue:
+          name: on_eligibility_determination
+          durable: true
+          exclusive: true
+          autoDelete: false
+          vhost: /
+
+components:
+  messages:
+    magi_medicaid_output:
+      name: magi_medicaid_result
+      title: MAGI Medicaid Result
+      summary: Inform enterprise services outcome of a MAGI Medicase eligibility determination
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/family_payload"
+
+  schemas:
+    family_payload:
+      type: object
+      required:
+        - hbx_id
+        - family_members
+        - households
+      properties:
+        hbx_id:
+          type: string
+          description: HBX-assigned unique identifier for this family
+        family_members:
+          type: string
+          format: array
+          description: All current and past members of this family
+        households:
+          type: string
+          format: array
+          description: Collection of physical households over time with family_member composition
+        renewal_consent_through_year:
+          type: integer
+          format: int32
+          minimum: 2013
+          description: The calendar year through which applicant has granted automatic access to eligibility information for benefit renetermination
+
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: user
+      description: Provide your API key as the user and leave the password empty.
+    supportedOauthFlows:
+      type: oauth2
+      description: Flows to support OAuth 2.0
+      flows:
+        implicit:
+          authorizationUrl: "https://authserver.ideacrew.com/auth"
+          scopes:
+            "eligibility_determination:post": Ability to post eligibility determination results
+            "eligibility_determinations:get": Ability to receive eligibility determination events
+        password:
+          tokenUrl: "https://authserver.ideacrew.com/token"
+          scopes:
+            "eligibility_determination:post": Ability to post r;ohono;oyu determination results
+            "eligibility_determinations:get": Ability to switch lights off
+        clientCredentials:
+          tokenUrl: "https://authserver.ideacrew.com/token"
+          scopes:
+            "eligibility_determination:post": Ability to post r;ohono;oyu determination results
+            "eligibility_determinations:get": Ability to switch lights off
+        authorizationCode:
+          authorizationUrl: "https://authserver.ideacrew.com/auth"
+          tokenUrl: "https://authserver.ideacrew.com/token"
+          refreshUrl: "https://authserver.ideacrew.com/refresh"
+          scopes:
+            "eligibility_determination:post": Ability to post r;ohono;oyu determination results
+            "eligibility_determinations:get": Ability to switch lights off
+    openIdConnectWellKnown:
+      type: openIdConnect
+      openIdConnectUrl: "https://authserver.ideacrew.com/.well-known"
