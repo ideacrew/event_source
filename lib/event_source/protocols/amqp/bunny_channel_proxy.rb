@@ -18,20 +18,22 @@ module EventSource
         def initialize(bunny_connection_proxy, async_api_channel_item)
           # @connection = bunny_connection_proxy
           # binding.pry
-          @subject =  Bunny::Channel.new(bunny_connection_proxy).open
+          @subject = Bunny::Channel.new(bunny_connection_proxy).open
 
-          build_bunny_channel_for(async_api_channel_item) unless async_api_channel_item.empty?
+          unless async_api_channel_item.empty?
+            build_bunny_channel_for(async_api_channel_item)
+          end
         end
 
         def build_bunny_publish_for(exchange, publish_options)
           return unless publish_options
+
           # :timestamp (Integer) — A timestamp associated with this message
           # :expiration (Integer) — Expiration time after which the message will be deleted
           # :mandatory (Boolean) — Should the message be returned if it cannot be routed to any queue?
           # :reply_to (String) — Queue name other apps should send the response to
           # :priority (Integer) — Message priority, 0 to 9. Not used by RabbitMQ, only applications
           # :user_id (String) — Optional user ID. Verified by RabbitMQ against the actual connection username
-
 
           # :routing_key (String) — Routing key
           # :persistent (Boolean) — Should the message be persisted to disk?
@@ -42,11 +44,13 @@ module EventSource
           # :message_id (String) — Any message identifier
           # :app_id (String) — Optional application ID
 
-          exchange.publish(publish_options[:message][:payload].to_json, publish_options[:bindings])
+          exchange.publish(
+            publish_options[:message][:payload].to_json,
+            publish_options[:bindings]
+          )
         end
 
         def build_bunny_subscriber_for(queue, subscribe_options)
-
           # TODO: remap exclusive? at channel bindings level for amqp
           #   exclusive
           #   on_cancellation
@@ -54,8 +58,9 @@ module EventSource
           #   arguments
           manual_ack = subscribe_options[:ack]
 
-          queue.subscribe({manual_ack: manual_ack}) do |delivery_info, properties, payload|
-
+          queue.subscribe(
+            { manual_ack: manual_ack }
+          ) do |delivery_info, properties, payload|
             puts "Received #{payload}, message properties are #{properties.inspect}"
           end
         end
@@ -65,12 +70,24 @@ module EventSource
           # Bunny::Channel.new(connection, nil, work_pool, options)
           # channel = Bunny::Channel.new(connection)
           channel_bindings = async_api_channel_item[:bindings][:amqp]
-          exchange = build_exchange(channel_bindings[:exchange]) if channel_bindings[:exchange]
-          queue = build_queue(channel_bindings[:queue]) if channel_bindings[:queue]
+          exchange =
+            build_exchange(channel_bindings[:exchange]) if channel_bindings[
+            :exchange
+          ]
+          queue = build_queue(channel_bindings[:queue]) if channel_bindings[
+            :queue
+          ]
 
-          bind_queue(channel_bindings[:queue][:name], exchange) if exchange && queue
+          if exchange && queue
+            bind_queue(channel_bindings[:queue][:name], exchange)
+          end
 
-          build_bunny_subscriber_for(queue, async_api_channel_item[:subscribe]) if queue
+          if queue
+            build_bunny_subscriber_for(
+              queue,
+              async_api_channel_item[:subscribe]
+            )
+          end
           # build_bunny_publish_for(exchange, async_api_channel_item[:publish]) if exchange
         end
 
@@ -105,12 +122,8 @@ module EventSource
           Bunny::Exchange.new(@subject, type, exchange_name, options)
         end
 
-        # def self.key_for(channel_item)
-        #   channel_item.key.to_s
-        # end
-
         def method_missing(name, *args)
-          @channel.send(name, *args)
+          @subject.send(name, *args)
         end
 
         # crm.contact_created:

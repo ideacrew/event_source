@@ -11,16 +11,14 @@ require_relative 'amqp/bunny_channel_proxy'
 require_relative 'amqp/bunny_connection_proxy'
 
 Dir[File.expand_path('lib/event_source/protocols/amqp/contracts/**/*.rb')]
-      .each { |f| require(f) }
+  .each { |f| require(f) }
 
 module EventSource
-  module AsyncApi
-    module Protocols
-      # Namespace for classes and modules that use AsyncAPI to handle message
-      # exchange using AMQP protcol
-      # @since 0.4.0
-      module Amqp
-      end
+  module Protocols
+    # Namespace for classes and modules that use AsyncAPI to handle message
+    # exchange using AMQP protcol
+    # @since 0.4.0
+    module Amqp
     end
   end
 end

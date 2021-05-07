@@ -43,9 +43,10 @@ module EventSource
         case protocol
         when :amqp, :amqps
           EventSource::Protocols::Amqp::BunnyConnectionProxy
-          # when :http, :https
+        when :http, :https
+          EventSource::Protocols::Http::FaradayConnectionProxy
         else
-          raise EventSource::Protocols::Amqp::Error::UnknownConnectionProtocolError,
+          raise EventSource::AsyncApi::Error::UnknownConnectionProtocolError,
                 "unknown protocol: #{protocol}"
         end
       end

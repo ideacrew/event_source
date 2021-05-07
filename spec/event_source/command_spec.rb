@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-        require 'yaml'
+require 'yaml'
 
 module EventSource
   class InvalidCommand
@@ -14,9 +14,7 @@ module EventSource
 end
 
 RSpec.describe EventSource::Command do
-  let(:invalid_command) do
-    EventSource::InvalidCommand
-  end
+  let(:invalid_command) { EventSource::InvalidCommand }
 
   context '.event' do
     let(:organization_params) do
@@ -30,8 +28,8 @@ RSpec.describe EventSource::Command do
 
     context 'with an invalid event_key' do
       it 'should raise an error' do
-
-        pet_array = YAML.load(File.read("spec/support/async_api_example.yml"))
+        pet_array =
+          YAML.load(File.read('spec/support/asyncapi/amqp_example_1.yml'))
 
         result = invalid_command.new.call
         expect(result).to be_failure

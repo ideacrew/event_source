@@ -10,6 +10,7 @@ PATH
       dry-struct (~> 1.4)
       dry-types (~> 1.5)
       dry-validation (~> 1.6)
+      faraday
       mime-types
       resque-bus (~> 0.7.0)
 
@@ -141,6 +142,15 @@ GEM
     erubi (1.10.0)
     et-orbi (1.2.4)
       tzinfo
+    faraday (1.4.1)
+      faraday-excon (~> 1.1)
+      faraday-net_http (~> 1.0)
+      faraday-net_http_persistent (~> 1.1)
+      multipart-post (>= 1.2, < 3)
+      ruby2_keywords (>= 0.0.4)
+    faraday-excon (1.1.0)
+    faraday-net_http (1.0.1)
+    faraday-net_http_persistent (1.1.0)
     fugit (1.4.5)
       et-orbi (~> 1.1, >= 1.1.8)
       raabro (~> 1.4)
@@ -169,6 +179,7 @@ GEM
       mongo (>= 2.10.5, < 3.0.0)
     mono_logger (1.1.1)
     multi_json (1.15.0)
+    multipart-post (2.1.1)
     mustermann (1.1.1)
       ruby2_keywords (~> 0.0.1)
     nio4r (2.5.7)
