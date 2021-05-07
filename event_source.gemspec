@@ -48,7 +48,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'faraday'
 
   # TODO: Change to development dependency
-  spec.add_development_dependency 'activesupport'
   spec.add_development_dependency 'database_cleaner'
   spec.add_development_dependency 'mongoid'
   spec.add_development_dependency 'yard'

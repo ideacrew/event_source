@@ -6,7 +6,7 @@ source "https://rubygems.org"
 gemspec
 
 group :development, :test do
-  gem "rails"
+  gem "rails", '~> 6.1.3.2'
   gem "rspec-rails"
   gem "pry",        platform: :mri
   gem "pry-byebug", platform: :mri
