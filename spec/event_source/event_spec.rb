@@ -68,21 +68,16 @@ RSpec.describe EventSource::Event do
     # end
 
     context 'and the required publisher_key provided is valid' do
-      let(:valid_event_class) do
-        EventSource::MyValidEvent
-      end
+      let(:valid_event_class) { EventSource::MyValidEvent }
 
       subject { valid_event_class.new }
+
       # it 'should initialize without error' do
       #   expect(subject.publisher_class).to be_a(Parties::OrganizationPublisher)
       # end
 
-      it 'should have default metadata values' do
-        metadata = subject.headers
-
-        expect(metadata[:version]).to be_present
-        expect(metadata[:event_key]).to be_present
-        # expect(metadata[:created_at]).to be_present
+      it 'should have an event_key' do
+        expect(subject.event_key).to eq 'event_source.my_valid_event'
       end
     end
 
@@ -94,9 +89,7 @@ RSpec.describe EventSource::Event do
   end
 
   context 'An initialized Event class with defined attribute_keys' do
-    let(:event_class) do
-      EventSource::MyEvent
-    end
+    let(:event_class) { EventSource::MyEvent }
 
     it 'keys should be initialized for each attribute' do
       expect(event_class.new.attribute_keys).to eq %i[hbx_id fein entity_kind]
@@ -139,17 +132,13 @@ RSpec.describe EventSource::Event do
       it 'should ignore extra attributes' do
         extra_keys = attributes.keys - subject.attribute_keys
 
-        extra_keys.each do |key|
-          expect(subject.payload.key?(key)).to be_falsey
-        end
+        extra_keys.each { |key| expect(subject.payload.key?(key)).to be_falsey }
       end
     end
   end
 
   context 'An initialized Event class with no attribute_keys' do
-    let(:event_class) do
-      EventSource::MyEventTwo
-    end
+    let(:event_class) { EventSource::MyEventTwo }
 
     subject { event_class.new }
     it 'attribute_keys should be empty' do
@@ -195,9 +184,7 @@ RSpec.describe EventSource::Event do
   end
 
   context 'An initialized Event class with attribute_keys' do
-    let(:event_class) do
-      EventSource::MyEventThree
-    end
+    let(:event_class) { EventSource::MyEventThree }
 
     context 'with attributes passed' do
       let(:attributes) do
@@ -213,11 +200,11 @@ RSpec.describe EventSource::Event do
 
       it 'attribute_keys should be present' do
         expect(subject.attribute_keys).to eq %i[
-          hbx_id
-          entity_kind
-          fein
-          legal_name
-        ]
+             hbx_id
+             entity_kind
+             fein
+             legal_name
+           ]
       end
       it '#event_errors should be empty' do
         expect(subject.event_errors).to be_empty
@@ -231,20 +218,11 @@ RSpec.describe EventSource::Event do
     end
 
     context 'with attribute setter' do
-      let(:attributes) do
-        {
-          hbx_id: '553234',
-          fein: '546232323'
-        }
-      end
+      let(:attributes) { { hbx_id: '553234', fein: '546232323' } }
 
-      let(:metadata) do
-        { event_key: 'parties.organization.created' }
-      end
+      let(:metadata) { { event_key: 'parties.organization.created' } }
 
-      subject do
-        event_class.new(attributes: attributes, metadata: metadata)
-      end
+      subject { event_class.new(attributes: attributes, metadata: metadata) }
 
       context 'when a name value pair is passed' do
         let(:legal_name) { 'Test Corp LLC' }
@@ -259,17 +237,11 @@ RSpec.describe EventSource::Event do
     end
 
     context 'with attribute getter' do
-      let(:attributes) do
-        {
-          hbx_id: '553234',
-          fein: '546232323'
-        }
-      end
+      let(:attributes) { { hbx_id: '553234', fein: '546232323' } }
 
       subject { event_class.new(attributes: attributes) }
 
       context 'when attribute name is passed' do
-
         it 'should return the value' do
           expect(subject[:fein]).to eq attributes[:fein]
           expect(subject[:hbx_id]).to eq attributes[:hbx_id]
