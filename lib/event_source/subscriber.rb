@@ -8,25 +8,32 @@ module EventSource
   # Subscribes to the events
   class Subscriber < Module
   # module Subscriber
-    include Dry::Equalizer(:exchange)
+    include Dry::Equalizer(:protocol, :exchange)
 
-    attr_reader :exchange, :protocol
+    attr_reader :protocol, :exchange
 
+    # @api private
+    def self.subscriber_container
+      @subscriber_container ||= Concurrent::Map.new
+    end
 
     def self.[](exchange_ref)
       # TODO: validate publisher already exists
       # raise EventSource::Error::PublisherAlreadyRegisteredError.new(id) if registry.key?(id)
 
-      new(exchange_ref)
+      new(exchange_ref.first[0], exchange_ref.first[1])
     end
 
     # @api private
-    def initialize(exchange_ref)
-      @exchange = exchange_ref.first[1]
-      @protocol = exchange_ref.first[0]
+    def initialize(protocol, exchange)
+      super()
+      @protocol = protocol
+      @exchange = exchange
     end
 
     def included(base)
+      self.class.subscriber_container[base] = {exchange: exchange, protocol: protocol}
+
       base.extend ClassMethods
 
       TracePoint.trace(:end) do |t|
@@ -41,11 +48,7 @@ module EventSource
     module ClassMethods
  
       def subscribe(queue_name, &block)
-        # verify_registered_event(publisher_key, queue_name)
-
-        exchange_name = ancestor_by_name('EventSource::Subscriber').exchange
         channel_name = exchange_name.match(/^(.*).exchange$/)[1]
-
         channel = connection.channels[channel_name.to_sym].first
         exchange = channel.exchanges[exchange_name]
         queue = channel.queues[queue_name.to_s]
@@ -79,29 +82,19 @@ module EventSource
         connection_manager = EventSource::ConnectionManager.instance
 
         connections = connection_manager.connections.reduce([]) do |connections, (connection_uri, connection_instance)|
-          connections.push(connection_instance) if URI.parse(connection_uri).scheme.to_sym == ancestor_by_name('EventSource::Subscriber').protocol
+          connections.push(connection_instance) if URI.parse(connection_uri).scheme.to_sym == protocol
         end
 
         connections.first
       end
 
-
-      def ancestor_by_name(name)
-        ancestors.detect{|ancestor| ancestor.class.name == name}
+      def exchange_name
+        EventSource::Subscriber.subscriber_container[self][:exchange]
       end
 
-      # def verify_registered_event(publisher_key, event_key)
-      #   channel_key = [publisher_key, event_key].join('.')
-
-      #   # app_key  = EventSource::Channel.app_key(channel_key)
-      #   # channels = EventSource.connection.channels[app_key]
-      #   # raise EventSource::Error::PublisherNotFound, "unable to find publisher '#{publisher_key}'" if channels.empty?
-
-      #   matched = EventSource.connection.channels.values.any? {|channel_items| channel_items[channel_key].present? }
-
-      #   # matched = channels[channel_key]
-      #   raise EventSource::Error::RegisteredEventNotFound, "unable to find registered event '#{event_key}'" unless matched
-      # end
+      def protocol
+        EventSource::Subscriber.subscriber_container[self][:protocol]
+      end
     end
   end
 end
