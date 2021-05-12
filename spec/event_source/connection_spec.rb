@@ -4,8 +4,8 @@ require 'spec_helper'
 
 RSpec.describe EventSource::Connection do
   context 'A Connection instance' do
-    let(:async_api_file) { Pathname.pwd.join('spec', 'support', 'async_api_example.yml') }
-    let(:channels) { EventSource::AsyncApi::Operations::Channels::Load.new.call(path: async_api_file).value! }
+    let(:async_api_file) { Pathname.pwd.join('spec', 'support', 'async_api_files', 'async_api_example.yml') }
+    let(:channel) { EventSource::AsyncApi::Operations::Channels::LoadPath.new.call(path: async_api_file).value! }
     let(:server_options) {
       {
         url: 'amqp://localhost:5672/',
@@ -16,18 +16,14 @@ RSpec.describe EventSource::Connection do
     }
 
     let(:connection) {
-      EventSource.connection
-      # connection_manager = EventSource::AsyncApi::ConnectionManager.instance
-      # async_api_connection = connection_manager.add_connection(server_options)
-      # async_api_connection.connect
-      # async_api_connection
+      connection_manager = EventSource::ConnectionManager.instance
+      connection_manager.add_connection(server_options)
     }
 
     context 'when channels params passed' do
 
       it 'should create individual channels' do
-        binding.pry
-        connection.add_channels(channels)
+        connection.add_channels(channel.deep_symbolize_keys)
       end
     end
   end
