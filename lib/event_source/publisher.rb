@@ -4,9 +4,9 @@ require 'dry/inflector'
 require 'concurrent/map'
 
 module EventSource
-  # Publisher mixin to register events and create channels
+  # Mixin to register and publish Events
   class Publisher < Module
-    include Dry::Equalizer(:id)
+    include Dry.Equalizer(:id)
 
     # Internal publisher registry, which is used to identify them globally
     #
@@ -57,7 +57,7 @@ module EventSource
       # end
 
       def register_event(event_key, options = {})
-        @events = {} unless defined? @events
+        @events = {} unless defined?(@events)
         @events[event_key] = options
         self
       end

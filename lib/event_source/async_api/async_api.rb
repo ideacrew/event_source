@@ -1,6 +1,18 @@
 # frozen_string_literal: true
 
 module EventSource
+  # EventSourse uses AsyncAPI to configure and document brokered communication
+  # between system components.  The
+  # [AsyncAPI specification](https://www.asyncapi.com/docs/specifications/2.0.0)
+  # provides a protocol-agnostic
+  # structure for organizing values needed to establish network connectivity and
+  # message exchange, including: {Server}, {Channels}, {Exchange}, and {Queue}.
+  #
+  # Using EventSource with valid AsyncAPi files, applications may automatically
+  # connect and exchange messages with other network-enabled components and
+  # services.
+  #
+  # See {Protocols} for the data communication protocols EventSource supports.
   module AsyncApi
     require 'event_source/uris/amqp_uri'
     require_relative 'error'

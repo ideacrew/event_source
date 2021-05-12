@@ -16,8 +16,8 @@ Dir[File.expand_path('lib/event_source/protocols/amqp/contracts/**/*.rb')]
 
 module EventSource
   module Protocols
-    # Namespace for classes and modules that use AsyncAPI to handle message
-    # exchange using AMQP protcol
+    # Namespace for classes and modules that use AsyncAPI to manage message
+    # exchange using the AMQP protcol
     # @since 0.4.0
     module Amqp
     end
