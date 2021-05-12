@@ -14,7 +14,7 @@ require 'dry/monads/result'
 require 'dry/validation'
 require 'dry-struct'
 
-require 'event_source/logging'
+# require 'event_source/logging'
 require 'event_source/uris/uri'
 require 'event_source/types'
 require 'event_source/async_api/types'
@@ -25,6 +25,7 @@ require 'event_source/async_api/async_api'
 require 'active_support/all'
 require 'event_source/railtie' if defined?(Rails)
 require 'event_source/connection'
+require 'event_source/connection_manager'
 require 'event_source/server'
 require 'event_source/channel'
 require 'event_source/publish_operation'
@@ -37,6 +38,7 @@ require 'event_source/publisher'
 require 'event_source/event'
 require 'event_source/subscriber'
 require 'event_source/adapters/queue_bus_adapter'
+require 'event_source/adapters/amqp_adapter'
 
 # Event source provides ability to compose, publish and subscribe to events
 module EventSource
@@ -74,4 +76,4 @@ module EventSource
   end
 end
 
-EventSource.connection = EventSource::Server.new_connection
+# EventSource.connection = EventSource::Server.new_connection

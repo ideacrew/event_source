@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe EventSource::AsyncApi::ConnectionManager do
+RSpec.describe EventSource::ConnectionManager do
   context 'A ConnectionManager Singleton instance' do
     let(:connection_manager) { described_class.instance }
     it 'should successfully initialize if there are no other ConnectionManagers are present' do
@@ -35,7 +35,7 @@ RSpec.describe EventSource::AsyncApi::ConnectionManager do
         it 'should raise an error' do
           expect {
             connection_manager.add_connection(invalid_server)
-          }.to raise_error EventSource::AsyncApi::Error::UnknownConnectionProtocolError
+          }.to raise_error EventSource::Protocols::Amqp::Error::UnknownConnectionProtocolError
         end
       end
 
@@ -56,7 +56,7 @@ RSpec.describe EventSource::AsyncApi::ConnectionManager do
         it 'should add a new connection' do
           expect(
             connection_manager.add_connection(my_server)
-          ).to be_an_instance_of EventSource::AsyncApi::Connection
+          ).to be_an_instance_of EventSource::Connection
         end
 
         context 'and connections are present' do
@@ -65,7 +65,7 @@ RSpec.describe EventSource::AsyncApi::ConnectionManager do
           it 'should have a connection' do
             expect(
               connection_manager.connections[connection_url]
-            ).to be_an_instance_of EventSource::AsyncApi::Connection
+            ).to be_an_instance_of EventSource::Connection
           end
 
           context "and a connection is added that's already present" do

@@ -3,10 +3,24 @@
 module EventSource
   # Server interface
   class Server
+    
     def connection
       # returns EventSource::Connection instance
       return @connection if defined?(@connection)
-      @connection = EventSource::Connection.new
+      # if EventSource.adapter.is_a?(EventSource::Adapters::AmqpAdapter)
+      #   # server_options = {
+      #   #     url: 'amqp://localhost:5672/',
+      #   #     protocol: :amqp,
+      #   #     protocol_version: '0.9.1',
+      #   #     description: 'Development RabbitMQ Server'
+      #   #   }
+
+      #   # connection_proxy = EventSource::Protocols::Amqp::BunnyConnectionProxy.new(server_options)
+      #   connection_manager = EventSource::AsyncApi::ConnectionManager.new
+      #   @connection = connection_manager.add_connection(server_options)
+      # else
+        @connection = EventSource::Connection.new
+      # end
     end
 
     def self.new_connection

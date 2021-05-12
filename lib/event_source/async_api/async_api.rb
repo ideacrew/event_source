@@ -11,8 +11,6 @@ module EventSource
     require_relative 'tag'
     require_relative 'component'
     require_relative 'contact'
-    require_relative 'channel'
-    require_relative 'connection'
     require_relative 'info'
     require_relative 'message_trait'
     require_relative 'message'
@@ -27,7 +25,6 @@ module EventSource
     require_relative 'server_binding'
     require_relative 'server'
     require_relative 'service'
-    require_relative 'connection_manager'
     require_relative 'contracts/contract'
 
     Dir[File.expand_path('lib/event_source/async_api/contracts/**/*.rb')]

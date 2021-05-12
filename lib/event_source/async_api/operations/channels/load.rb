@@ -8,35 +8,24 @@ module EventSource
         class Load
           send(:include, Dry::Monads[:result, :do, :try])
 
-          def call(path:)
-            file_io  = yield read(path)
-            params   = yield deserialize(file_io)
-            channels = yield create(params)
-
+          def call(dir:)
+            paths = yield list_paths(dir)
+            channels  = yield load(paths)
+      
             Success(channels)
           end
 
           private
 
-          def read(path)
+          def list_paths(dir)
             Try do
-              ::File.read(path)
+              ::Dir[::File.join(dir, '**', '*')].reject { |p| ::File.directory? p }
             end.to_result
           end
 
-          def deserialize(file_io)
-            Try do 
-              YAML.load(file_io)
-            end.to_result
-          end
-
-          def create(params)
+          def load(paths)
             Try do
-              channels_params = {}
-              channels_params[:channels] = params['channels'].deep_symbolize_keys
-              result = Create.new.call(channels_params)
-              return result if result.failure?
-              result.value!
+              paths.collect{|path| LoadPath.new.call(path: path).value! }
             end.to_result
           end
         end

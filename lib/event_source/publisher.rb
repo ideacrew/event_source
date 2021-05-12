@@ -20,16 +20,19 @@ module EventSource
 
     attr_reader :id
 
-    def self.[](id)
+    def self.[](exchange_ref)
       # TODO: validate publisher already exists
       # raise EventSource::Error::PublisherAlreadyRegisteredError.new(id) if registry.key?(id)
-      new(id)
+
+
+      new(exchange_ref[0], exchange_ref[1])
     end
 
     # @api private
-    def initialize(id)
-      @id = id
-      super
+    def initialize(protocol, exchange_name)
+      @id = exchange_name
+      @protocol = protocol
+      # super
     end
 
     def included(base)
@@ -59,12 +62,38 @@ module EventSource
         self
       end
 
+      def publisher_key
+        EventSource::Publisher.publisher_container.key(self)
+      end
+
       def register
         # FIXME: .key works only for Ruby 1.9 or later
-        publisher_key = EventSource::Publisher.publisher_container.key(self)
-        events.each do |event_key, options|
-          EventSource.connection.create_channel(publisher_key, event_key, options)
-        end
+        # puts connection
+        # puts exchange.inspect
+
+        # events.each do |event_key, options|
+        #   # EventSource.connection.create_channel(publisher_key, event_key, options)
+        # end
+      end
+
+      def publish(event)
+        # exchange.publish(event.payload)
+      end
+
+      def connection
+        connection_manager = EventSource::ConnectionManager.instance
+        connection_manager.connections.values.first
+      end
+
+      def channel
+        channel_name = publisher_key.match(/(.*)\.exchange$/)[1]
+        puts "------>>>>#{connection.channels}"
+
+        connection.channels[channel_name.to_sym].first
+      end
+
+      def exchange
+        channel.exchanges[publisher_key]
       end
     end
 

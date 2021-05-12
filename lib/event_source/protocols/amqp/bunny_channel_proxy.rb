@@ -16,13 +16,8 @@ module EventSource
         # @option opts [Hash] :rabbit_mq_queue_bindings
         # @return Bunny::Channel
         def initialize(bunny_connection_proxy, async_api_channel_item)
-          # @connection = bunny_connection_proxy
-          # binding.pry
           @subject = Bunny::Channel.new(bunny_connection_proxy).open
-
-          unless async_api_channel_item.empty?
-            build_bunny_channel_for(async_api_channel_item)
-          end
+          build_bunny_channel_for(async_api_channel_item) unless async_api_channel_item.empty?
         end
 
         def build_bunny_publish_for(exchange, publish_options)
@@ -82,12 +77,13 @@ module EventSource
             bind_queue(channel_bindings[:queue][:name], exchange)
           end
 
-          if queue
-            build_bunny_subscriber_for(
-              queue,
-              async_api_channel_item[:subscribe]
-            )
-          end
+          # if queue
+          #   build_bunny_subscriber_for(
+          #     queue,
+          #     async_api_channel_item[:subscribe]
+          #   )
+          # end
+
           # build_bunny_publish_for(exchange, async_api_channel_item[:publish]) if exchange
         end
 
@@ -113,6 +109,16 @@ module EventSource
         def exchanges
           @subject.exchanges
         end
+
+        def queue_by_name(name)
+          matched = nil
+          queues.each_value{|queue| matched = queue if queue.name == name}
+          matched
+        end
+
+        def exchange_by_name(name)
+          exchanges.detect{|exchange| exchange.name == name}
+        end 
 
         def add_queue(queue_name, options = {})
           Bunny::Queue.new(@subject, queue_name, options)
@@ -154,9 +160,9 @@ module EventSource
           @channel.new(@connection, id = nil, work_pool)
         end
 
-        def open(channel_params)
-          connection.create_channel
-        end
+        # def open(channel_params)
+        #   connection.create_channel
+        # end
 
         def active?
           @channel.active
@@ -223,10 +229,6 @@ module EventSource
           rescue Bunny::NotFound => e
             puts "Channel-level exception! Code: #{e.channel_close.reply_code}, message: #{e.channel_close.reply_text}"
           end
-        end
-
-        def queue
-          @queue = Bunny::Queue.new
         end
 
         # Bind a queue to an exchange

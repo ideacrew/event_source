@@ -25,5 +25,7 @@ module EventSource
     AttributesInvalid = Class.new(Error)
     RegisteredEventNotFound = Class.new(Error)
     PublisherAlreadyRegisteredError = Class.new(Error)
+    InvalidChannelsResourceError = Class.new(Error)
+    SubscriberNotFound = Class.new(Error)
   end
 end
