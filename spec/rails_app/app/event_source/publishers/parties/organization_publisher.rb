@@ -2,10 +2,10 @@
 
 module Parties
   class OrganizationPublisher
-    include EventSource::Publisher[amqp: 'enroll.parties.organizations.exchange']
+    include ::EventSource::Publisher[amqp: 'enroll.parties.organizations.exchange']
 
     register_event 'fein_corrected'
-    register_event 'created'
+    # register_event 'created'
   end
 end
 

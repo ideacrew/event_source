@@ -20,6 +20,8 @@ module EventSource
         RabbitMqOptionDefaults = {
           network_recovery_interval: 5.0, # reconnection interval for TCP conection failure
           automatic_recovery: true, # Bunny will try to recover from detected TCP connection failures every 5 seconds
+          recovery_attempts: nil, # (Integer) — default: nil — Max number of recovery attempts, nil means forever
+          reset_recovery_attempts_after_reconnection: true, # (Integer) — default: true — Should recovery attempt counter be reset after successful reconnection? When set to false, the attempt counter will last through the entire lifetime of the connection object.
           recover_from_connection_close: true, # Bunny will try to recover from Server-initiated connection.close
           continuation_timeout: 4_000, # timeout in milliseconds for client operations that expect a response
           frame_max: 131_072 # max permissible size in bytes of a frame. Larger value may improve throughput; smaller value may improve latency
@@ -97,6 +99,11 @@ module EventSource
         def add_channel(async_api_channel_item)
           BunnyChannelProxy.new(@bunny_session, async_api_channel_item)
         end
+
+        # channel_by(:channel_name, 'enroll.organizations')
+        # channel_by(:exchange_name, 'enroll.organizations.exchange')
+        # def channel_by(type, value)
+        # end
 
         def active?
           @bunny_session && @bunny_session.open?

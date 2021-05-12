@@ -55,12 +55,14 @@ module EventSource
                    :logger,
                    :application,
                    :root,
-                   :load_configuration
+                   :load_configuration,
+                   :load_components
     def_delegators :adapter, :publish, :publish_at
 
     def configure
       yield(config)
       load_configuration
+      load_components
     end
 
     # Set up logging: first attempt to attach to host application logger instance, otherwise

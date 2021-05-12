@@ -33,7 +33,6 @@ module EventSource
 
     def included(base)
       self.class.subscriber_container[base] = {exchange: exchange, protocol: protocol}
-
       base.extend ClassMethods
 
       TracePoint.trace(:end) do |t|
@@ -49,13 +48,12 @@ module EventSource
  
       def subscribe(queue_name, &block)
         channel_name = exchange_name.match(/^(.*).exchange$/)[1]
-        channel = connection.channels[channel_name.to_sym].first
+        channel = connection.channel_by_name(channel_name.to_sym)
         exchange = channel.exchanges[exchange_name]
         queue = channel.queues[queue_name.to_s]
 
         if queue
           consumer_proxy = EventSource::Protocols::Amqp::BunnyConsumerProxy.new(channel, queue)
-
           consumer_proxy.on_delivery do |delivery_info, metadata, payload|
             if block_given?
               block.call(delivery_info, metadata, payload)
@@ -70,8 +68,7 @@ module EventSource
       end
 
       def register_subscription_methods
-        method_names = self.instance_methods(false)
-        method_names.each do |method_name|
+        instance_methods(false).each do |method_name|
           if method_name.match(/^on_(.*)$/)
             subscribe(method_name)
           end
@@ -80,12 +77,7 @@ module EventSource
 
       def connection
         connection_manager = EventSource::ConnectionManager.instance
-
-        connections = connection_manager.connections.reduce([]) do |connections, (connection_uri, connection_instance)|
-          connections.push(connection_instance) if URI.parse(connection_uri).scheme.to_sym == protocol
-        end
-
-        connections.first
+        connection_manager.connections_for(protocol).first
       end
 
       def exchange_name

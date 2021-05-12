@@ -57,10 +57,10 @@ module EventSource
 
       def validate
         channel_name = exchange_name.match(/^(.*).exchange$/)[1]
-        channel = connection.channels[channel_name.to_sym].first
+        channel = connection.channel_by_name(channel_name.to_sym)
         exchange = channel.exchanges[exchange_name]
+
         raise EventSource::AsyncApi::Error::ExchangeNotFoundError, "exchange #{exchange_name} not found" unless exchange
-        
         events.each do |event_key, options|
           queue_name = (['on'] + channel_name.split('.') + [event_key]).join('_')
           raise EventSource::AsyncApi::Error::QueueNotFoundError, "queue #{queue_name} not found" unless channel.queues[queue_name]
@@ -69,10 +69,7 @@ module EventSource
 
       def connection
         connection_manager = EventSource::ConnectionManager.instance
-
-        connection_manager.connections.reduce([]) do |connections, (connection_uri, connection_instance)|
-          connections.push(connection_instance) if URI.parse(connection_uri).scheme.to_sym == protocol
-        end.first
+        connection_manager.connections_for(protocol).first
       end
 
       def exchange_name

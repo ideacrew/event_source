@@ -33,7 +33,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
   end
 
   let(:client) { EventSource::Protocols::Amqp::BunnyConnectionProxy.new(my_server) }
-  let(:connection) { EventSource::AsyncApi::Connection.new(client) }
+  let(:connection) { EventSource::Connection.new(client) }
   
   let(:channel_id) { 'crm.contact_created' }
 
@@ -167,7 +167,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
   end
 
   context 'Adapter pattern methods are present' do
-    let(:adapter_methods) { EventSource::AsyncApi::Channel::ADAPTER_METHODS }
+    let(:adapter_methods) { EventSource::Channel::ADAPTER_METHODS }
 
     it 'should have all the required methods' do
       expect(channel_proxy).to respond_to(*adapter_methods)

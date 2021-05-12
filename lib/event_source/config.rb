@@ -26,11 +26,9 @@ module EventSource
         if channels.success?
           connection.add_channels(channels.to_h)
         else
-          raise EventSource::Error::InvalidChannelsResourceError, "Channels Resource failed validation due to #{channels.errors}"
+          raise EventSource::Error::InvalidChannelsResourceError, "Async api resource failed validation due to #{channels.errors}"
         end
       end
-
-      load_components
     end
 
     def load_components

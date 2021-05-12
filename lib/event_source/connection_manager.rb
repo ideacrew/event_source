@@ -40,6 +40,12 @@ module EventSource
       connections
     end
 
+    def connections_for(protocol)
+      connections.reduce([]) do |connections, (connection_uri, connection_instance)|
+        connections.push(connection_instance) if URI.parse(connection_uri).scheme.to_sym == protocol
+      end
+    end
+
     # TODO do we need a method to gracefully close all open connections at shutdown?
 
     private

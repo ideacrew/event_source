@@ -40,11 +40,8 @@ module EventSource
     # async api channels entity
     def add_channels(async_api_channels)
       async_api_channels[:channels].each do |key, async_api_channel_item|
-        @channels[key] ||= []
-        @channels[key] << add_channel(async_api_channel_item)
+        @channels[key] = add_channel(async_api_channel_item)
       end
-
-      @channels
     end
 
     # @param [Hash] args Protocol Server in hash form
@@ -53,6 +50,17 @@ module EventSource
     def add_channel(*args)
       channel_proxy = @client.add_channel(*args)
       Channel.new(channel_proxy)
+    end
+
+    # channel_by(:channel_name, 'enroll.organizations')
+    # channel_by(:exchange_name, 'enroll.organizations.exchange')
+    # def channel_by(type, value)
+    #   return channel_by_name(value) if type == :channel_name
+    #   @client.channel_by(type, value)
+    # end
+
+    def channel_by_name(name)
+      @channels[name]
     end
 
     def connection_params
