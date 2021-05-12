@@ -37,8 +37,7 @@ require 'event_source/command'
 require 'event_source/publisher'
 require 'event_source/event'
 require 'event_source/subscriber'
-require 'event_source/adapters/queue_bus_adapter'
-require 'event_source/adapters/amqp_adapter'
+require 'event_source/operations/codec64'
 
 # Event source provides ability to compose, publish and subscribe to events
 module EventSource
