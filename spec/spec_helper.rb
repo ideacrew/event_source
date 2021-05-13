@@ -3,12 +3,13 @@
 require 'bundler/setup'
 require 'pry'
 require 'event_source'
+require 'rspec/logging_helper'
 
 # Set up the local context
 
 # Bring in the Rails test harness
 # require "active_support/all"
-require File.expand_path("../rails_app/config/environment", __FILE__)
+require File.expand_path('../rails_app/config/environment', __FILE__)
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

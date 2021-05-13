@@ -3,7 +3,18 @@
 require 'spec_helper'
 
 RSpec.describe EventSource::Operations::Codec64 do
-  context 'Given a binary file' do
+  context 'Given an invalid file' do
+    let(:transform) { :encode }
+    let(:source_filename) { 'phoney_phoney_phoney.file' }
+
+    it 'should raise an error' do
+      expect {
+        subject.call(transform: transform, source_filename: source_filename)
+      }.to raise_error EventSource::Error.FileAccessError
+    end
+  end
+
+  context 'Given a valid binary file' do
     let(:transform) { :encode }
     let(:source_filename) { './spec/support/Simple Event Flow (no CQRS).png' }
     let(:file_content_encoded_size) { 536_939 }

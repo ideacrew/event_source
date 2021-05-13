@@ -12,6 +12,7 @@ PATH
       dry-types (~> 1.5)
       dry-validation (~> 1.6)
       faraday
+      logging
       mime-types
       resque-bus (~> 0.7.0)
 
@@ -161,6 +162,10 @@ GEM
     i18n (1.8.10)
       concurrent-ruby (~> 1.0)
     ice_nine (0.11.2)
+    little-plugger (1.1.4)
+    logging (2.3.0)
+      little-plugger (~> 1.1)
+      multi_json (~> 1.14)
     loofah (2.9.1)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)

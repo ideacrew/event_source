@@ -46,7 +46,8 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'resque-bus', '~> 0.7.0'
   spec.add_dependency 'mime-types'
   spec.add_dependency 'faraday'
-  spec.add_dependency "deep_merge"
+  spec.add_dependency 'deep_merge'
+  spec.add_dependency 'logging'
 
   # TODO: Change to development dependency
   spec.add_development_dependency 'database_cleaner'
