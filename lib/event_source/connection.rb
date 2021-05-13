@@ -25,8 +25,8 @@ module EventSource
       @client.connection
     end
 
-    def connect
-      @client.connect
+    def start
+      @client.start
     end
 
     def active?
