@@ -18,19 +18,27 @@ module EventSource
             bindings.slice(:durable, :auto_delete, :vhost, :exclusive)
           )
 
-          channel_proxy.bind_queue(name, channel_proxy[exchange_name])
+          channel_proxy.queue_bind(bindings[:name], exchange_name)
         end
 
-        def subscribe(opts)
-          consumer_proxy = BunnyConsumerProxy.new(@subject.channel, self)
+        def convert_to_bunny_options(options)
+          operation_bindings = {}
+          operation_bindings[:manual_ack] = options[:ack] if options.key?(:key)
+          operation_bindings
+        end
+
+        def subscribe(subscriber, options, &block)
+          operation_bindings = convert_to_bunny_options(options)
+
+          consumer_proxy = BunnyConsumerProxy.new(@subject.channel, @subject, operation_bindings)
           consumer_proxy.on_delivery do |delivery_info, metadata, payload|
             if block_given?
               block.call(delivery_info, metadata, payload)
             else
-              self.new.send(queue_name, delivery_info, metadata, payload)
+              subscriber.new.send(queue_name, delivery_info, metadata, payload)
             end
           end
-          queue.subscribe_with(consumer_proxy)
+          @subject.subscribe_with(consumer_proxy)
         end
 
         # Forwards all missing method calls to the Bunny::Queue instance

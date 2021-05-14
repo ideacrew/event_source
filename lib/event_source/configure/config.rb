@@ -5,7 +5,7 @@ module EventSource
   module Configure
     # This class contains all the configuration for a running queue bus application.
     class Config
-      include Logging
+      # include Logging
 
       #TODO: add default for pub_sub_root
       attr_writer :asyncapi_resources, :pub_sub_root, :protocols
@@ -19,11 +19,11 @@ module EventSource
         @asyncapi_resources.each do |resource|
           resource.deep_symbolize_keys!
           connection = connection_manager.add_connection(resource[:servers][:production])
-          logger.info('load_configurations') { "connecting" }
+          # logger.info('load_configurations') { "connecting" }
           connection.start
-          logger.info('load_configurations') { "connected" }
+          # logger.info('load_configurations') { "connected" }
           connection.add_channels(channels: resource[:channels])
-          logger.info('load_configurations') { "channels added" }
+          # logger.info('load_configurations') { "channels added" }
         end
       end
 

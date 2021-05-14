@@ -2,7 +2,7 @@
 
 module Parties
   class OrganizationSubscriber
-    include ::EventSource::Subscriber[amqp: 'enroll.parties.organizations.exchange']
+    include ::EventSource::Subscriber[amqp: 'enroll.parties.organizations']
 
     subscribe(:on_enroll_parties_organizations_fein_corrected) do |delivery_info, metadata, payload|
       # Sequence of steps that are executed as single operation
