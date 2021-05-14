@@ -7,7 +7,7 @@ module EventSource
       # @attr_reader [Bunny::Channel] channel Channel connection to broker server
       # @since 0.4.0
       class BunnyChannelProxy
-        attr_reader :connection, :subject
+        attr_reader :connection, :subject, :publish_bindings, :subscribe_bindings
 
         # @param [EventSource::AsyncApi::Connection] Connection instance
         # @param [Hash] AsyncApi::ChannelItem
@@ -17,7 +17,7 @@ module EventSource
         # @return Bunny::Channel
         def initialize(bunny_connection_proxy, async_api_channel_item)
           @subject = Bunny::Channel.new(bunny_connection_proxy).open
-          build_bunny_channel_for(async_api_channel_item) unless async_api_channel_item.empty?
+          # build_bunny_channel_for(async_api_channel_item) unless async_api_channel_item.empty?
         end
 
         # def build_bunny_publish_for(exchange, publish_options)
@@ -39,25 +39,30 @@ module EventSource
         #   # :message_id (String) — Any message identifier
         #   # :app_id (String) — Optional application ID
 
-        #   exchange.publish(
-        #     publish_options[:message][:payload].to_json,
-        #     publish_options[:bindings]
-        #   )
+        #   @publish_bindings[exchange.name] = publish_options[:bindings]
+
+        #   # exchange.publish(
+        #   #   publish_options[:message][:payload].to_json,
+        #   #   publish_options[:bindings]
+        #   # )
         # end
 
         # def build_bunny_subscriber_for(queue, subscribe_options)
+
+        #   @subscribe_bindings[queue.name] = subscribe_options[:bindings]
+
         #   # TODO: remap exclusive? at channel bindings level for amqp
         #   #   exclusive
         #   #   on_cancellation
         #   #   consumer_tag
         #   #   arguments
-        #   manual_ack = subscribe_options[:ack]
+        #   # manual_ack = subscribe_options[:ack]
 
-        #   queue.subscribe(
-        #     { manual_ack: manual_ack }
-        #   ) do |delivery_info, properties, payload|
-        #     puts "Received #{payload}, message properties are #{properties.inspect}"
-        #   end
+        #   # queue.subscribe(
+        #   #   { manual_ack: manual_ack }
+        #   # ) do |delivery_info, properties, payload|
+        #   #   puts "Received #{payload}, message properties are #{properties.inspect}"
+        #   # end
         # end
 
         def build_bunny_channel_for(async_api_channel_item)
@@ -87,21 +92,6 @@ module EventSource
           # build_bunny_publish_for(exchange, async_api_channel_item[:publish]) if exchange
         end
 
-        def build_exchange(bindings)
-          add_exchange(
-            bindings[:type],
-            bindings[:name],
-            bindings.slice(:durable, :auto_delete, :vhost)
-          )
-        end
-
-        def build_queue(bindings)
-          add_queue(
-            bindings[:name],
-            bindings.slice(:durable, :auto_delete, :vhost, :exclusive)
-          )
-        end
-
         def queues
           @subject.queues
         end
@@ -120,12 +110,12 @@ module EventSource
           exchanges.detect{|exchange| exchange.name == name}
         end 
 
-        def add_queue(queue_name, options = {})
-          Bunny::Queue.new(@subject, queue_name, options)
+        def add_queue(bindings, exchange_name)
+          BunnyQueueProxy.new(@subject, bindings, exchange)
         end
 
-        def add_exchange(type, exchange_name, options = {})
-          Bunny::Exchange.new(@subject, type, exchange_name, options)
+        def add_exchange(bindings)
+          BunnyExchangeProxy.new(@subject, bindings)
         end
 
         def method_missing(name, *args)

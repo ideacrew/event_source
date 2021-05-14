@@ -7,32 +7,35 @@ module EventSource
       # @attr_reader [Bunny::Channel] channel AMQP Channel on which this Queue was created
       # @since 0.4.0
       class BunnyQueueProxy
-        attr_reader :channel
 
         # @param [EventSource::AsyncApi::Channel] Channel instance on which to open this Queue
         # @param [Hash] {EventSource::AsyncApi::Queue} instance with configuration for this Queue
         # @return [Bunny::Queue]
-        def initialize(async_api_channel, async_api_queue, options = {})
-          @channel = channel_for(async_api_channel)
-          @subject = build_bunny_queue_for(queue, options)
+        def initialize(channel_proxy, bindings, exchange_name)
+          @subject = Bunny::Queue.new(
+            channel_proxy,
+            bindings[:name],
+            bindings.slice(:durable, :auto_delete, :vhost, :exclusive)
+          )
+
+          channel_proxy.bind_queue(name, channel_proxy[exchange_name])
         end
 
-        def build_bunny_queue_for(async_api_queue, options)
-          name = async_api_queue[:name]
-          options = async_api_queue[:options]
-
-          Bunny::Queue.new(channel, name, options)
+        def subscribe(opts)
+          consumer_proxy = BunnyConsumerProxy.new(@subject.channel, self)
+          consumer_proxy.on_delivery do |delivery_info, metadata, payload|
+            if block_given?
+              block.call(delivery_info, metadata, payload)
+            else
+              self.new.send(queue_name, delivery_info, metadata, payload)
+            end
+          end
+          queue.subscribe_with(consumer_proxy)
         end
 
         # Forwards all missing method calls to the Bunny::Queue instance
         def method_missing(name, *args)
           @subject.send(name, *args)
-        end
-
-        private
-
-        def channel_for(async_api_channel)
-          async_api_channel.channel
         end
       end
     end

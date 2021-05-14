@@ -3,7 +3,7 @@
 module EventSource
   # Adapter interface for AsyncAPI protocol clients
   class Channel
-    attr_reader :id
+    attr_reader :id, :bindings, :exchanges, :queues
 
     ADAPTER_METHODS = %i[
         queues
@@ -14,20 +14,26 @@ module EventSource
         bind_exchange   
       ]
 
-    def channels=(channel_proxy)
-      @channels[channel_proxy.id] = channel_proxy
-    end
-
-    def initialize(channel_proxy)
+    def initialize(channel_proxy, channel_item)
       @channel_proxy = channel_proxy
+      @bindings = channel_item[:bindings].values.first || {}
+      @exchanges = {}
+      @queues = {}
+
+      exchange = add_exchange(channel_item[:publish])
+      queue = add_queue(channel_item[:subscribe])
     end
 
-    def queues
-      @channel_proxy.queues
+    def add_exchange(publish_operation = nil)
+      return unless publish_operation
+      exchange_proxy = @channel_proxy.add_exchange(bindings[:exchange])
+      @exchanges[bindings[:exchange][:name]] = Exchange.new(exchange_proxy, publish_operation)
     end
 
-    def exchanges
-      @channel_proxy.exchanges
+    def add_queue(subscribe_operation = nil)
+      return unless subscribe_operation
+      queue_proxy = @channel_proxy.add_queue(bindings[:queue], id)
+      @queues[bindings[:queue][:name]] = Queue.new(queue_proxy, subscribe_operation)
     end
 
     def queue_by_name(name)
