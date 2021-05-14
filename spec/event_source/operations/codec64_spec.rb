@@ -10,7 +10,7 @@ RSpec.describe EventSource::Operations::Codec64 do
     it 'should raise an error' do
       expect {
         subject.call(transform: transform, source_filename: source_filename)
-      }.to raise_error EventSource::Error.FileAccessError
+      }.to raise_error EventSource::Error::FileAccessError
     end
   end
 

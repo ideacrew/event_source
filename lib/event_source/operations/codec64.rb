@@ -40,7 +40,8 @@ module EventSource
               file.close
             end
         else
-          raise EventSource::Error.FileAccessError "file not found or unable to read: #{filename}"
+          raise EventSource::Error::FileAccessError,
+                "file not found or unable to read: #{filename}"
         end
         Success(encoded_string)
       end
