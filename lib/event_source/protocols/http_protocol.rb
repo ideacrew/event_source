@@ -16,7 +16,7 @@ Dir[File.expand_path('lib/event_source/protocols/http/contracts/**/*.rb')]
 module EventSource
   module Protocols
     # Namespace for classes and modules that use AsyncAPI to handle message
-    # exchange using http protcol
+    # exchange using HTTP protcol
     # @since 0.4.0
     module Http
     end

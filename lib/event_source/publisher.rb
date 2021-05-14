@@ -8,6 +8,8 @@ module EventSource
   class Publisher < Module
     include Dry.Equalizer(:protocol, :exchange)
 
+    # @attr_reader [String] protocol communication protocol used by this publisher (for example: amqp)
+    # @attr_reader [String] exchange name of the Exchange where event messages are published
     attr_reader :protocol, :exchange
 
     # Internal publisher registry, which is used to identify them globally
@@ -34,7 +36,10 @@ module EventSource
     end
 
     def included(base)
-      self.class.publisher_container[base] = {exchange: exchange, protocol: protocol}
+      self.class.publisher_container[base] = {
+        exchange: exchange,
+        protocol: protocol
+      }
       base.extend(ClassMethods)
 
       TracePoint.trace(:end) do |t|
@@ -60,10 +65,17 @@ module EventSource
         channel = connection.channel_by_name(channel_name.to_sym)
         exchange = channel.exchanges[exchange_name]
 
-        raise EventSource::AsyncApi::Error::ExchangeNotFoundError, "exchange #{exchange_name} not found" unless exchange
+        unless exchange
+          raise EventSource::AsyncApi::Error::ExchangeNotFoundError,
+                "exchange #{exchange_name} not found"
+        end
         events.each do |event_key, options|
-          queue_name = (['on'] + channel_name.split('.') + [event_key]).join('_')
-          raise EventSource::AsyncApi::Error::QueueNotFoundError, "queue #{queue_name} not found" unless channel.queues[queue_name]
+          queue_name =
+            (['on'] + channel_name.split('.') + [event_key]).join('_')
+          unless channel.queues[queue_name]
+            raise EventSource::AsyncApi::Error::QueueNotFoundError,
+                  "queue #{queue_name} not found"
+          end
         end
       end
 

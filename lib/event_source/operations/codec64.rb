@@ -8,11 +8,16 @@ module EventSource
       send(:include, Dry::Monads[:result, :do])
       send(:include, Dry::Monads[:try])
 
-      # @param [Hash] opts the params to perform Base64 encoding and decoding
-      # @option opts [String] :source_filename the source file to encode
-      # @option opts [Binary, String] :source_value the source string to encode
-      # @option opts [Symbol] :transform the operation to perform: :encode (default) or :decode
-      # @return [Dry::Monad::Result, String] Encoded binary datum wrapped in Monad result
+      # @param [Hash] params the params to perform Base64 encoding and decoding
+      # @option params [String] :source_filename source file to encode
+      # @option params [Binary, String] :source_value source string to encode
+      # @option params [Symbol] :transform (:encode) encode or decode operation
+      # @example Encode a file:
+      #      EventSource::Operations::Codec64(transform: :encode, source_filename: 'my_doc.pdf')
+      #
+      # @example Descode a string:
+      #      EventSource::Operations::Codec64(transform: :decode, source_value: 'BwcCB2JkY2U=')
+      # @return [Dry::Monad::Result, String] String with encoded/decoded data wrapped in Monad result
       def call(params)
         transformed_value = yield transform(params)
 

@@ -4,9 +4,10 @@ module EventSource
   module Protocols
     module Amqp
       # Connect to RabbitMQ server instance using Bunny client
-      # @attr_reader [String] connection_params Connection string used to contact broker server
-      # @attr_reader [Hash] server_options Bibding options used to connect with broker server
+      # @attr_reader [String] connection_uri connection string used to establish connection with RabbitMQ server
+      # @attr_reader [String] connection_params configuration settings to establish connection with RabbitMQ server
       # @attr_reader [String] protocol_version AMQP protocol release supported by this broker client
+      # @attr_reader [Hash] server_options RabbitMQ specific connection binding options
       # @attr_reader [Bunny::Session] connection the server Connection object
       class BunnyConnectionProxy
         attr_reader :connection_params,
@@ -48,11 +49,6 @@ module EventSource
           vhost: '/' # (String) — default: "/" — Virtual host to use
         }
 
-        # def initialize
-        #   @protocol_version = ProtocolVersion
-        #   @client_version = ClientVersion
-        # end
-
         # @param [Hash] opts AMQP Server in hash form
         # @param [Hash] opts binding options for RabbitMQ server
         # @return Bunny::Session
@@ -65,10 +61,12 @@ module EventSource
           @bunny_session = Bunny.new(@connection_params, @server_options)
         end
 
+        # The Connection object
         def connection
           @bunny_session
         end
 
+        # Initiate network connection to RabbitMQ broker
         def start
           return if active?
 
@@ -105,18 +103,23 @@ module EventSource
         # def channel_by(type, value)
         # end
 
+        # Is the server connection started?
+        # return [Boolean]
         def active?
           @bunny_session && @bunny_session.open?
         end
 
+        # Close the server connection
         def close
           @bunny_session.close if active?
         end
 
+        # Attampt to reastablish connection to a disconnected server
         def reconnect
           @bunny_session.reconnect!
         end
 
+        # The version of Bunny client
         def client_version
           ClientVersion
         end
@@ -174,8 +177,6 @@ module EventSource
         end
 
         private
-
-        def validate_protcol(); end
 
         def security_for(server)
           security = server[:security] || BINDINGS_DEFAULT[:security]

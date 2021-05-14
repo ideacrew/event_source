@@ -4,20 +4,20 @@ module EventSource
   module Protocols
     module Amqp
       # Create and manage a RabbitMQ channel instance using Bunny client
-      # @attr_reader [Bunny::Channel] channel Channel connection to broker server
+      # @attr_reader [Bunny::ConnectionProxy] connection Connection proxy instance to the RabbitMQ server
+      # @attr_reader [Bunny::ChannelProxy] subject Channel channel proxy interface on the Connection
       # @since 0.4.0
       class BunnyChannelProxy
         attr_reader :connection, :subject
 
-        # @param [EventSource::AsyncApi::Connection] Connection instance
-        # @param [Hash] AsyncApi::ChannelItem
-        # @param [Hash] opts RabbitMQ extended binding options
-        # @option opts [Hash] :rabbit_mq_exchange_bindings
-        # @option opts [Hash] :rabbit_mq_queue_bindings
-        # @return Bunny::Channel
+        # @param bunny_connection_proxy [EventSource::Protocols::Amqp::BunnyConnectionProxy] Connection instance
+        # @param async_api_channel_item [EventSource::AsyncApi::ChannelItem] Channel item configuration
+        # @return [Bunny::ChannelProxy] Channel proxy instance on the RabbitMQ server {Connection}
         def initialize(bunny_connection_proxy, async_api_channel_item)
           @subject = Bunny::Channel.new(bunny_connection_proxy).open
-          build_bunny_channel_for(async_api_channel_item) unless async_api_channel_item.empty?
+          unless async_api_channel_item.empty?
+            build_bunny_channel_for(async_api_channel_item)
+          end
         end
 
         # def build_bunny_publish_for(exchange, publish_options)
@@ -112,13 +112,13 @@ module EventSource
 
         def queue_by_name(name)
           matched = nil
-          queues.each_value{|queue| matched = queue if queue.name == name}
+          queues.each_value { |queue| matched = queue if queue.name == name }
           matched
         end
 
         def exchange_by_name(name)
-          exchanges.detect{|exchange| exchange.name == name}
-        end 
+          exchanges.detect { |exchange| exchange.name == name }
+        end
 
         def add_queue(queue_name, options = {})
           Bunny::Queue.new(@subject, queue_name, options)
