@@ -3,7 +3,6 @@
 require 'bundler/setup'
 require 'pry'
 require 'event_source'
-require 'rspec/logging_helper'
 
 # Set up the local context
 
