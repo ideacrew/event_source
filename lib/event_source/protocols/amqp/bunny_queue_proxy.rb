@@ -8,34 +8,54 @@ module EventSource
       # enabling access to its API.
       # @since 0.4.0
       class BunnyQueueProxy
-        # @attr_reader [Bunny::Channel] channel AMQP Channel on which this Queue was created
-        attr_reader :channel
-
         # @param async_api_channel [EventSource::AsyncApi::Channel] Channel definition and bindings
-        # @param async_api_queue [EventSource::AsyncApi::Queue] Queue definition and bindings
-        # @param options [Hash] AMQP protocol-specific options for instantiating the queue
+        # @param [Hash] bindings operation binding settings
+        # @option bindings [String] :name queue name
+        # @option bindings [String] :durable
+        # @option bindings [String] :auto_delete
+        # @option bindings [String] :exclusive
+        # @option bindings [String] :vhost ('/')
+        # @param async_api_queue [String] Exchange name which to bind this queue
         # @return [Bunny::Queue]
-        def initialize(async_api_channel, async_api_queue, options = {})
-          @channel = channel_for(async_api_channel)
-          @subject = build_bunny_queue_for(queue, options)
+        def initialize(channel_proxy, bindings, exchange_name)
+          @subject =
+            Bunny::Queue.new(
+              channel_proxy,
+              bindings[:name],
+              bindings.slice(:durable, :auto_delete, :vhost, :exclusive)
+            )
+
+          channel_proxy.queue_bind(bindings[:name], exchange_name)
+        end
+
+        def convert_to_bunny_options(options)
+          operation_bindings = {}
+          operation_bindings[:manual_ack] = options[:ack] if options.key?(:key)
+          operation_bindings
+        end
+
+        def subscribe(subscriber, options, &block)
+          operation_bindings = convert_to_bunny_options(options)
+
+          consumer_proxy =
+            BunnyConsumerProxy.new(
+              @subject.channel,
+              @subject,
+              operation_bindings
+            )
+          consumer_proxy.on_delivery do |delivery_info, metadata, payload|
+            if block_given?
+              block.call(delivery_info, metadata, payload)
+            else
+              subscriber.new.send(queue_name, delivery_info, metadata, payload)
+            end
+          end
+          @subject.subscribe_with(consumer_proxy)
         end
 
         # Forwards all missing method calls to the Bunny::Queue instance
         def method_missing(name, *args)
           @subject.send(name, *args)
-        end
-
-        private
-
-        def build_bunny_queue_for(async_api_queue, options)
-          name = async_api_queue[:name]
-          options = async_api_queue[:options]
-
-          Bunny::Queue.new(channel, name, options)
-        end
-
-        def channel_for(async_api_channel)
-          async_api_channel.channel
         end
       end
     end

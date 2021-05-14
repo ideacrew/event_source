@@ -7,22 +7,22 @@ module EventSource
       # @attr_reader [Bunny::Channel] channel AMQP Channel on which this Queue was created
       # @since 0.4.0
       class BunnyExchangeProxy
-        attr_reader :channel
 
         # @param [EventSource::AsyncApi::Channel] Channel instance on which to open this Exchange
         # @param [Hash] {EventSource::AsyncApi::Exchange} instance with configuration for this Exchange
         # @return [Bunny::Exchange]
-        def initialize(async_api_channel, async_api_exchange, options = {})
-          @channel = channel_for(async_api_channel)
-          @subject = build_bunny_exchange_for(async_api_exchange, options)
+        def initialize(channel_proxy, bindings)
+          @subject = Bunny::Exchange.new(
+            channel_proxy,
+            bindings[:type],
+            bindings[:name],
+            bindings.slice(:durable, :auto_delete, :vhost)
+          )
         end
 
-        def build_bunny_exchange_for(async_api_exchange, options)
-          type = async_api_exchange[:type]
-          name = async_api_exchange[:name]
-          options = async_api_exchange[:options]
-
-          Bunny::Exchange.new(@channel, type, name, options)
+        def publish(payload, options)
+          operation_bindings = operation_bindings_for(options)
+          @subject.publish(payload, operation_bindings)
         end
 
         # Forwards all missing method calls to the Bunny::Queue instance
@@ -30,10 +30,27 @@ module EventSource
           @subject.send(name, *args)
         end
 
-        private
+        private 
+        
+        # Unimplemented Bunny Bindings
+        #   :routing_key (String) — Routing key
+        #   :content_type (String) — Message content type (e.g. application/json)
+        #   :correlation_id (String) — Message correlated to this one, e.g. what request this message is a reply for
+        #   :message_id (String) — Any message identifier
+        #   :app_id (String) — Optional application ID
 
-        def channel_for(async_api_channel)
-          async_api_channel.channel
+        # Unsupported AsyncApi Bindings
+        #   cc: ['user.logs']
+        #   bcc: ['external.audit']
+        def operation_bindings_for(options)
+          operation_bindings = options.pluck(:expiration, :priority, :mandatory)
+          operation_bindings[:user_id] = options[:userId] if options[:userId]
+          operation_bindings[:timestamp] = Time.now if options[:timestamp]
+          operation_bindings[:persistent] = true if options[:deliveryMode] == 2
+          operation_bindings[:reply_to] = options[:replyTo]
+          operation_bindings[:content_encoding] = options[:contentEncoding]
+          operation_bindings[:type] = options[:messageType]
+          operation_bindings
         end
       end
     end

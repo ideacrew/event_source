@@ -17,7 +17,7 @@ servers:
     protocolVersion: "0.9.2"
     description: RabbitMQ Test Server
 channels:
-  enroll.parties.organizations:
+  polypress.parties.organizations:
     publish:
       operationId: enroll.parties.organizations.fein_corrected
       summary: Organization FEIN Corrected
@@ -25,27 +25,52 @@ channels:
         $ref: "#/components/messages/crm_sugar_crm_contacts_contact_created_event"
         payload:
           type: object
-      # bindings:
-      #   cc: ''
+        bindings:
+          contentEncoding: gzip
+          messageType: 'user.signup'
+          # bindingVersion: 0.1.0
+      bindings:
+        amqp:
+          expiration: 100000
+          userId: guest
+          priority: 10
+          deliveryMode: 2
+          mandatory: false
+          replyTo: user.signedup
+          timestamp: true
+          # cc: ['user.logs']
+          # bcc: ['external.audit']
+          # bindingVersion: 0.1.0
     subscribe:
-      operationId: on_enroll_parties_organizations_fein_corrected
+      operationId: on_polypress_parties_organizations_fein_corrected
       summary: Organizaation FEIN Corrected
       message:
         $ref: "#/components/messages/crm_sugar_crm_contacts_contact_created_event"
         payload:
           type: object
+      bindings:
+        amqp:
+          # expiration: 100000
+          # userId: guest
+          # cc: ['user.logs']
+          # replyTo: user.signedup
+          priority: 10
+          deliveryMode: 2
+          timestamp: true
+          ack: false
+          bindingVersion: 0.1.0
     bindings:
       amqp:
         is: :routing_key
         binding_version: '0.2.0'
         queue:
-          name: on_enroll_parties_organizations_fein_corrected
+          name: on_polypress_parties_organizations_fein_corrected
           durable: true
           auto_delete: true
           vhost: '/'
           exclusive: true
         exchange:
-          name: 'enroll.parties.organizations.exchange'
+          name: 'enroll.parties.organizations'
           type: :fanout
           durable: false
           auto_delete: true

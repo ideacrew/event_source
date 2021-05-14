@@ -39,17 +39,17 @@ module EventSource
 
     # async api channels entity
     def add_channels(async_api_channels)
-      async_api_channels[:channels].each do |key, async_api_channel_item|
-        @channels[key] = add_channel(async_api_channel_item)
+      async_api_channels[:channels].each do |channel_key, async_api_channel_item|
+        add_channel(channel_key, async_api_channel_item)
       end
     end
 
     # @param [Hash] args Protocol Server in hash form
     # @param [Hash] args binding options for Protocol server
     # @return Bunny::Session
-    def add_channel(*args)
-      channel_proxy = @client.add_channel(*args)
-      Channel.new(channel_proxy)
+    def add_channel(channel_key, async_api_channel_item)
+      channel_proxy = @client.add_channel(async_api_channel_item)
+      @channels[channel_key] = Channel.new(channel_proxy, async_api_channel_item, channel_key)
     end
 
     # channel_by(:channel_name, 'enroll.organizations')

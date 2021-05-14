@@ -46,24 +46,23 @@ module EventSource
     # methods to register subscriptions
     module ClassMethods
  
+      def exchange_name
+        EventSource::Subscriber.subscriber_container[self][:exchange]
+      end
+
+      def protocol
+        EventSource::Subscriber.subscriber_container[self][:protocol]
+      end
+
       def subscribe(queue_name, &block)
-        channel_name = exchange_name.match(/^(.*).exchange$/)[1]
-        channel = connection.channel_by_name(channel_name.to_sym)
-        exchange = channel.exchanges[exchange_name]
+        channel_name = exchange_name #.match(/^(.*).exchange$/)[1]
+        channel = connection.channels[channel_name.to_sym]
         queue = channel.queues[queue_name.to_s]
 
         if queue
-          consumer_proxy = EventSource::Protocols::Amqp::BunnyConsumerProxy.new(channel, queue)
-          consumer_proxy.on_delivery do |delivery_info, metadata, payload|
-            if block_given?
-              block.call(delivery_info, metadata, payload)
-            else
-              self.new.send(queue_name, delivery_info, metadata, payload)
-            end
-          end
-          queue.subscribe_with(consumer_proxy)
+          queue.subscribe(self, &block)
         else
-          raise EventSource::Error::SubscriberNotFound, 'unable to find queue' unless queue_not_found
+          raise EventSource::Error::SubscriberNotFound, 'unable to find queue'
         end
       end
 
@@ -78,14 +77,6 @@ module EventSource
       def connection
         connection_manager = EventSource::ConnectionManager.instance
         connection_manager.connections_for(protocol).first
-      end
-
-      def exchange_name
-        EventSource::Subscriber.subscriber_container[self][:exchange]
-      end
-
-      def protocol
-        EventSource::Subscriber.subscriber_container[self][:protocol]
       end
     end
   end

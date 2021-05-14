@@ -8,98 +8,16 @@ module EventSource
       # @attr_reader [Bunny::ChannelProxy] subject Channel channel proxy interface on the Connection
       # @since 0.4.0
       class BunnyChannelProxy
-        attr_reader :connection, :subject
+        attr_reader :connection,
+                    :subject,
+                    :publish_bindings,
+                    :subscribe_bindings
 
         # @param bunny_connection_proxy [EventSource::Protocols::Amqp::BunnyConnectionProxy] Connection instance
         # @param async_api_channel_item [EventSource::AsyncApi::ChannelItem] Channel item configuration
         # @return [Bunny::ChannelProxy] Channel proxy instance on the RabbitMQ server {Connection}
         def initialize(bunny_connection_proxy, async_api_channel_item)
           @subject = Bunny::Channel.new(bunny_connection_proxy).open
-          unless async_api_channel_item.empty?
-            build_bunny_channel_for(async_api_channel_item)
-          end
-        end
-
-        # def build_bunny_publish_for(exchange, publish_options)
-        #   return unless publish_options
-
-        #   # :timestamp (Integer) — A timestamp associated with this message
-        #   # :expiration (Integer) — Expiration time after which the message will be deleted
-        #   # :mandatory (Boolean) — Should the message be returned if it cannot be routed to any queue?
-        #   # :reply_to (String) — Queue name other apps should send the response to
-        #   # :priority (Integer) — Message priority, 0 to 9. Not used by RabbitMQ, only applications
-        #   # :user_id (String) — Optional user ID. Verified by RabbitMQ against the actual connection username
-
-        #   # :routing_key (String) — Routing key
-        #   # :persistent (Boolean) — Should the message be persisted to disk?
-        #   # :type (String) — Message type, e.g. what type of event or command this message represents. Can be any string
-        #   # :content_type (String) — Message content type (e.g. application/json)
-        #   # :content_encoding (String) — Message content encoding (e.g. gzip)
-        #   # :correlation_id (String) — Message correlated to this one, e.g. what request this message is a reply for
-        #   # :message_id (String) — Any message identifier
-        #   # :app_id (String) — Optional application ID
-
-        #   exchange.publish(
-        #     publish_options[:message][:payload].to_json,
-        #     publish_options[:bindings]
-        #   )
-        # end
-
-        # def build_bunny_subscriber_for(queue, subscribe_options)
-        #   # TODO: remap exclusive? at channel bindings level for amqp
-        #   #   exclusive
-        #   #   on_cancellation
-        #   #   consumer_tag
-        #   #   arguments
-        #   manual_ack = subscribe_options[:ack]
-
-        #   queue.subscribe(
-        #     { manual_ack: manual_ack }
-        #   ) do |delivery_info, properties, payload|
-        #     puts "Received #{payload}, message properties are #{properties.inspect}"
-        #   end
-        # end
-
-        def build_bunny_channel_for(async_api_channel_item)
-          # type = async_api_channel_item[:type]
-          # Bunny::Channel.new(connection, nil, work_pool, options)
-          # channel = Bunny::Channel.new(connection)
-          channel_bindings = async_api_channel_item[:bindings][:amqp]
-          exchange =
-            build_exchange(channel_bindings[:exchange]) if channel_bindings[
-            :exchange
-          ]
-          queue = build_queue(channel_bindings[:queue]) if channel_bindings[
-            :queue
-          ]
-
-          if exchange && queue
-            bind_queue(channel_bindings[:queue][:name], exchange)
-          end
-
-          # if queue
-          #   build_bunny_subscriber_for(
-          #     queue,
-          #     async_api_channel_item[:subscribe]
-          #   )
-          # end
-
-          # build_bunny_publish_for(exchange, async_api_channel_item[:publish]) if exchange
-        end
-
-        def build_exchange(bindings)
-          add_exchange(
-            bindings[:type],
-            bindings[:name],
-            bindings.slice(:durable, :auto_delete, :vhost)
-          )
-        end
-
-        def build_queue(bindings)
-          add_queue(
-            bindings[:name],
-            bindings.slice(:durable, :auto_delete, :vhost, :exclusive)
-          )
         end
 
         def queues
@@ -120,12 +38,12 @@ module EventSource
           exchanges.detect { |exchange| exchange.name == name }
         end
 
-        def add_queue(queue_name, options = {})
-          Bunny::Queue.new(@subject, queue_name, options)
+        def add_queue(bindings, channel_name)
+          BunnyQueueProxy.new(@subject, bindings, channel_name)
         end
 
-        def add_exchange(type, exchange_name, options = {})
-          Bunny::Exchange.new(@subject, type, exchange_name, options)
+        def add_exchange(bindings)
+          BunnyExchangeProxy.new(@subject, bindings)
         end
 
         def method_missing(name, *args)
