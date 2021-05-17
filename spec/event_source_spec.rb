@@ -1,11 +1,18 @@
 # frozen_string_literal: true
 
-# RSpec.describe EventSource do
-#   it "has a version number" do
-#     expect(EventSource::VERSION).not_to be nil
-#   end
-
 require 'spec_helper'
+
+# This spec verifies Webmock is intercepting network API calls
+RSpec.describe EventSource do
+  it 'queries an outside source' do
+    uri =
+      URI('https://api.github.com/repos/thoughtbot/factory_girl/contributors')
+
+    response = Oj.load(Net::HTTP.get(uri))
+    expect(response.first['login']).to eq 'joshuaclayton'
+    # expect(response).to be_an_instance_of(String)
+  end
+end
 
 RSpec.describe Parties::Organization::CorrectOrUpdateFein do
   context 'Call the Organization Create Service and store a record with an incorrect FEIN value' do

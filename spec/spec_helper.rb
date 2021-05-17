@@ -10,6 +10,9 @@ require 'event_source'
 # require "active_support/all"
 require File.expand_path('../rails_app/config/environment', __FILE__)
 
+# Load spec dependencies
+Dir[File.join('.', 'spec', 'support', '**', '*.rb')].sort.each { |f| require f }
+
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
   config.example_status_persistence_file_path = '.rspec_status'

@@ -8,6 +8,7 @@ require 'dry/monads/do'
 require 'dry/monads/result'
 require 'dry/validation'
 require 'dry-struct'
+require 'oj'
 require 'active_support/all' # TODO: Remove ActiveSupport dependency
 
 require 'event_source/version'
@@ -48,10 +49,10 @@ module EventSource
                    :load_components
 
     def configure
-      yield(config)
-      load_protocols
-      load_configurations
-      load_components
+      # yield(config)
+      # load_protocols
+      # load_configurations
+      # load_components
     end
 
     def config

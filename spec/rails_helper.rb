@@ -5,12 +5,14 @@ ENV['RAILS_ENV'] ||= 'test'
 require 'spec_helper'
 
 # Prevent database truncation if the environment is production
-abort("The Rails environment is running in production mode!") if Rails.env.production?
+if Rails.env.production?
+  abort('The Rails environment is running in production mode!')
+end
 require 'rspec/rails'
 # Add additional requires below this line. Rails is not loaded until this point!
-# require 'mongoid-rspec'
+require 'mongoid-rspec'
 # require 'shoulda/matchers'
-# require 'database_cleaner'
+require 'database_cleaner'
 # require 'capybara/rails'
 # require 'capybara/rspec'
 # require "forgery"
@@ -27,9 +29,7 @@ require 'rspec/rails'
 # FactoryBot.find_definitions
 
 Shoulda::Matchers.configure do |config|
-  config.integrate do |with|
-    with.test_framework :rspec
-  end
+  config.integrate { |with| with.test_framework :rspec }
 end
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
@@ -44,7 +44,7 @@ end
 # directory. Alternatively, in the individual `*_spec.rb` files, manually
 # require only the support files necessary.
 #
-Dir[Rails.root.join('spec/support/**/*.rb')].sort.each { |f| require f }
+# Dir[Rails.root.join('spec/support/**/*.rb')].sort.each { |f| require f }
 
 # Checks for pending migration and applies them before tests are run.
 # If you are not using ActiveRecord, you can remove this line.
@@ -54,7 +54,8 @@ RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   # config.fixture_path = "#{::Rails.root}/spec/fixtures"
 
-  DatabaseCleaner.strategy = :truncation, { :except => %w[translations] }
+  DatabaseCleaner.strategy = :truncation, { except: %w[translations] }
+
   # If you're not using ActiveRecord, or you'd prefer not to run each of your
   # examples within a transaction, remove the following line or assign false
   # instead of true.
@@ -77,17 +78,38 @@ RSpec.configure do |config|
 
   # Filter lines from Rails gems in backtraces.
   config.filter_rails_from_backtrace!
+
+  # require 'mongoid'
+  # Mongoid.load!(
+  #   Dir[SPEC_ROOT.join('rails_app', 'config', 'mongoid.yml')].first,
+  #   :test
+  # )
+  # Mongoid.logger.level = Logger::DEBUG
+
   # arbitrary gems may also be filtered via:
+
   # config.filter_gems_from_backtrace("gem name")
   config.include Mongoid::Matchers, type: :model
   config.include FactoryBot::Syntax::Methods
   config.include Capybara::DSL
 
-  config.after(:example, :dbclean => :after_each) do
-    DatabaseCleaner.clean
-  end
+  # require 'database_cleaner'
 
-  config.around(:example, :dbclean => :around_each) do |example|
+  # RSpec.configure do |config|
+  #   config.before(:suite) do
+  #     DatabaseCleaner.strategy = :deletion
+  #     DatabaseCleaner.clean_with(:deletion)
+  #   end
+
+  #   config.around(:each) do |example|
+  #     DatabaseCleaner.cleaning do
+  #       example.run
+  #     end
+  #   end
+  # end
+  config.after(:example, dbclean: :after_each) { DatabaseCleaner.clean }
+
+  config.around(:example, dbclean: :around_each) do |example|
     DatabaseCleaner.clean
     example.run
     DatabaseCleaner.clean
