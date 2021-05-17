@@ -17,7 +17,7 @@ servers:
     protocolVersion: "0.9.2"
     description: RabbitMQ Test Server
 channels:
-  polypress.parties.organizations:
+  enroll.parties.organizations:
     publish:
       operationId: enroll.parties.organizations.fein_corrected
       summary: Organization FEIN Corrected
@@ -42,7 +42,7 @@ channels:
           # bcc: ['external.audit']
           # bindingVersion: 0.1.0
     subscribe:
-      operationId: on_polypress_parties_organizations_fein_corrected
+      operationId: on_enroll_parties_organizations_fein_corrected
       summary: Organizaation FEIN Corrected
       message:
         $ref: "#/components/messages/crm_sugar_crm_contacts_contact_created_event"
@@ -64,7 +64,7 @@ channels:
         is: :routing_key
         binding_version: '0.2.0'
         queue:
-          name: on_polypress_parties_organizations_fein_corrected
+          name: on_enroll_parties_organizations_fein_corrected
           durable: true
           auto_delete: true
           vhost: '/'

@@ -49,10 +49,10 @@ module EventSource
                    :load_components
 
     def configure
-      # yield(config)
-      # load_protocols
-      # load_configurations
-      # load_components
+      yield(config)
+      load_protocols
+      load_configurations
+      load_components
     end
 
     def config
