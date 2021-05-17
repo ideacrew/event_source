@@ -7,7 +7,7 @@ module EventSource
 
     ADAPTER_METHODS = %i[
         connection
-        connect
+        start
         active?
         connection_params
         protocol_version

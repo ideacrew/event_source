@@ -18,7 +18,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyConnectionProxy do
   end
   
   context 'Adapter pattern methods are present' do
-    let(:adapter_methods) { EventSource::AsyncApi::Connection::ADAPTER_METHODS }
+    let(:adapter_methods) { EventSource::Connection::ADAPTER_METHODS }
 
     it 'should have all the required methods' do
       expect(described_class.new(my_server)).to respond_to(*adapter_methods)
@@ -92,7 +92,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyConnectionProxy do
 
       it 'should raise an error' do
         expect {
-          described_class.new(invalid_server).connect
+          described_class.new(invalid_server).start
         }.to raise_error EventSource::Protocols::Amqp::Error::ConnectionError
       end
     end
@@ -169,7 +169,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyConnectionProxy do
       after { result.close }
       it 'should successfully connect to RabbitMQ Server' do
         expect(result).to be_a EventSource::Protocols::Amqp::BunnyConnectionProxy
-        expect(result.connect).to be_truthy
+        expect(result.start).to be_truthy
         expect(result.active?).to be_truthy
       end
     end
