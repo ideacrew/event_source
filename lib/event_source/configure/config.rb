@@ -10,6 +10,10 @@ module EventSource
       #TODO: add default for pub_sub_root
       attr_writer :asyncapi_resources, :pub_sub_root, :protocols
 
+      def logger
+        EventSource::Logging.logger
+      end
+
       def load_protocols
         @protocols.each do |protocol|
           require "event_source/protocols/#{protocol}_protocol"
@@ -18,17 +22,15 @@ module EventSource
 
       def load_configurations
         connection_manager = EventSource::ConnectionManager.instance
+
         @asyncapi_resources.each do |resource|
           resource.deep_symbolize_keys!
           connection =
             connection_manager.add_connection(resource[:servers][:production])
-
-          # logger.info('load_configurations') { "connecting" }
+          logger.info { "Connecting #{connection.connection_uri}" }
           connection.start
-
-          # logger.info('load_configurations') { "connected" }
+          logger.info { "Connected to #{connection.connection_uri}" }
           connection.add_channels(channels: resource[:channels])
-          # logger.info('load_configurations') { "channels added" }
         end
       end
 

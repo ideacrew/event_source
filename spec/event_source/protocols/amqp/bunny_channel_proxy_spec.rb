@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
   # let(:protocol) { :amqp }
@@ -158,7 +158,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
     }
   end
 
-  before { connection.connect unless connection.active? }
+  before { connection.start unless connection.active? }
   after { connection.disconnect if connection.active? }
 
   let(:channel_proxy) do

@@ -2,28 +2,31 @@
 require 'logging'
 
 module EventSource
-  # class Application < Rails::Application
-  layout =
-    Logging.layouts.pattern(
-      pattern: '[%d] %-5l %c: %m\n',
-      date_pattern: '%Y-%m-%d %H:%M:%S.%L'
-    )
+  class Logging
 
-  # only show "info" or higher messages on STDOUT using the Basic layout
-  Logging.appenders.stdout(level: :info, layout: layout)
+    def self.logger
+      return @logger if defined? @logger
+      layout =
+      ::Logging.layouts.pattern(
+        pattern: '[%d] %-5l %c: %m\n',
+        date_pattern: '%Y-%m-%d %H:%M:%S.%L'
+      )
 
-  # send all log events to the development log (including debug) as JSON
-  Logging.appenders.rolling_file(
-    'development.log',
-    age: 'daily',
-    layout: Logging.layouts.json
-  )
+      # only show "info" or higher messages on STDOUT using the Basic layout
+      ::Logging.appenders.stdout(level: :debug, layout: layout)
 
-  logger = Logging.logger['Foo::Bar']
-  logger.add_appenders 'stdout', 'development.log'
-  logger.level = :debug
+      # send all log events to the development log (including debug) as JSON
+     ::Logging.appenders.rolling_file(
+        'event_source.log',
+        age: 'daily',
+        level: :info,
+        layout: ::Logging.layouts.json
+      )
 
-  logger = Logging.logger(STDOUT)
-  logger.level = :info
-  # config.logger = logger
+      @logger = ::Logging.logger['EventSource']
+      @logger.add_appenders 'stdout', 'event_source.log'
+      @logger
+    end
+
+  end
 end

@@ -4,12 +4,6 @@ require 'bundler/setup'
 require 'pry'
 require 'event_source'
 
-# Set up the local context
-
-# Bring in the Rails test harness
-# require "active_support/all"
-require File.expand_path('../rails_app/config/environment', __FILE__)
-
 # Load spec dependencies
 Dir[File.join('.', 'spec', 'support', '**', '*.rb')].sort.each { |f| require f }
 

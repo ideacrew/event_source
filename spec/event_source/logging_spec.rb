@@ -1,16 +1,16 @@
 # frozen_string_literal: true
 require 'event_source/logging'
 
-RSpec.describe EventSource do
-  let(:logger) { Logging.logger['SuperLogger'] }
+RSpec.describe EventSource::Logging do
+  # let(:logger) { described_class.logger['EventSource::Logging'] }
+  let(:logger) { EventSource.logger }
 
   it 'should be able to read a log message' do
-    binding.pry
     logger.debug 'foo bar'
     logger.warn 'just a little warning'
 
-    @log_output.readline.should be == 'DEBUG SuperLogger: foo bar'
-    @log_output.readline.should be == 'WARN  SuperLogger: just a little warning'
+    expect(@log_output.readline.strip).to eq 'DEBUG  EventSource::Logging : foo bar'
+    expect(@log_output.readline.strip).to eq 'WARN  EventSource::Logging : just a little warning'
   end
 
   # let(:klass) do

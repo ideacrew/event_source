@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Types do
+RSpec.describe EventSource::Types do
   describe 'Types::Uri' do
     subject(:type) { EventSource::AsyncApi::Types::Uri }
     let(:valid_value) { 'amqp://' }
