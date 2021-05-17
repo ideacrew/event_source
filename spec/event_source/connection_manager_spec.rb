@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe EventSource::ConnectionManager do
   context 'A ConnectionManager Singleton instance' do
@@ -14,6 +14,10 @@ RSpec.describe EventSource::ConnectionManager do
     end
 
     context 'and no connections are present' do
+      before do
+        connection_manager.drop_connections_for(:amqp)
+      end
+
       it 'the connnections should be empty' do
         expect(connection_manager.connections).to be_empty
       end
@@ -62,21 +66,18 @@ RSpec.describe EventSource::ConnectionManager do
         context 'and connections are present' do
           let(:connection_url) { 'amqp://localhost:5672/' }
 
+          before do
+            connection_manager.add_connection(my_server)
+          end
+
           it 'should have a connection' do
             expect(
               connection_manager.connections[connection_url]
             ).to be_an_instance_of EventSource::Connection
           end
 
-          context "and a connection is added that's already present" do
-            it 'should raise an error' do
-              expect {
-                connection_manager.add_connection(my_server)
-              }.to raise_error EventSource::Protocols::Amqp::Error::DuplicateConnectionError
-            end
-          end
-
           context 'and an existing connection is dropped' do
+
             it 'should close and remove the connection' do
               expect(
                 connection_manager.drop_connection(connection_url)

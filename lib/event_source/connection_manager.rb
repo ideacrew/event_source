@@ -35,14 +35,20 @@ module EventSource
 
     def drop_connection(connection_uri)
       connection = connections[connection_uri]
-      connection.close if connection.active?
+      connection.disconnect if connection.active?
       connections.delete connection_uri
       connections
     end
 
     def connections_for(protocol)
-      connections.reduce([]) do |connections, (connection_uri, connection_instance)|
-        connections.push(connection_instance) if URI.parse(connection_uri).scheme.to_sym == protocol
+      connections.reduce([]) do |data, (connection_uri, connection_instance)|
+        data.push(connection_instance) if URI.parse(connection_uri).scheme.to_sym == protocol
+      end
+    end
+
+    def drop_connections_for(protocol)
+      connections.each do |connection_uri, connection_instance|
+        drop_connection(connection_uri) if URI.parse(connection_uri).scheme.to_sym == protocol
       end
     end
 

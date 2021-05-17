@@ -10,7 +10,7 @@ RSpec.describe EventSource::AsyncApi::Operations::Channels::Load do
     context 'with a Channels and ChannelItem' do
       it 'should create new Channels instance' do
         result = subject.call(dir: async_api_folder).value!
-        expect(result.first).to be_a EventSource::AsyncApi::Channels
+        expect(result.first).to be_a Hash
       end
     end
   end
