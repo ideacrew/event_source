@@ -16,7 +16,7 @@ module EventSource
     # Describes a message received on a given channel and operation
     class Message < Dry::Struct
       # @!attribute [r] headers
-      # Schema definition of the application headers. Schema must be of type “object”.
+      # Schema definition of the application headers. Schema must be of type "object".
       # It must not define the protocol headers.
       # @return [Schema]
       attribute :headers, Schema

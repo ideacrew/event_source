@@ -36,15 +36,15 @@ module EventSource
             end
           end
 
-          rule(:is) do
-            if key? && value?
-              if value[:queue]
-                # verify keys for queue schema are present
-              else
-                # verify keys for exchange schema are present
-              end
-            end
-          end
+          # rule(:is) do
+          #   if key? && value?
+          #     if value[:queue]
+          #       # verify keys for queue schema are present
+          #     else
+          #       # verify keys for exchange schema are present
+          #     end
+          #   end
+          # end
         end
       end
     end

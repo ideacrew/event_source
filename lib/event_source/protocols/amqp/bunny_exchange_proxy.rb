@@ -33,11 +33,11 @@ module EventSource
         private
 
         # Unimplemented Bunny Bindings
-        #   :routing_key (String) — Routing key
-        #   :content_type (String) — Message content type (e.g. application/json)
-        #   :correlation_id (String) — Message correlated to this one, e.g. what request this message is a reply for
-        #   :message_id (String) — Any message identifier
-        #   :app_id (String) — Optional application ID
+        #   :routing_key (String) - Routing key
+        #   :content_type (String) - Message content type (e.g. application/json)
+        #   :correlation_id (String) - Message correlated to this one, e.g. what request this message is a reply for
+        #   :message_id (String) - Any message identifier
+        #   :app_id (String) - Optional application ID
 
         # Unsupported AsyncApi Bindings
         #   cc: ['user.logs']

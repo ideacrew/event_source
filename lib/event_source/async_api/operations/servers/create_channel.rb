@@ -12,7 +12,7 @@ module EventSource
           # @param [EventSource::AsyncApi::Channel] params The Channel
           # @return [Dry::Monads::Result] Operation Success or Failure
           def call(params)
-            values = yield validate(params)
+            yield validate(params)
 
             # Verify connection is active
             # Verify this channel name is availble

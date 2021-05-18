@@ -6,7 +6,7 @@ module EventSource
     # from the Message object, except payload and traits
     class MessageTrait < Dry::Struct
       # @!attribute [r] headers
-      # Schema definition of the application headers. Schema must be of type “object”.
+      # Schema definition of the application headers. Schema must be of type "object".
       # It must not define the protocol headers.
       # @return [EventSource::AsyncApi::Schema]
       attribute :headers, EventSource::AsyncApi::Schema
@@ -37,7 +37,7 @@ module EventSource
       attribute :schema_format, Types::String
 
       # @!attribute [r] content_type
-      # The content type to use when encoding/decoding a message’s payload. The value must be a
+      # The content type to use when encoding/decoding a message's payload. The value must be a
       # specific media type (e.g. application/json). When omitted, the value must be the one specified
       # on the default_content_type field
       # @return [String]

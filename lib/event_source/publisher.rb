@@ -65,10 +65,9 @@ module EventSource
         channel = connection.channel_by_name(channel_name.to_sym)
         exchange = channel.exchanges[exchange_name]
 
-        unless exchange
-          raise EventSource::AsyncApi::Error::ExchangeNotFoundError,
-                "exchange #{exchange_name} not found"
-        end
+        return if exchange
+        raise EventSource::AsyncApi::Error::ExchangeNotFoundError,
+              "exchange #{exchange_name} not found"
       end
 
       def connection
