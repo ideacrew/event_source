@@ -27,9 +27,9 @@ module EventSource
       #   raise EventSource::Protocols::Amqp::Error::DuplicateConnectionError,
       #     "Connection already exists for #{connection_uri}"
       # else
-        client = client_klass.new(async_api_server)
-        connections[connection_uri] =
-          EventSource::Connection.new(client)
+      client = client_klass.new(async_api_server)
+      connections[connection_uri] =
+        EventSource::Connection.new(client)
       # end
     end
 
@@ -47,12 +47,12 @@ module EventSource
     end
 
     def drop_connections_for(protocol)
-      connections.each do |connection_uri, connection_instance|
+      connections.each do |connection_uri, _connection_instance|
         drop_connection(connection_uri) if URI.parse(connection_uri).scheme.to_sym == protocol
       end
     end
 
-    # TODO do we need a method to gracefully close all open connections at shutdown?
+    # TODO: do we need a method to gracefully close all open connections at shutdown?
 
     private
 
@@ -64,11 +64,11 @@ module EventSource
         EventSource::Protocols::Http::FaradayConnectionProxy
       else
         raise EventSource::Protocols::Amqp::Error::UnknownConnectionProtocolError,
-          "unknown protocol: #{protocol}"
-          end
+              "unknown protocol: #{protocol}"
+      end
 
-         # raise EventSource::AsyncApi::Error::UnknownConnectionProtocolError,
-         #        "unknown protocol: #{protocol}"
+      # raise EventSource::AsyncApi::Error::UnknownConnectionProtocolError,
+      #        "unknown protocol: #{protocol}"
     end
   end
 end

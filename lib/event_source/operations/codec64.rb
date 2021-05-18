@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'base64'
 
 module EventSource
@@ -36,7 +37,7 @@ module EventSource
 
       def transform_file(params)
         filename = params[:source_filename]
-        if File.exists?(filename) && File.readable?(filename)
+        if File.exist?(filename) && File.readable?(filename)
           encoded_string =
             File.open(filename, 'r') do |file|
               # Base64.strict_encode64(file.read)

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'deep_merge'
 
 module EventSource
@@ -7,7 +8,7 @@ module EventSource
     class Config
       include EventSource::Logging
 
-      #TODO: add default for pub_sub_root
+      # TODO: add default for pub_sub_root
       attr_writer :asyncapi_resources, :pub_sub_root, :protocols
 
       def load_protocols

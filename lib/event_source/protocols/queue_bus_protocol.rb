@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'bunny'
 require 'uri'
 
@@ -10,8 +11,7 @@ require_relative 'queue_bus/bunny_queue_proxy'
 require_relative 'queue_bus/bunny_channel_proxy'
 require_relative 'queue_bus/bunny_connection_proxy'
 
-Dir[File.expand_path('lib/event_source/protocols/queue_bus/contracts/**/*.rb')]
-      .each { |f| require(f) }
+Dir[File.expand_path('lib/event_source/protocols/queue_bus/contracts/**/*.rb')].sort.each { |f| require(f) }
 
 module EventSource
   module AsyncApi

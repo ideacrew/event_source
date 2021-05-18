@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'faraday'
 require 'uri'
 
@@ -10,8 +11,7 @@ require_relative 'http/types'
 require_relative 'http/faraday_channel_proxy'
 require_relative 'http/faraday_connection_proxy'
 
-Dir[File.expand_path('lib/event_source/protocols/http/contracts/**/*.rb')]
-  .each { |f| require(f) }
+Dir[File.expand_path('lib/event_source/protocols/http/contracts/**/*.rb')].sort.each { |f| require(f) }
 
 module EventSource
   module Protocols

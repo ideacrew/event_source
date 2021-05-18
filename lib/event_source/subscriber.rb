@@ -7,7 +7,7 @@ require 'concurrent/map'
 module EventSource
   # Subscribes to the events
   class Subscriber < Module
-  # module Subscriber
+    # module Subscriber
     include Dry::Equalizer(:protocol, :exchange)
 
     attr_reader :protocol, :exchange
@@ -32,7 +32,7 @@ module EventSource
     end
 
     def included(base)
-      self.class.subscriber_container[base] = {exchange: exchange, protocol: protocol}
+      self.class.subscriber_container[base] = { exchange: exchange, protocol: protocol }
       base.extend ClassMethods
 
       TracePoint.trace(:end) do |t|
@@ -45,7 +45,7 @@ module EventSource
 
     # methods to register subscriptions
     module ClassMethods
- 
+
       def exchange_name
         EventSource::Subscriber.subscriber_container[self][:exchange]
       end
@@ -55,7 +55,7 @@ module EventSource
       end
 
       def subscribe(queue_name, &block)
-        channel_name = exchange_name #.match(/^(.*).exchange$/)[1]
+        channel_name = exchange_name # .match(/^(.*).exchange$/)[1]
         channel = connection.channels[channel_name.to_sym]
         queue = channel.queues[queue_name.to_s]
 
@@ -68,9 +68,7 @@ module EventSource
 
       def register_subscription_methods
         instance_methods(false).each do |method_name|
-          if method_name.match(/^on_(.*)$/)
-            subscribe(method_name)
-          end
+          subscribe(method_name) if method_name.match(/^on_(.*)$/)
         end
       end
 

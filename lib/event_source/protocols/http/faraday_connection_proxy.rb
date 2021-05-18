@@ -14,7 +14,7 @@ module EventSource
                     :server_options,
                     :connection_uri
 
-        HttpOptionDefaults = {}
+        HttpOptionDefaults = {}.freeze
 
         ProtocolVersion = '0.1.0'
         ClientVersion = Faraday::VERSION
@@ -46,7 +46,7 @@ module EventSource
         end
 
         def active?
-          @subject && @subject.open?
+          @subject&.open?
         end
 
         def close

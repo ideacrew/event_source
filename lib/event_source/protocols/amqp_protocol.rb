@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'bunny'
 require 'uri'
 
@@ -11,8 +12,7 @@ require_relative 'amqp/bunny_channel_proxy'
 require_relative 'amqp/bunny_connection_proxy'
 require_relative 'amqp/bunny_consumer_proxy'
 
-Dir[File.expand_path('lib/event_source/protocols/amqp/contracts/**/*.rb')]
-  .each { |f| require(f) }
+Dir[File.expand_path('lib/event_source/protocols/amqp/contracts/**/*.rb')].each { |f| require(f) }
 
 module EventSource
   module Protocols

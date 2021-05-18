@@ -6,15 +6,15 @@ module EventSource
     attr_reader :channels
 
     ADAPTER_METHODS = %i[
-        connection
-        start
-        active?
-        connection_params
-        protocol_version
-        client_version
-        connection_uri
-        add_channel
-      ]
+      connection
+      start
+      active?
+      connection_params
+      protocol_version
+      client_version
+      connection_uri
+      add_channel
+    ].freeze
 
     def initialize(connection_proxy)
       @client = connection_proxy
