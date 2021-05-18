@@ -16,7 +16,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyConnectionProxy do
       description: description
     }
   end
-  
+
   context 'Adapter pattern methods are present' do
     let(:adapter_methods) { EventSource::Connection::ADAPTER_METHODS }
 
@@ -91,9 +91,9 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyConnectionProxy do
       end
 
       it 'should raise an error' do
-        expect {
+        expect do
           described_class.new(invalid_server).start
-        }.to raise_error EventSource::Protocols::Amqp::Error::ConnectionError
+        end.to raise_error EventSource::Protocols::Amqp::Error::ConnectionError
       end
     end
 

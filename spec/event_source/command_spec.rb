@@ -29,7 +29,7 @@ RSpec.describe EventSource::Command do
     context 'with an invalid event_key' do
       it 'should raise an error' do
         pet_array =
-          YAML.load(File.read('spec/support/asyncapi/amqp_example_1.yml'))
+          YAML.safe_load(File.read('spec/support/asyncapi/amqp_example_1.yml'))
 
         result = invalid_command.new.call
         expect(result).to be_failure

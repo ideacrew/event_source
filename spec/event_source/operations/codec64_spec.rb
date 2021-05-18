@@ -8,9 +8,9 @@ RSpec.describe EventSource::Operations::Codec64 do
     let(:source_filename) { 'phoney_phoney_phoney.file' }
 
     it 'should raise an error' do
-      expect {
+      expect do
         subject.call(transform: transform, source_filename: source_filename)
-      }.to raise_error EventSource::Error::FileAccessError
+      end.to raise_error EventSource::Error::FileAccessError
     end
   end
 
@@ -27,7 +27,7 @@ RSpec.describe EventSource::Operations::Codec64 do
         subject.call(transform: transform, source_filename: source_filename)
 
       expect(result.success?).to be_truthy
-      expect((result.value!).size).to eq file_content_encoded_size
+      expect(result.value!.size).to eq file_content_encoded_size
       expect(result.value!).to start_with file_content_encoded_start_chars
     end
   end

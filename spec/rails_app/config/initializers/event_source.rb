@@ -21,7 +21,7 @@ EventSource.configure do |config|
   # ]
 
   # TODO: define constant in Aca Entities
-  # config.asyncapi_resources = Pathname.pwd.join('spec', 'support', 'async_api_files') 
+  # config.asyncapi_resources = Pathname.pwd.join('spec', 'support', 'async_api_files')
   # config.asyncapi_resources = AcaEntities::AsyncApi::Mitc
   # config.asyncapi_resources = AcaEntities.find_resources_for(:enroll, %w[amqp resque_bus]) # will give you resouces in array of hashes form
   # AcaEntities::Operations::AsyncApi::FindResource.new.call(self)

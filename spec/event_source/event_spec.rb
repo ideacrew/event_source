@@ -200,11 +200,11 @@ RSpec.describe EventSource::Event do
 
       it 'attribute_keys should be present' do
         expect(subject.attribute_keys).to eq %i[
-             hbx_id
-             entity_kind
-             fein
-             legal_name
-           ]
+          hbx_id
+          entity_kind
+          fein
+          legal_name
+        ]
       end
       it '#event_errors should be empty' do
         expect(subject.event_errors).to be_empty

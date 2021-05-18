@@ -17,7 +17,6 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
   #   }
   # end
 
-
   let(:protocol) { :amqp }
   let(:url) { 'amqp://localhost:5672/' }
   let(:protocol_version) { '0.9.1' }
@@ -34,7 +33,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
 
   let(:client) { EventSource::Protocols::Amqp::BunnyConnectionProxy.new(my_server) }
   let(:connection) { EventSource::Connection.new(client) }
-  
+
   let(:channel_id) { 'crm.contact_created' }
 
   let(:publish_operation) do
@@ -43,9 +42,9 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
       summary: "SugarCRM Contact Created",
       message: {
         "$ref": "#/components/messages/crm_sugar_crm_contacts_contact_created_event",
-        payload: {"hello"=>"world!!"}
+        payload: { "hello" => "world!!" }
       },
-      bindings:  {
+      bindings: {
         binding_version: '0.2.0',
         timestamp: Time.now.to_i,
         expiration: 1,
@@ -66,9 +65,9 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
       summary: "SugarCRM Contact Created",
       message: {
         "$ref": "#/components/messages/crm_sugar_crm_contacts_contact_created_event",
-        payload: {"hurray"=>"world!!"}
+        payload: { "hurray" => "world!!" }
       },
-      bindings:  {
+      bindings: {
         binding_version: '0.2.0',
         timestamp: Time.now.to_i,
         expiration: 1,
@@ -94,7 +93,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
         expiration: 1,
         # cc: ['user.logs'],
         priority: 1,
-        delivery_mode: 2,
+        delivery_mode: 2
         # reply_to: 'crm.contact_created',
         # user_id: 'enroll_app.system'
       }
@@ -112,7 +111,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
         expiration: 1,
         # cc: ['user.logs'],
         priority: 1,
-        delivery_mode: 2,
+        delivery_mode: 2
         # reply_to: 'crm.contact_created',
         # user_id: 'enroll_app.system'
       }
@@ -120,27 +119,27 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
   end
 
   let(:channel_bindings) do
-      {
-        amqp: {
-          is: :routing_key,
-          binding_version: '0.2.0',
-          queue: {
-            name: 'on_contact_created',
-            durable: true,
-            auto_delete: true,
-            vhost: '/',
-            exclusive: true
-          },
-          exchange: {
-            name: 'crm_contact_created',
-            type: :fanout,
-            durable: true,
-            auto_delete: true,
-            vhost: '/'
-          }
+    {
+      amqp: {
+        is: :routing_key,
+        binding_version: '0.2.0',
+        queue: {
+          name: 'on_contact_created',
+          durable: true,
+          auto_delete: true,
+          vhost: '/',
+          exclusive: true
+        },
+        exchange: {
+          name: 'crm_contact_created',
+          type: :fanout,
+          durable: true,
+          auto_delete: true,
+          vhost: '/'
         }
       }
-    end
+    }
+  end
 
   let(:channel_item) do
     {

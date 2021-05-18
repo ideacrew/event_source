@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'sinatra/base'
 
 class FakeGitHub < Sinatra::Base
@@ -11,6 +13,6 @@ class FakeGitHub < Sinatra::Base
     content_type :json
     status response_code
 
-    File.open(File.dirname(__FILE__) + '/../fixtures/' + file_name).read
+    File.open("#{File.dirname(__FILE__)}/../fixtures/#{file_name}").read
   end
 end

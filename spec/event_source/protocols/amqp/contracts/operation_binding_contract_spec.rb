@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe EventSource::Protocols::Amqp::Contracts::OperationBindingContract do
- 
+
   context 'with valid parameters' do
 
     let(:required_params) do

@@ -38,9 +38,9 @@ RSpec.describe EventSource::AsyncApi::Contracts::ChannelsContract do
         summary: "SugarCRM Contact Created",
         message: {
           "$ref": "#/components/messages/crm_sugar_crm_contacts_contact_created_event",
-          payload: {"type"=>"object"}
+          payload: { "type" => "object" }
         },
-        bindings: {} #operation bindings
+        bindings: {} # operation bindings
       }
     end
 
@@ -50,9 +50,9 @@ RSpec.describe EventSource::AsyncApi::Contracts::ChannelsContract do
         summary: "SugarCRM Contact Created",
         message: {
           "$ref": "#/components/messages/crm_sugar_crm_contacts_contact_created_event",
-          payload: {"type"=>"object"}
+          payload: { "type" => "object" }
         },
-        bindings: {} #operation bindings
+        bindings: {} # operation bindings
       }
     end
 
@@ -64,7 +64,7 @@ RSpec.describe EventSource::AsyncApi::Contracts::ChannelsContract do
       }
     end
 
-    let(:all_params) { { channels: Hash[channel_id, channel_item] } }
+    let(:all_params) { { channels: { channel_id => channel_item } } }
     let(:required_params) { all_params }
 
     context 'with a Channel only' do
@@ -75,10 +75,10 @@ RSpec.describe EventSource::AsyncApi::Contracts::ChannelsContract do
     end
 
     context 'with Channel and ChannelItem' do
-      it 'should pass validation'# do
+      it 'should pass validation' # do
       #   expect(subject.call(all_params).success?).to be_truthy
       # end
-      it 'should return validated params'# do
+      it 'should return validated params' # do
       #   expect(subject.call(all_params).to_h).to eq all_params
       # end
     end

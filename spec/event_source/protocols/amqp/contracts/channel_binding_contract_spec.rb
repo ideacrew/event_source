@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe EventSource::Protocols::Amqp::Contracts::ChannelBindingContract do
- 
-  describe 'Queue binding' do 
+
+  describe 'Queue binding' do
     context 'with valid parameters' do
 
       let(:required_params) do
@@ -30,7 +30,7 @@ RSpec.describe EventSource::Protocols::Amqp::Contracts::ChannelBindingContract d
     end
   end
 
-  describe 'Exchange binding' do 
+  describe 'Exchange binding' do
     context 'with valid parameters' do
 
       let(:required_params) do
