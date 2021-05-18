@@ -6,6 +6,7 @@ module EventSource
   module AsyncApi
     module Operations
       module Channels
+        # load channel params from given file path
         class LoadPath
           send(:include, Dry::Monads[:result, :do, :try])
 

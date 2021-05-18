@@ -4,7 +4,7 @@ module EventSource
   module AsyncApi
     module Operations
       module Channels
-
+        # Performs Channel open
         class Open
           send(:include, Dry::Monads[:result, :do])
 

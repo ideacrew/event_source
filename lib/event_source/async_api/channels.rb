@@ -5,7 +5,7 @@ module EventSource
     # An addressable component made available by the {Server} for the organization of {Message Messages}
     # Holds the relative paths to the individual channel and their operations. Channel
     # paths are relative to servers.
-    # Channels are also known as “topics”, “routing keys”, “event types” or “paths”
+    # Channels are also known as "topics", "routing keys", "event types" or "paths"
     class Channels < Dry::Struct
       # @!attribute [r] channel_item
       # A relative path to an individual channel. The field name MUST be in the form of a

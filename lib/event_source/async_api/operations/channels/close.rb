@@ -5,6 +5,7 @@ module EventSource
     module Operations
       module Channels
 
+        # Performs Channel close
         class Close
           send(:include, Dry::Monads[:result, :do])
 
@@ -17,9 +18,7 @@ module EventSource
 
           def verify(params)
           end
-
         end
-
       end
     end
   end

@@ -24,6 +24,7 @@ module EventSource
             required(:vhost).filled(:string)
           end
 
+        # Schema and validation rules for {EventSource::Protocols::Amqp::ChannelBinding}
         class ChannelBindingContract < Contract
           params do
             required(:amqp).hash do

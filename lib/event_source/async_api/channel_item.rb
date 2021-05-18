@@ -10,7 +10,7 @@ module EventSource
       # @!attribute [r] ref
       # Allows for an external definition of this channel item. The referenced structure
       # MUST be in the format of a Channel Item Object. If there are conflicts between the
-      # referenced definition and this Channel Item’s definition, the behavior is undefined.
+      # referenced definition and this Channel Item's definition, the behavior is undefined.
       # @return [String]
       attribute :ref, Types::String.meta(omittable: true)
 

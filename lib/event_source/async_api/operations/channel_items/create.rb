@@ -4,6 +4,7 @@ module EventSource
   module AsyncApi
     module Operations
       module ChannelItems
+        # Create a {ChannelItem} instance
         class Create
           send(:include, Dry::Monads[:result, :do])
 

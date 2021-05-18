@@ -6,6 +6,7 @@ module EventSource
   module Protocols
     module Amqp
       module Contracts
+        # Schema and validation rules for {EventSource::Protocols::Amqp::MessageBinding}
         class MessageBindingContract < Contract
           params do
             optional(:content_encoding).maybe(:string)

@@ -33,7 +33,7 @@ module EventSource
 
       # @!attribute [r] variables
       # A map between a variable name and its value. The value is used for substitution in the
-      # server’s URL template.
+      # server's URL template.
       # @return [Array<Variable>]
       attribute :variables, Types::Array.of(Variable).meta(omittable: true)
 

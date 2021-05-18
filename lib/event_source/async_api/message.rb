@@ -52,7 +52,7 @@ module EventSource
       attribute :schema_format, Types::String
 
       # @!attribute [r] content_type
-      # The content type to use when encoding/decoding a message’s payload. The value must be a
+      # The content type to use when encoding/decoding a message's payload. The value must be a
       # specific media type (e.g. application/json). When omitted, the value must be the one specified
       # on the default_content_type field
       # @return [String]

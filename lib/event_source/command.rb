@@ -58,7 +58,7 @@ module EventSource
       # @raise EventSource::Errors::EventNameUndefined if corresponding class
       #   isn't found for the event_key
       def event(event_key, options = {})
-        Try() { event = build_command_event(event_key, options) }.to_result
+        Try() { build_command_event(event_key, options) }.to_result
       end
 
       private

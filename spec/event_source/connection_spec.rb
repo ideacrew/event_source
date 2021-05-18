@@ -3,6 +3,12 @@
 require 'rails_helper'
 
 RSpec.describe EventSource::Connection do
+  let(:connection_manager) { EventSource::ConnectionManager.instance }
+
+  before do
+    connection_manager.drop_connections_for(:amqp)
+  end
+
   context 'A Connection instance' do
     let(:async_api_file) { Pathname.pwd.join('spec', 'support', 'async_api_files', 'organization', 'fein_corrected.yml') }
     let(:channel) { EventSource::AsyncApi::Operations::Channels::LoadPath.new.call(path: async_api_file).value! }
@@ -23,6 +29,7 @@ RSpec.describe EventSource::Connection do
     context 'when channels params passed' do
 
       it 'should create individual channels' do
+        connection.start unless connection.active?
         connection.add_channels(channel.deep_symbolize_keys)
       end
     end

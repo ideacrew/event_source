@@ -9,7 +9,7 @@ module EventSource
     # * End-to-end encryption (either symmetric or asymmetric)
     # * HTTP authentication
     # * HTTP API key
-    # * OAuth2’s common flows (Implicit, Resource Owner Protected Credentials, Client Credentials and Authorization Code) as defined in RFC6749
+    # * OAuth2's common flows (Implicit, Resource Owner Protected Credentials, Client Credentials and Authorization Code) as defined in RFC6749
     # * OpenID Connect Discovery
     class SecurityScheme < Dry::Struct
       # @!attribute [r] type

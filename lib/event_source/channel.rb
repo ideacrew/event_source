@@ -24,8 +24,8 @@ module EventSource
       @name = channel_name
       @exchanges = {}
       @queues = {}
-      exchange = add_exchange(channel_item[:publish])
-      queue = add_queue(channel_item[:subscribe])
+      add_exchange(channel_item[:publish])
+      add_queue(channel_item[:subscribe])
     end
 
     def add_exchange(publish_operation = nil)

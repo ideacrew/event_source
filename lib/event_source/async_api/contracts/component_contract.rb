@@ -21,17 +21,16 @@ module EventSource
         end
 
         rule(:field) do
-          if key? && value do
-               # get field value and singularize
-               # constantize
-               # verify object is kind_of? object
+          return unless key? && value
 
-               result = ChannelsContract.new.call(value)
+          # get field value and singularize
+          # constantize
+          # verify object is kind_of? object
 
-               # Use dry-validation metadata form to pass error hash along with text to calling service
-               key.failure(text: 'invalid channel', error: result.errors.to_h) if result&.failure?
-             end
-          end
+          result = ChannelsContract.new.call(value)
+
+          # Use dry-validation metadata form to pass error hash along with text to calling service
+          key.failure(text: 'invalid channel', error: result.errors.to_h) if result&.failure?
         end
       end
     end

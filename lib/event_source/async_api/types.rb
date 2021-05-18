@@ -17,7 +17,6 @@ module EventSource
       #   end
       UriKind =
         Types.Constructor(EventSource::Uris::Uri) do |val|
-          binding.pry
           EventSource::Uris::Uri.new(uri: val)
         end
 

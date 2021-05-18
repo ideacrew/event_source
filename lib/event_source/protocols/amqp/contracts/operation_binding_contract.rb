@@ -4,6 +4,7 @@ module EventSource
   module Protocols
     module Amqp
       module Contracts
+        # Schema and validation rules for {EventSource::Protocols::Amqp::OperationBinding}
         class OperationBindingContract < Contract
           params do
             optional(:expiration).value(
