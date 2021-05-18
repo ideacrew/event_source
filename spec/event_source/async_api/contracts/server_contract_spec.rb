@@ -15,7 +15,7 @@ RSpec.describe EventSource::AsyncApi::Contracts::ServerContract do
 
   let(:variables) { [port: port, user: user, password: password] }
 
-  let(:bindings) {}
+  let(:bindings) {{}}
 
   let(:required_params) { { url: url, protocol: protocol } }
   let(:optional_params) do

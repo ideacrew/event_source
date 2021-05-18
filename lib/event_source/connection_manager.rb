@@ -2,6 +2,7 @@
 
 require 'singleton'
 module EventSource
+  # Implements dsl for managing connections
   class ConnectionManager
     include Singleton
 

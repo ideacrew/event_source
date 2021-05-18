@@ -28,19 +28,29 @@ RSpec.describe EventSource::AsyncApi::Contracts::SecuritySchemeContract do
   let(:all_params) { required_params.merge(optional_params) }
 
   context 'validate required parameters' do
-    let(:required_params_error) { { type: ['is missing'] } }
+    let(:required_params_error) { 
+      [
+        "is missing",
+        "must be Symbol",
+        "must be one of: #{EventSource::AsyncApi::Types::SecuritySchemeKind.values.map(&:to_s).join(', ')}"
+      ]
+    }
 
     context 'sending no parameters should fail with :errors' do
       it { expect(subject.call({}).failure?).to be_truthy }
-      it { expect(subject.call({}).errors.to_h).to eq required_params_error }
+      it do
+        required_params_error.each do |error|
+          expect(subject.call({}).errors.to_h[:type]).to include error
+        end
+      end
     end
 
     context 'sending optional parameters only should fail with :errors' do
       it { expect(subject.call(optional_params).failure?).to be_truthy }
       it do
-        expect(
-          subject.call(optional_params).errors.to_h
-        ).to eq required_params_error
+        required_params_error.each do |error|
+          expect(subject.call({}).errors.to_h[:type]).to include error
+        end
       end
     end
 

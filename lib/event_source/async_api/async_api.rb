@@ -39,7 +39,7 @@ module EventSource
     require_relative 'service'
     require_relative 'contracts/contract'
 
-    Dir[File.expand_path('lib/event_source/async_api/contracts/**/*.rb')].each { |f| require(f) }
-    Dir[File.expand_path('lib/event_source/async_api/operations/**/*.rb')].each { |f| require(f) }
+    Dir[File.expand_path('lib/event_source/async_api/contracts/**/*.rb')].sort.each { |f| require(f) }
+    Dir[File.expand_path('lib/event_source/async_api/operations/**/*.rb')].sort.each { |f| require(f) }
   end
 end
