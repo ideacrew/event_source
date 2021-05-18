@@ -173,11 +173,11 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
     end
   end
 
-  context 'When a connection and channel item passted' do
-    it 'should create queues and exchanges' do
-      channel = channel_proxy.subject
-      expect(channel.queues).to be_present
-      expect(channel.exchanges).to be_present
-    end
-  end
+  # context 'When a connection and channel item passted' do
+  #   it 'should create queues and exchanges' do
+  #     channel = channel_proxy.subject
+  #     expect(channel.queues).to be_present
+  #     expect(channel.exchanges).to be_present
+  #   end
+  # end
 end

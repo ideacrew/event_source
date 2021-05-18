@@ -57,19 +57,20 @@ module EventSource
       event_errors.empty?
     end
 
-    
-
     # Send the event instance to its producer so that it may be accessed by subscribers
     # @raise [EventSource::Error::AttributesInvalid]
     def publish
       raise EventSource::Error::AttributesInvalid, @event_errors unless valid?
 
-      publisher = publisher_klass_for(publisher_key)
-      publisher.publish(self)
-
+      publisher = publisher_klass(publisher_key)
+      # publisher.publish(self)
 
       # EventSource.adapter.enqueue(self)
       # EventSource.adapter.publish("on_#{event_key}".gsub(/\./, '_'), payload)
+    end
+
+    def publisher_klass(key)
+      key.split('.').map(&:camelize).join('::').constantize
     end
 
     def event_key

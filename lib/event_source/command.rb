@@ -58,13 +58,13 @@ module EventSource
       # @raise EventSource::Errors::EventNameUndefined if corresponding class
       #   isn't found for the event_key
       def event(event_key, options = {})
-        Try() { event = build_event(event_key, options) }.to_result
+        Try() { event = build_command_event(event_key, options) }.to_result
       end
 
       private
 
       # @private
-      def build_event(event_key, options = {})
+      def build_command_event(event_key, options = {})
         event_class = event_klass_for(event_key)
         event_class.new(options)
       end
