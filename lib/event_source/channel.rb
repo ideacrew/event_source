@@ -14,6 +14,11 @@ module EventSource
         bind_exchange   
       ]
 
+
+    # @param channel_proxy [EventSource::Protocols::Amqp::BunnyChannelProxy] Channel instance
+    # @param channel_item  [Hash] Channel item configuration
+    # @param channel_name  [String] Channel name
+    # @return [Bunny::Channel] Channel instance on the RabbitMQ server {Connection}
     def initialize(channel_proxy, channel_item, channel_name)
       @channel_proxy = channel_proxy
       @bindings = channel_item[:bindings].values.first || {}
@@ -30,6 +35,11 @@ module EventSource
       @exchanges[bindings[:exchange][:name]] = EventSource::Exchange.new(exchange_proxy, publish_operation)
     end
 
+    # Add a queue configured according to the AsyncAPI ChannelItem bindings. It also binds the
+    # queue to an existing exchange of the same name as channel item name.
+    #
+    # @param subscribe_operation [Hash] Subscribe operation configuration
+    # @return [EventSource::Queue] Queue instance
     def add_queue(subscribe_operation = nil)
       return unless subscribe_operation
       queue_proxy = @channel_proxy.add_queue(bindings[:queue], self.name)

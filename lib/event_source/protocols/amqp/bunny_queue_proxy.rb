@@ -8,6 +8,9 @@ module EventSource
       # enabling access to its API.
       # @since 0.4.0
       class BunnyQueueProxy
+        include EventSource::Logging
+
+        attr_reader :channel
         # @param async_api_channel [EventSource::AsyncApi::Channel] Channel definition and bindings
         # @param [Hash] channel_bindings channel binding settings
         # @option channel_bindings [String] :name queue name
@@ -18,14 +21,32 @@ module EventSource
         # @param async_api_queue [String] Exchange name which to bind this queue
         # @return [Bunny::Queue]
         def initialize(channel_proxy, channel_bindings, exchange_name)
-          @subject =
-            Bunny::Queue.new(
-              channel_proxy,
+          @channel = channel_proxy
+          @subject = bunny_queue_for(channel_bindings)
+          bind_exchange(exchange_name)
+
+          @subject
+        end
+
+        def bind_exchange(exchange_name)
+          if @channel.exchange_exists?(exchange_name)
+            @channel.bind_queue(@subject.name, exchange_name)
+            logger.info "Queue #{@subject.name} bound to exchange #{exchange_name}"
+          else
+            raise EventSource::AsyncApi::Error::ExchangeNotFoundError,
+              "exchange #{exchange_name} not found"
+          end
+        end
+
+        def bunny_queue_for(channel_bindings)
+          queue = Bunny::Queue.new(
+              @channel,
               channel_bindings[:name],
               channel_bindings.slice(:durable, :auto_delete, :vhost, :exclusive)
             )
 
-          channel_proxy.queue_bind(channel_bindings[:name], exchange_name)
+          logger.info "Created queue #{queue.name}"
+          queue
         end
 
         def convert_to_bunny_options(options)

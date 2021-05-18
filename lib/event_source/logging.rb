@@ -2,9 +2,9 @@
 require 'logging'
 
 module EventSource
-  class Logging
+  module Logging
 
-    def self.logger
+    def logger
       return @logger if defined? @logger
       layout =
       ::Logging.layouts.pattern(
@@ -27,6 +27,5 @@ module EventSource
       @logger.add_appenders 'stdout', 'event_source.log'
       @logger
     end
-
   end
 end

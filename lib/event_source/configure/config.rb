@@ -5,14 +5,10 @@ module EventSource
   module Configure
     # This class contains all the configuration for a running queue bus application.
     class Config
-      # include Logging
+      include EventSource::Logging
 
       #TODO: add default for pub_sub_root
       attr_writer :asyncapi_resources, :pub_sub_root, :protocols
-
-      def logger
-        EventSource::Logging.logger
-      end
 
       def load_protocols
         @protocols.each do |protocol|

@@ -1,16 +1,20 @@
 # frozen_string_literal: true
 require 'event_source/logging'
 
+class LogService
+  include EventSource::Logging
+end
+
 RSpec.describe EventSource::Logging do
   # let(:logger) { described_class.logger['EventSource::Logging'] }
-  let(:logger) { EventSource.logger }
+  let(:logger) { LogService.new.logger }
 
   it 'should be able to read a log message' do
     logger.debug 'foo bar'
     logger.warn 'just a little warning'
 
-    expect(@log_output.readline.strip).to eq 'DEBUG  EventSource::Logging : foo bar'
-    expect(@log_output.readline.strip).to eq 'WARN  EventSource::Logging : just a little warning'
+    expect(@log_output.readline.strip).to eq 'DEBUG  EventSource : foo bar'
+    expect(@log_output.readline.strip).to eq 'WARN  EventSource : just a little warning'
   end
 
   # let(:klass) do

@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe EventSource::Connection do
   context 'A Connection instance' do
-    let(:async_api_file) { Pathname.pwd.join('spec', 'support', 'async_api_files', 'async_api_example.yml') }
+    let(:async_api_file) { Pathname.pwd.join('spec', 'support', 'async_api_files', 'organization', 'fein_corrected.yml') }
     let(:channel) { EventSource::AsyncApi::Operations::Channels::LoadPath.new.call(path: async_api_file).value! }
     let(:server_options) {
       {

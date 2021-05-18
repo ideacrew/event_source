@@ -37,12 +37,10 @@ require 'event_source/operations/codec64'
 # Event source provides ability to compose, publish and subscribe to events
 module EventSource
   class << self
-    attr_writer :logger
 
     extend Forwardable
 
     def_delegators :config,
-                   :logger,
                    :pub_sub_root,
                    :load_protocols,
                    :load_configurations,

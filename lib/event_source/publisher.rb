@@ -69,14 +69,6 @@ module EventSource
           raise EventSource::AsyncApi::Error::ExchangeNotFoundError,
                 "exchange #{exchange_name} not found"
         end
-        events.each do |event_key, options|
-          queue_name =
-            (['on'] + channel_name.split('.') + [event_key]).join('_')
-          unless channel.queues[queue_name]
-            raise EventSource::AsyncApi::Error::QueueNotFoundError,
-                  "queue #{queue_name} not found"
-          end
-        end
       end
 
       def connection

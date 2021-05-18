@@ -17,6 +17,7 @@ module EventSource
         # @param async_api_channel_item [EventSource::AsyncApi::ChannelItem] Channel item configuration
         # @return [Bunny::ChannelProxy] Channel proxy instance on the RabbitMQ server {Connection}
         def initialize(bunny_connection_proxy, async_api_channel_item)
+          @connection = bunny_connection_proxy
           @subject = Bunny::Channel.new(bunny_connection_proxy).open
         end
 
@@ -34,16 +35,20 @@ module EventSource
           matched
         end
 
+        def exchange_exists?(exchange_name)
+          !exchange_by_name(exchange_name).nil?
+        end
+
         def exchange_by_name(name)
-          exchanges.detect { |exchange| exchange.name == name }
+          exchanges[name.to_s]
         end
 
         def add_queue(bindings, channel_name)
-          BunnyQueueProxy.new(@subject, bindings, channel_name)
+          BunnyQueueProxy.new(self, bindings, channel_name)
         end
 
         def add_exchange(bindings)
-          BunnyExchangeProxy.new(@subject, bindings)
+          BunnyExchangeProxy.new(self, bindings)
         end
 
         def method_missing(name, *args)
@@ -121,10 +126,6 @@ module EventSource
         # queue(s) using pre-arranged criteria called bindings.
         def exchange
           @exchange = Bunny::Exchange.new
-        end
-
-        def exchange_exists?(exchange)
-          @connection.exchange_exists?(exchange)
         end
 
         # Binds an exchange to another exchange
