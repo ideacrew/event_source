@@ -99,18 +99,23 @@ module EventSource
           params = @connection_params[:http].slice(:params)
           headers = @connection_params[:http].slice(:headers)
 
-          Faraday.new(url: '', params: params, headers: headers) do |conn|
-            response_middleware.each_pair do |component, options|
-              if component.value.nil?
-                conn.response "#{component.key}"
-              else
-                conn.response "#{component.key}", "#{options}"
-              end
-            end
+          Faraday.new(url: @connection_uri, params: params, headers: headers)
+          # ) do |conn|
+          # response_middleware.each_pair do |component, options|
+          # if component.value.nil?
+          #   conn.response "#{component.key}"
+          # else
+          #   conn.response "#{component.key}", "#{options}"
+          # end
+          # end
 
-            # last middleware must be adapter
-            conn.adapter @connection_params[:adapater]
-          end
+          # last middleware must be adapter
+          # conn.adapter @connection_params[:adapter]
+          # end
+        end
+
+        def connection
+          @subject
         end
 
         # Verify connection
@@ -162,8 +167,16 @@ module EventSource
         class << self
           # Creates unique URI for this connection based on
           # {EventSource::AsyncAPI::Server} configuration values
-          # @return [URI] connection key
-          def connection_uri_for(async_api_server); end
+          # @return [String] uri connection key
+          def connection_uri_for(async_api_server)
+            server_uri = URI(async_api_server[:url]).normalize
+
+            URI::HTTP.build(
+              scheme: server_uri.scheme,
+              host: server_uri.host,
+              port: server_uri.port
+            ).to_s
+          end
 
           def connection_params_for(async_api_server); end
         end
