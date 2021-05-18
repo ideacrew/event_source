@@ -12,6 +12,7 @@ PATH
       dry-types (~> 1.5)
       dry-validation (~> 1.6)
       faraday (~> 1.4.1)
+      faraday_middleware
       logging (~> 2.3.0)
       mime-types
       oj (~> 3.11)
@@ -164,6 +165,8 @@ GEM
     faraday-excon (1.1.0)
     faraday-net_http (1.0.1)
     faraday-net_http_persistent (1.1.0)
+    faraday_middleware (1.0.0)
+      faraday (~> 1.0)
     ffi (1.15.0)
     fugit (1.4.5)
       et-orbi (~> 1.1, >= 1.1.8)
