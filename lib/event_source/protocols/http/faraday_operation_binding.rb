@@ -23,7 +23,7 @@ module EventSource
       #               description: The Id of the company.
       #           additionalProperties: false
       #         bindingVersion: '0.1.0'
-      class HttpOperationBinding < Dry::Struct
+      class FaradayOperationBinding < Dry::Struct
         # @!attribute [r] type
         # Required. Type of operation. Its value MUST be either :request or :response
         # @return [Types::HttpOperationBindingTypeKind]

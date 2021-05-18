@@ -11,8 +11,8 @@ require_relative 'http/types'
 # require_relative 'http/faraday_queue_proxy'
 require_relative 'http/faraday_channel_proxy'
 require_relative 'http/faraday_connection_proxy'
-require_relative 'http/faraday_message_binding'
-require_relative 'http/faraday_operation_binding'
+# require_relative 'http/faraday_message_binding'
+# require_relative 'http/faraday_operation_binding'
 
 Dir[File.expand_path('lib/event_source/protocols/http/contracts/**/*.rb')].sort.each { |f| require(f) }
 

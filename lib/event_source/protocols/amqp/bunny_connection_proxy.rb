@@ -61,12 +61,12 @@ module EventSource
           @server_options = options.merge(RabbitMqOptionDefaults)
           @connection_params = self.class.connection_params_for(server)
           @connection_uri = self.class.connection_uri_for(server)
-          @bunny_session = Bunny.new(@connection_params, @server_options)
+          @subject = Bunny.new(@connection_params, @server_options)
         end
 
         # The Connection object
         def connection
-          @bunny_session
+          @subject
         end
 
         # Initiate network connection to RabbitMQ broker
@@ -74,7 +74,7 @@ module EventSource
           return if active?
 
           begin
-            @bunny_session.start
+            @subject.start
           rescue Errno::ECONNRESET
             raise EventSource::Protocols::Amqp::Error::ConnectionError,
                   "Connection failed. network error to: #{connection_params}"
@@ -83,7 +83,7 @@ module EventSource
                   "Connection failed to: #{connection_params}"
           rescue Bunny::PossibleAuthenticationFailureError
             raise EventSource::Protocols::Amqp::Error::AuthenticationError,
-                  "Likely athentication failure for account: #{@bunny_session.user}"
+                  "Likely athentication failure for account: #{@subject.user}"
           rescue StandardError
             raise EventSource::Protocols::Amqp::Error::ConnectionError,
                   "Unable to connect to: #{connection_params}"
@@ -98,23 +98,23 @@ module EventSource
         end
 
         def add_channel(async_api_channel_item)
-          BunnyChannelProxy.new(@bunny_session, async_api_channel_item)
+          BunnyChannelProxy.new(@subject, async_api_channel_item)
         end
 
         # Is the server connection started?
         # return [Boolean]
         def active?
-          @bunny_session&.open?
+          @subject && @subject.open?
         end
 
         # Close the server connection
         def close
-          @bunny_session.close if active?
+          @subject.close if active?
         end
 
         # Attempt to reastablish connection to a disconnected server
         def reconnect
-          @bunny_session.reconnect!
+          @subject.reconnect!
         end
 
         # The version of Bunny client in use
@@ -172,6 +172,11 @@ module EventSource
 
             { host: host, port: port, vhost: vhost }
           end
+        end
+
+        # Forwards all missing method calls to the Bunny::Queue instance
+        def method_missing(name, *args)
+          @subject.send(name, *args)
         end
 
         private

@@ -2,11 +2,11 @@
 
 require 'spec_helper'
 
-RSpec.describe EventSource::Protocols.http::FaradayChannelProxy do
+RSpec.describe EventSource::Protocols::Http::FaradayChannelProxy do
   let(:protocol) { :http }
-  let(:url) { 'http://localhost:5672/' }
+  let(:url) { 'http://localhost' }
   let(:protocol_version) { '0.9.1' }
-  let(:description) { 'Development RabbitMQ Server' }
+  let(:description) { 'Development Http Server' }
 
   let(:my_server) do
     {
@@ -18,7 +18,7 @@ RSpec.describe EventSource::Protocols.http::FaradayChannelProxy do
   end
 
   let(:client) do
-    EventSource::Protocols.http::BunnyConnectionProxy.new(my_server)
+    EventSource::Protocols::Http::FaradayConnectionProxy.new(my_server)
   end
   let(:connection) { EventSource::Connection.new(client) }
 

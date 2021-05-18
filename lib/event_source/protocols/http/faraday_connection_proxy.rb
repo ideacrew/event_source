@@ -97,7 +97,7 @@ module EventSource
 
         def build_connection_for(async_api_server)
           params = @connection_params[:http].slice(:params)
-          headers = @connection_headers[:http].slice(:params)
+          headers = @connection_params[:http].slice(:headers)
 
           Faraday.new(url: '', params: params, headers: headers) do |conn|
             response_middleware.each_pair do |component, options|

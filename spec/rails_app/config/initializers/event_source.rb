@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 EventSource.configure do |config|
-  config.protocols = %w[amqp]
+  config.protocols = %w[amqp http]
   config.pub_sub_root = Pathname.pwd.join('spec', 'rails_app', 'app', 'event_source')
 
   folder = Pathname.pwd.join('spec', 'support', 'async_api_files')

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
-RSpec.describe EventSource::Protocols::Amqp::FaradayConnectionProxy do
+RSpec.describe EventSource::Protocols::Http::FaradayConnectionProxy do
   let(:protocol) { :http }
   let(:url) { 'https://localhost:8080/' }
   let(:protocol_version) { '0.9.1' }
