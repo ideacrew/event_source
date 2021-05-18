@@ -127,11 +127,11 @@ module EventSource
         end
 
         # Create a channel for processing HTTP protocol requests
-        # @param [EventSource::AsyncApi::ChannelItem] channel_item channel
-        #   configuration and bindings
-        # @result [Faraday::ChannelProxy]
+        # @param [EventSource::AsyncApi::ChannelItem] async_api_channel_item
+        #   Channel configuration and bindings
+        # @result [FaradayChannelProxy]
         def add_channel(async_api_channel_item)
-          Faraday::ChannelProxy.new(self, async_api_channel_item)
+          FaradayChannelProxy.new(self, async_api_channel_item)
         end
 
         # The status of the connection instance
@@ -159,7 +159,11 @@ module EventSource
           ProtocolVersion
         end
 
-        # Access [::Faraday::Connection] methods
+        # This class applies both the Adapter and Proxy development patterns.
+        # It supports the EventSource DSL via the Adapter pattern and serves
+        # as Proxy for accessing {::Faraday::Connection} methods
+        # @param [String] name the {::Faraday::Connection} method to send a message
+        # @param [Mixed] args the message to send to method
         def method_missing(name, *args)
           @subject.send(name, *args)
         end

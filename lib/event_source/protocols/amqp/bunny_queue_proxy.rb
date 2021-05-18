@@ -12,14 +12,15 @@ module EventSource
 
         attr_reader :channel
 
-        # @param async_api_channel [EventSource::AsyncApi::Channel] Channel definition and bindings
+
+        # @param channel_proxy [EventSource::AsyncApi::Channel] Channel definition and bindings
         # @param [Hash] channel_bindings channel binding settings
         # @option channel_bindings [String] :name queue name
         # @option channel_bindings [String] :durable
         # @option channel_bindings [String] :auto_delete
         # @option channel_bindings [String] :exclusive
         # @option channel_bindings [String] :vhost ('/')
-        # @param async_api_queue [String] Exchange name which to bind this queue
+        # @param exchange_name [String] Exchange name which to bind this queue
         # @return [Bunny::Queue]
         def initialize(channel_proxy, channel_bindings, exchange_name)
           @channel = channel_proxy
@@ -40,11 +41,12 @@ module EventSource
         end
 
         def bunny_queue_for(channel_bindings)
-          queue = Bunny::Queue.new(
-            @channel,
-            channel_bindings[:name],
-            channel_bindings.slice(:durable, :auto_delete, :vhost, :exclusive)
-          )
+          queue =
+            Bunny::Queue.new(
+              @channel,
+              channel_bindings[:name],
+              channel_bindings.slice(:durable, :auto_delete, :vhost, :exclusive)
+            )
 
           logger.info "Created queue #{queue.name}"
           queue
@@ -63,7 +65,7 @@ module EventSource
             BunnyConsumerProxy.new(
               @subject.channel,
               @subject,
-              "",
+              '',
               operation_bindings[:no_ack],
               operation_bindings[:exclusive]
             )

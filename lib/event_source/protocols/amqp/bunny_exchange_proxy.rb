@@ -7,17 +7,17 @@ module EventSource
       # @attr_reader [Bunny::Channel] channel AMQP Channel on which this Queue was created
       # @since 0.4.0
       class BunnyExchangeProxy
-
-        # @param [EventSource::AsyncApi::Channel] Channel instance on which to open this Exchange
-        # @param [Hash] {EventSource::AsyncApi::Exchange} instance with configuration for this Exchange
+        # @param [EventSource::AsyncApi::Channel] channel_proxy instance on which to open this Exchange
+        # @param [Hash<EventSource::AsyncApi::Exchange>] bindings instance with configuration for this Exchange
         # @return [Bunny::Exchange]
         def initialize(channel_proxy, bindings)
-          @subject = Bunny::Exchange.new(
-            channel_proxy,
-            bindings[:type],
-            bindings[:name],
-            bindings.slice(:durable, :auto_delete, :vhost)
-          )
+          @subject =
+            Bunny::Exchange.new(
+              channel_proxy,
+              bindings[:type],
+              bindings[:name],
+              bindings.slice(:durable, :auto_delete, :vhost)
+            )
         end
 
         def publish(payload, options)

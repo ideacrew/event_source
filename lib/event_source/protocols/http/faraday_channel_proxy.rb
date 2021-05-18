@@ -29,10 +29,8 @@ module EventSource
         # @attr_reader [Faraday::Request] subject Channel
         attr_reader :connection, :subject
 
-        # @param [EventSource::AsyncApi::Connection] Connection instance
-        # @param [Hash] AsyncApi::ChannelItem
-        # @option opts [Hash] :http_request_bindings
-        # @option opts [Hash] :http_queue_bindings
+        # @param [EventSource::AsyncApi::Connection] faraday_connection_proxy Connection instance
+        # @param [Hash<EventSource::AsyncApi::ChannelItem>] async_api_channel_item {EventSource::AsyncApi::ChannelItem}
         # @return [EventSource::Protocols::Http::FaradayChannelProxy] subject
         def initialize(faraday_connection_proxy, async_api_channel_item)
           @connection = faraday_connection_proxy
@@ -43,11 +41,12 @@ module EventSource
           return if async_api_channel_item.empty?
           bindings = async_api_channel_item[:bindings][:http]
 
-          @connection.send
+          # @connection.send
 
           @connection.create { |request| }
 
-          http_method = bindings[:method]
+          http_method = async_api_channel_item[:bindings].slice(method)
+          @connection.subject.build_request(http_method) { |request| }
         end
 
         # Faraday::Request.body
