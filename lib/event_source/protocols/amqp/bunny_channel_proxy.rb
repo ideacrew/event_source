@@ -16,7 +16,7 @@ module EventSource
         # @param bunny_connection_proxy [EventSource::Protocols::Amqp::BunnyConnectionProxy] Connection instance
         # @param async_api_channel_item [EventSource::AsyncApi::ChannelItem] Channel item configuration
         # @return [Bunny::ChannelProxy] Channel proxy instance on the RabbitMQ server {Connection}
-        def initialize(bunny_connection_proxy, async_api_channel_item)
+        def initialize(bunny_connection_proxy, _async_api_channel_item)
           @connection = bunny_connection_proxy
           @subject = Bunny::Channel.new(bunny_connection_proxy).open
         end
@@ -114,7 +114,8 @@ module EventSource
           @channel.close
         end
 
-        def # @return [Bunny::ConsumerWorkPool] Thread pool dlivered messages
+        # @return [Bunny::ConsumerWorkPool] Thread pool dlivered messages
+        def
         #   are dispatached to
         def(work_pool); end
 
@@ -143,11 +144,9 @@ module EventSource
         end
 
         def delete_exchange(exchange)
-          begin
-            @channel.exchange_delete(exchange)
-          rescue Bunny::NotFound => e
-            puts "Channel-level exception! Code: #{e.channel_close.reply_code}, message: #{e.channel_close.reply_text}"
-          end
+          @channel.exchange_delete(exchange)
+        rescue Bunny::NotFound => e
+          puts "Channel-level exception! Code: #{e.channel_close.reply_code}, message: #{e.channel_close.reply_text}"
         end
 
         # Bind a queue to an exchange
@@ -173,11 +172,9 @@ module EventSource
         end
 
         def delete_queue(queue)
-          begin
-            @channel.queue_delete(queue)
-          rescue Bunny::NotFound => e
-            puts "Channel-level exception! Code: #{e.channel_close.reply_code}, message: #{e.channel_close.reply_text}"
-          end
+          @channel.queue_delete(queue)
+        rescue Bunny::NotFound => e
+          puts "Channel-level exception! Code: #{e.channel_close.reply_code}, message: #{e.channel_close.reply_text}"
         end
 
         private

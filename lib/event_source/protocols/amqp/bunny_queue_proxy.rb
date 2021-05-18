@@ -11,6 +11,7 @@ module EventSource
         include EventSource::Logging
 
         attr_reader :channel
+
         # @param async_api_channel [EventSource::AsyncApi::Channel] Channel definition and bindings
         # @param [Hash] channel_bindings channel binding settings
         # @option channel_bindings [String] :name queue name
@@ -34,16 +35,16 @@ module EventSource
             logger.info "Queue #{@subject.name} bound to exchange #{exchange_name}"
           else
             raise EventSource::AsyncApi::Error::ExchangeNotFoundError,
-              "exchange #{exchange_name} not found"
+                  "exchange #{exchange_name} not found"
           end
         end
 
         def bunny_queue_for(channel_bindings)
           queue = Bunny::Queue.new(
-              @channel,
-              channel_bindings[:name],
-              channel_bindings.slice(:durable, :auto_delete, :vhost, :exclusive)
-            )
+            @channel,
+            channel_bindings[:name],
+            channel_bindings.slice(:durable, :auto_delete, :vhost, :exclusive)
+          )
 
           logger.info "Created queue #{queue.name}"
           queue

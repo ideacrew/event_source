@@ -6,14 +6,13 @@ module EventSource
     attr_reader :bindings, :exchanges, :queues, :name
 
     ADAPTER_METHODS = %i[
-        queues
-        exchanges
-        add_queue
-        add_exchange
-        bind_queue
-        bind_exchange   
-      ]
-
+      queues
+      exchanges
+      add_queue
+      add_exchange
+      bind_queue
+      bind_exchange
+    ].freeze
 
     # @param channel_proxy [EventSource::Protocols::Amqp::BunnyChannelProxy] Channel instance
     # @param channel_item  [Hash] Channel item configuration

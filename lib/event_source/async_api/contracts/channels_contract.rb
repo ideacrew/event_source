@@ -18,12 +18,11 @@ module EventSource
             value.each do |key, value|
               result = ChannelItemContract.new.call(value)
 
-              if result&.failure?
-                key.failure(
-                  text: 'invalid channel_item',
-                  error: result.errors.to_h
-                )
-              end
+              next unless result&.failure?
+              key.failure(
+                text: 'invalid channel_item',
+                error: result.errors.to_h
+              )
             end
           end
         end

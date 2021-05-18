@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'yaml'
 
 module EventSource
@@ -25,7 +26,7 @@ module EventSource
           end
 
           def deserialize(file_io)
-            Try do 
+            Try do
               YAML.load(file_io)
             end.to_result
           end

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 Dry::Schema.load_extensions(:hints, :info)
 
 module EventSource
@@ -28,26 +29,22 @@ module EventSource
               optional(:name).maybe(:string)
 
               # optional(:url).value(:string) #(EventSource::AsyncApi::Types::UriKind)
-              optional(:url).value(:string) #(EventSource::AsyncApi::Types::UriKind)
-              optional(:email).value(:string) #(EventSource::AsyncApi::Types::Email)
+              optional(:url).value(:string) # (EventSource::AsyncApi::Types::UriKind)
+              optional(:email).value(:string) # (EventSource::AsyncApi::Types::Email)
             end
 
           required(:license)
             .maybe(:hash) do
               optional(:name).maybe(:string)
-              optional(:url).maybe(:string) #(Types::Url)
+              optional(:url).maybe(:string) # (Types::Url)
             end
 
           # @!macro [attach] beforehook
           #   @!method $0($1)
           #   Coerce contact and license attributes to empty hash if nil
           before(:value_coercer) do |result|
-            unless result.to_h.key?(:contact)
-              result.to_h.merge!({ contact: {} })
-            end
-            unless result.to_h.key?(:license)
-              result.to_h.merge!({ license: {} })
-            end
+            result.to_h.merge!({ contact: {} }) unless result.to_h.key?(:contact)
+            result.to_h.merge!({ license: {} }) unless result.to_h.key?(:license)
           end
         end
       end

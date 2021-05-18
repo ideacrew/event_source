@@ -31,14 +31,14 @@ module EventSource
         ProtocolOptionDefaults = {
           heartbeat: :server, # will use RabbitMQ setting
           frame_max: 131_072
-        }
+        }.freeze
 
         OptionDefaults = {
           protocol: :amqp,
           protocol_version: '1.9.1',
           default_content_type: 'application/json',
           description: 'RabbitMQ Server'
-        }
+        }.freeze
 
         ConnectDefaults = {
           host: 'localhost',
@@ -47,7 +47,7 @@ module EventSource
           username: 'guest',
           password: 'guest',
           vhost: '/' # (String) — default: "/" — Virtual host to use
-        }
+        }.freeze
 
         # @param [Hash] opts AMQP Server in hash form
         # @param [Hash] opts binding options for RabbitMQ server
@@ -89,7 +89,7 @@ module EventSource
 
             # logger "#{name} connection active "
             active?
-          ensure
+
             # logger "#{name} connection failed"
           end
         end
@@ -106,7 +106,7 @@ module EventSource
         # Is the server connection started?
         # return [Boolean]
         def active?
-          @bunny_session && @bunny_session.open?
+          @bunny_session&.open?
         end
 
         # Close the server connection
@@ -161,11 +161,11 @@ module EventSource
               amqp_url = URI.parse(url)
               host = amqp_url.host || amqp_url.path # url w/single string parses into path
               port = amqp_url.port || ConnectDefaults[:port]
-              if amqp_url.path.present? && amqp_url.path != host
-                vhost = amqp_url.path
-              else
-                vhost = ConnectDefaults[:vhost]
-              end
+              vhost = if amqp_url.path.present? && amqp_url.path != host
+                        amqp_url.path
+                      else
+                        ConnectDefaults[:vhost]
+                      end
             else
               host = url || ConnectDefaults[:host]
               port = server[:port] || ConnectDefaults[:port]
@@ -210,13 +210,13 @@ module EventSource
           hosts: [], # (Array<String>) — default: ["127.0.0.1"] — list of hostname or IP addresses to select hostname from when connecting
           addresses: [], # (Array<String>) — default: ["127.0.0.1:5672"] — list of addresses to select hostname and port from when connecting
           hosts_shuffle_strategy: nil # (Proc) — a callable that reorders a list of host strings, defaults to Array#shuffle
-        }
+        }.freeze
 
         SECURITY_OPTIONS_DEFAULT = {
           ssl: false,
           username: 'guest',
           password: 'guest'
-        }
+        }.freeze
 
         TLS_SECURITY_BINDINGS = {
           tls: false, # (Boolean) — default: false — Should TLS/SSL be used?
@@ -225,12 +225,12 @@ module EventSource
           tls_ca_certificates: [], # (Array<String>) — Array of paths to TLS/SSL CA files (.pem), by default detected from OpenSSL configuration
           verify_peer: true, # (String) — default: true — Whether TLS peer verification should be performed
           tls_version: :negotiated # (Symbol) — default: negotiated — What TLS version should be used (:TLSv1, :TLSv1_1, or :TLSv1_2)
-        }
+        }.freeze
 
         OPZ_DEFAULT = {
           auth_mechanism: 'PLAIN', # server authentication. "PLAIN" or EXTERNAL" suppoted
           locale: 'PLAIN' # (String) — default: "PLAIN" — Locale RabbitMQ should use
-        }
+        }.freeze
       end
     end
   end

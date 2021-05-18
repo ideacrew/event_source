@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'yaml'
 
 module EventSource
@@ -11,7 +12,7 @@ module EventSource
           def call(dir:)
             paths = yield list_paths(dir)
             channels  = yield load(paths)
-      
+
             Success(channels)
           end
 
@@ -25,7 +26,7 @@ module EventSource
 
           def load(paths)
             Try do
-              paths.collect{|path| LoadPath.new.call(path: path).value! }
+              paths.collect {|path| LoadPath.new.call(path: path).value! }
             end.to_result
           end
         end

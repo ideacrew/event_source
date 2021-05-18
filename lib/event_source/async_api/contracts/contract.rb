@@ -21,51 +21,48 @@ module EventSource
         #   @return [Dry::Monads::Result::Success] if nested $1 params pass validation
         #   @return [Dry::Monads::Result::Failure] if nested $1 params fail validation
         rule(:components).each do
-          unless key? && value do
-                   result = ComponentContract.new.call(value)
+          next if key? && value do
+                    result = ComponentContract.new.call(value)
 
-                   # Use dry-validation metadata form to pass error hash along with text to calling service
-                   if result&.failure?
-                     key.failure(
-                       text: 'invalid component hash',
-                       error: result.errors.to_h
-                     )
-                   end
-                 end
-            next
-          end
+                    # Use dry-validation metadata form to pass error hash along with text to calling service
+                    if result&.failure?
+                      key.failure(
+                        text: 'invalid component hash',
+                        error: result.errors.to_h
+                      )
+                    end
+                  end
+          next
         end
 
         rule(:channels).each do
-          unless key? && value do
-                   result = ChannelsContract.new.call(value)
+          next if key? && value do
+                    result = ChannelsContract.new.call(value)
 
-                   # Use dry-validation metadata form to pass error hash along with text to calling service
-                   if result&.failure?
-                     key.failure(
-                       text: 'invalid channel hash',
-                       error: result.errors.to_h
-                     )
-                   end
-                 end
-            next
-          end
+                    # Use dry-validation metadata form to pass error hash along with text to calling service
+                    if result&.failure?
+                      key.failure(
+                        text: 'invalid channel hash',
+                        error: result.errors.to_h
+                      )
+                    end
+                  end
+          next
         end
 
         rule(:channel_items).each do
-          unless key? && value do
-                   result = ChannelItemContract.new.call(value)
+          next if key? && value do
+                    result = ChannelItemContract.new.call(value)
 
-                   # Use dry-validation metadata form to pass error hash along with text to calling service
-                   if result&.failure?
-                     key.failure(
-                       text: 'invalid channel_item hash',
-                       error: result.errors.to_h
-                     )
-                   end
-                 end
-            next
-          end
+                    # Use dry-validation metadata form to pass error hash along with text to calling service
+                    if result&.failure?
+                      key.failure(
+                        text: 'invalid channel_item hash',
+                        error: result.errors.to_h
+                      )
+                    end
+                  end
+          next
         end
 
         rule(:info) do
@@ -114,51 +111,48 @@ module EventSource
         end
 
         rule(:servers).each do
-          unless key? && value do
-                   result = ServerContract.new.call(value)
+          next if key? && value do
+                    result = ServerContract.new.call(value)
 
-                   # Use dry-validation metadata form to pass error hash along with text to calling service
-                   if result&.failure?
-                     key.failure(
-                       text: 'invalid server hash',
-                       error: result.errors.to_h
-                     )
-                   end
-                 end
-            next
-          end
+                    # Use dry-validation metadata form to pass error hash along with text to calling service
+                    if result&.failure?
+                      key.failure(
+                        text: 'invalid server hash',
+                        error: result.errors.to_h
+                      )
+                    end
+                  end
+          next
         end
 
         rule(:tags).each do
-          unless key? && value do
-                   result = TagContract.new.call(value)
+          next if key? && value do
+                    result = TagContract.new.call(value)
 
-                   # Use dry-validation metadata form to pass error hash along with text to calling service
-                   if result&.failure?
-                     key.failure(
-                       text: 'invalid tag hash',
-                       error: result.errors.to_h
-                     )
-                   end
-                 end
-            next
-          end
+                    # Use dry-validation metadata form to pass error hash along with text to calling service
+                    if result&.failure?
+                      key.failure(
+                        text: 'invalid tag hash',
+                        error: result.errors.to_h
+                      )
+                    end
+                  end
+          next
         end
 
         rule(:external_docs).each do
-          unless key? && value do
-                   result = ExternalDocumentationContract.new.call(value)
+          next if key? && value do
+                    result = ExternalDocumentationContract.new.call(value)
 
-                   # Use dry-validation metadata form to pass error hash along with text to calling service
-                   if result&.failure?
-                     key.failure(
-                       text: 'invalid external_doc hash',
-                       error: result.errors.to_h
-                     )
-                   end
-                 end
-            next
-          end
+                    # Use dry-validation metadata form to pass error hash along with text to calling service
+                    if result&.failure?
+                      key.failure(
+                        text: 'invalid external_doc hash',
+                        error: result.errors.to_h
+                      )
+                    end
+                  end
+          next
         end
       end
     end

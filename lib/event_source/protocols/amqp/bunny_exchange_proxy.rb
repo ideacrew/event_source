@@ -30,8 +30,8 @@ module EventSource
           @subject.send(name, *args)
         end
 
-        private 
-        
+        private
+
         # Unimplemented Bunny Bindings
         #   :routing_key (String) — Routing key
         #   :content_type (String) — Message content type (e.g. application/json)

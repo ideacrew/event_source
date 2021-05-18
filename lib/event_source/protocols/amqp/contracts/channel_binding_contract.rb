@@ -5,24 +5,24 @@ module EventSource
     module Amqp
       module Contracts
         ExchangeHashSchema =
-        Dry::Schema.Params do
-          required(:name).filled(:string)
-          required(:type).value(
-            EventSource::AsyncApi::Types::ExchangeTypeKind
-          )
-          required(:durable).filled(:bool)
-          required(:auto_delete).filled(:bool)
-          required(:vhost).filled(:string)
-        end
+          Dry::Schema.Params do
+            required(:name).filled(:string)
+            required(:type).value(
+              EventSource::AsyncApi::Types::ExchangeTypeKind
+            )
+            required(:durable).filled(:bool)
+            required(:auto_delete).filled(:bool)
+            required(:vhost).filled(:string)
+          end
 
         QueueHashSchema =
-        Dry::Schema.Params do
-          required(:name).filled(:string)
-          required(:durable).filled(:bool)
-          required(:exclusive).filled(:bool)
-          required(:auto_delete).filled(:bool)
-          required(:vhost).filled(:string)
-        end
+          Dry::Schema.Params do
+            required(:name).filled(:string)
+            required(:durable).filled(:bool)
+            required(:exclusive).filled(:bool)
+            required(:auto_delete).filled(:bool)
+            required(:vhost).filled(:string)
+          end
 
         class ChannelBindingContract < Contract
           params do
