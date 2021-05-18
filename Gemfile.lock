@@ -12,7 +12,7 @@ PATH
       dry-types (~> 1.5)
       dry-validation (~> 1.6)
       faraday (~> 1.4.1)
-      faraday_middleware
+      faraday_middleware (~> 1.0)
       logging (~> 2.3.0)
       mime-types
       oj (~> 3.11)

@@ -18,20 +18,16 @@ module EventSource
       end
     end
 
-    # @param [Hash] async_api_server Protocol Server in hash form
+    # @param [Hash] async_api_server Server definition in hash form
     # @return [EventSource::AsyncApi::Connection] Connection
     def add_connection(async_api_server)
       client_klass = protocol_klass_for(async_api_server[:protocol])
       connection_uri = client_klass.connection_uri_for(async_api_server)
 
       return connections[connection_uri] if connections.key? connection_uri
-      #   raise EventSource::Protocols::Amqp::Error::DuplicateConnectionError,
-      #     "Connection already exists for #{connection_uri}"
-      # else
+
       client = client_klass.new(async_api_server)
-      connections[connection_uri] =
-        EventSource::Connection.new(client)
-      # end
+      connections[connection_uri] = EventSource::Connection.new(client)
     end
 
     def drop_connection(connection_uri)
@@ -42,8 +38,12 @@ module EventSource
     end
 
     def connections_for(protocol)
-      connections.reduce([]) do |data, (connection_uri, connection_instance)|
-        data.push(connection_instance) if URI.parse(connection_uri).scheme.to_sym == protocol
+      connections.reduce(
+        []
+      ) do |connections, (connection_uri, connection_instance)|
+        if URI.parse(connection_uri).scheme.to_sym == protocol
+          connections.push(connection_instance)
+        end
       end
     end
 

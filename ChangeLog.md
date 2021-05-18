@@ -1,8 +1,34 @@
 ## Changes between EventSource 0.3.0 and 0.4.0 (in development)
 
-### Add Support for AMQP
+EventSource now supports 'Connection by Configuration'. Using injected configuration
+settings, EventSource is able to connect and exchange messages with network services.
 
-EventSource is adding network-based service-to-service eventing and message exchange using RabbitMQ. The interface is based on [AsyncAPI specification 2.0.0](https://www.asyncapi.com/docs/specifications/2.0.0#channelsObject) and uses the Adapter pattern to pave the way for adding other protocols, including HTTP.
+The interface is based on [AsyncAPI specification 2.0.0](https://www.asyncapi.com/docs/specifications/2.0.0#channelsObject) which provides a model for representing many
+common message exchange protocols. The interface applies the Adapter development
+pattern to pave the way to efficiently add more protocols in the future.
+
+### Added Support for AMQP
+
+EventSource added network-based service-to-service eventing and message exchange using RabbitMQ.
+
+### Initialization File
+
+EventSource now uses a configuration file to set up a customized environment. For
+example, the following file loads the AMQP protocol, sets the path where publish and
+subscriber files may be found to: `app/eventsource` and loads the array: `NetworkServices`
+holding AsyncApi-formatted YAML files with service connection information.
+
+```ruby
+# config/initializers/event_source.rb
+
+config.protocols = %w[amqp]
+config.pub_sub_root = Rails.root.join('app', 'event_source')
+config.asyncapi_resources =
+  EventSource::AsyncApi::Operations::Channels::Load
+    .new
+    .call(NetworkedServices)
+    .value!
+```
 
 ## Changes between EventSource 0.2.0 and 0.3.0 (April 20, 2021)
 

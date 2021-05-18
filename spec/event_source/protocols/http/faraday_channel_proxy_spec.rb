@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
+require 'spec_helper'
 
-RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
-  let(:protocol) { :amqp }
-  let(:url) { 'amqp://localhost:5672/' }
+RSpec.describe EventSource::Protocols.http::FaradayChannelProxy do
+  let(:protocol) { :http }
+  let(:url) { 'http://localhost:5672/' }
   let(:protocol_version) { '0.9.1' }
   let(:description) { 'Development RabbitMQ Server' }
 
@@ -18,7 +18,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
   end
 
   let(:client) do
-    EventSource::Protocols::Amqp::BunnyConnectionProxy.new(my_server)
+    EventSource::Protocols.http::BunnyConnectionProxy.new(my_server)
   end
   let(:connection) { EventSource::Connection.new(client) }
 
@@ -114,7 +114,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
 
   let(:channel_bindings) do
     {
-      amqp: {
+      http: {
         is: :routing_key,
         binding_version: '0.2.0',
         queue: {
@@ -151,12 +151,12 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
     }
   end
 
-  before { connection.start unless connection.active? }
-  # after { connection.disconnect if connection.active? }
+  before { connection.connect unless connection.active? }
+  after { connection.disconnect if connection.active? }
 
   let(:channel_proxy) do
-    described_class.new(client.connection, channel_item)
-    described_class.new(client.connection, channel_item2)
+    described_class.new(connection, channel_item)
+    described_class.new(connection, channel_item2)
   end
 
   context 'Adapter pattern methods are present' do
@@ -167,12 +167,11 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
     end
   end
 
-  # context 'When a connection and channel item passted' do
-  #   it 'should create queues and exchanges' do
-  #     channel = channel_proxy.subject
-  #     expect(channel.queues).to be_present
-  #     expect(channel.exchanges).to be_present
-  #   end
-  # end
+  context 'When a connection and channel item passted' do
+    it 'should create queues and exchanges' do
+      channel = channel_proxy.subject
+      expect(channel.queues).to be_present
+      expect(channel.exchanges).to be_present
+    end
+  end
 end
-

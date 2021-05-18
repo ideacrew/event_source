@@ -3,29 +3,29 @@
 module EventSource
   module Protocols
     module Amqp
-      # This object contains information about the channel representation in AMQP.
+      # AMQP protocol-specific information about the channel
+      # @example Binding configuration includes both an exchange and a queue
+      # channels:
+      #   user/signedup:
+      #     bindings:
+      #       amqp:
+      #         is: routingKey
+      #         exchange:
+      #           name: myExchange
+      #           type: topic
+      #           durable: true
+      #           autoDelete: false
+      #           vhost: /
+      #         queue:
+      #           name: my-queue-name
+      #           durable: true
+      #           exclusive: true
+      #           autoDelete: false
+      #           vhost: /
+      #         bindingVersion: 0.1.0
       class ChannelBinding < Dry::Struct
         # @!attribute [r] is
         # Defines what type of channel is it. Can be either queue or routingKey (default).
-        # @example
-        # channels:
-        #   user/signedup:
-        #     bindings:
-        #       amqp:
-        #         is: routingKey
-        #         queue:
-        #           name: my-queue-name
-        #           durable: true
-        #           exclusive: true
-        #           autoDelete: false
-        #           vhost: /
-        #         exchange:
-        #           name: myExchange
-        #           type: topic
-        #           durable: true
-        #           autoDelete: false
-        #           vhost: /
-        #         bindingVersion: 0.1.0
         # @return [EventSource::AsyncApi::Types::ChannelTypeKind]
         attribute :is,
                   EventSource::AsyncApi::Types::ChannelTypeKind.optional.meta(

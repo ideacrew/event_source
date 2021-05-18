@@ -4,16 +4,18 @@ module EventSource
   module Protocols
     module Amqp
       # Connect to RabbitMQ server instance using Bunny client
-      # @attr_reader [String] connection_uri connection string used to establish connection with RabbitMQ server
-      # @attr_reader [String] connection_params configuration settings to establish connection with RabbitMQ server
-      # @attr_reader [String] protocol_version AMQP protocol release supported by this broker client
-      # @attr_reader [Hash] server_options RabbitMQ specific connection binding options
-      # @attr_reader [Bunny::Session] connection the server Connection object
+      # @raise EventSource::Protocols::Amqp::Error::ConnectionError
+      # @raise EventSource::Protocols::Amqp::Error::AuthenticationError
       class BunnyConnectionProxy
-        attr_reader :connection_params,
+        # @attr_reader [String] connection_uri String used to connect with RabbitMQ server
+        # @attr_reader [String] connection_params Configuration settings used when connecting with RabbitMQ server
+        # @attr_reader [String] protocol_version AMQP protocol release supported by this broker client
+        # @attr_reader [Hash] server_options RabbitMQ-specific connection binding options
+        # @attr_reader [Bunny::Session] connection Server Connection object
+        attr_reader :connection_uri,
+                    :connection_params,
                     :protocol_version,
-                    :server_options,
-                    :connection_uri
+                    :server_options
 
         ProtocolVersion = '0.9.1'
         ClientVersion = Bunny.version
@@ -50,8 +52,8 @@ module EventSource
           vhost: '/' # (String) - default: "/" - Virtual host to use
         }.freeze
 
-        # @param [Hash] opts AMQP Server in hash form
-        # @param [Hash] opts binding options for RabbitMQ server
+        # @param [Hash] server {EventSource::AsyncApi::Server} configuration
+        # @param [Hash] options binding options for RabbitMQ server
         # @return Bunny::Session
         def initialize(server, options = {})
           @protocol_version = ProtocolVersion
@@ -99,11 +101,6 @@ module EventSource
           BunnyChannelProxy.new(@bunny_session, async_api_channel_item)
         end
 
-        # channel_by(:channel_name, 'enroll.organizations')
-        # channel_by(:exchange_name, 'enroll.organizations.exchange')
-        # def channel_by(type, value)
-        # end
-
         # Is the server connection started?
         # return [Boolean]
         def active?
@@ -115,12 +112,12 @@ module EventSource
           @bunny_session.close if active?
         end
 
-        # Attampt to reastablish connection to a disconnected server
+        # Attempt to reastablish connection to a disconnected server
         def reconnect
           @bunny_session.reconnect!
         end
 
-        # The version of Bunny client
+        # The version of Bunny client in use
         def client_version
           ClientVersion
         end

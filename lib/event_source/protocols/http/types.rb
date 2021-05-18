@@ -19,9 +19,8 @@ module EventSource
             'PUT',
             'PATCH',
             'DELETE',
-            'HEAD' \
-              'OPTIONS' \
-              'CONNECT',
+            'HEAD',
+            'OPTIONS',
             'TRACE'
           )
       end
