@@ -13,7 +13,6 @@ module EventSource
       add_queue
       add_exchange
       bind_queue
-      bind_exchange
     ].freeze
 
     # @param channel_proxy [EventSource::Protocols::Amqp::BunnyChannelProxy] Channel instance

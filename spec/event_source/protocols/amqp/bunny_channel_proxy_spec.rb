@@ -155,8 +155,8 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
   # after { connection.disconnect if connection.active? }
 
   let(:channel_proxy) do
-    described_class.new(client.connection, channel_item)
-    described_class.new(client.connection, channel_item2)
+    described_class.new(client, channel_item)
+    described_class.new(client, channel_item2)
   end
 
   context 'Adapter pattern methods are present' do
@@ -175,4 +175,3 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
   #   end
   # end
 end
-
