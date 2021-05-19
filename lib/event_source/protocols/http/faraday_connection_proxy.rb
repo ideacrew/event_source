@@ -20,10 +20,9 @@ module EventSource
                     :protocol_version,
                     :subject
 
-
         # Default value for {::Faraday::Connection} Adapter
         # Override this value using the options argument in the constructor
-        AdapterDefaults = { typheous: nil }
+        AdapterDefaults = { typhoeus: nil }
 
         # Faraday gem version used by this client
         ClientVersion = Faraday::VERSION
@@ -55,8 +54,7 @@ module EventSource
             interval: 0.05,
             interval_randomness: 0.5,
             backoff_factor: 2
-          },
-          gzip: nil
+          }
         }
 
         # Default values for {::Faraday::Connection} Response Middleware. These are an
@@ -70,8 +68,7 @@ module EventSource
           },
           json: {
             content_type: /\bjson$/
-          },
-          gzip: nil
+          }
         }
 
         # @param [Hash] async_api_server {EventSource::AsyncApi::Server} configuration
@@ -96,22 +93,44 @@ module EventSource
         end
 
         def build_connection_for(async_api_server)
-          params = @connection_params[:http].slice(:params)
-          headers = @connection_params[:http].slice(:headers)
+          params = @connection_params[:http][:params]
+          headers = @connection_params[:http][:headers]
 
-          Faraday.new(url: @connection_uri, params: params, headers: headers)
-          # ) do |conn|
-          # response_middleware.each_pair do |component, options|
-          # if component.value.nil?
-          #   conn.response "#{component.key}"
-          # else
-          #   conn.response "#{component.key}", "#{options}"
-          # end
-          # end
+          request_middleware = connection_params[:request_middleware]
+          response_middleware = connection_params[:response_middleware]
+          adapter = connection_params[:adapter]
 
-          # last middleware must be adapter
-          # conn.adapter @connection_params[:adapter]
-          # end
+          conn =
+            Faraday.new(
+              url: @connection_uri,
+              params: params,
+              headers: headers
+            ) do |conn|
+              request_middleware.each_pair do |component, options|
+                if options.nil?
+                  conn.request "#{component}".to_sym
+                else
+                  conn.request "#{component}".to_sym, "#{options}"
+                end
+              end
+
+              response_middleware.each_pair do |component, options|
+                if options.nil?
+                  conn.response "#{component}".to_sym
+                else
+                  conn.response "#{component}".to_sym, "#{options}"
+                end
+              end
+
+              # last middleware must be adapter
+              adapter.each_pair do |component, options|
+                if options.nil?
+                  conn.adapter "#{component}".to_sym
+                else
+                  conn.adapter "#{component}".to_sym, "#{options}"
+                end
+              end
+            end
         end
 
         def connection
@@ -188,27 +207,25 @@ module EventSource
         private
 
         def connection_params_for(options)
-          options_request_middleware = options.slice(:request_middleware) || {}
+          options_request_middleware = options[:request_middleware] || {}
           request_middleware =
             options_request_middleware.merge! RequestMiddlewareDefaults
 
-          options_response_middleware =
-            options.slice(:response_middleware) || {}
+          options_response_middleware = options[:response_middleware] || {}
           response_middleware =
             options_response_middleware.merge! ResponseMiddlewareDefaults
 
-          options_adapter = options.slice(:adapter) || {}
-          adapter = ResponseMiddlewareDefaults.merge! options_adapter
+          options_adapter = options[:adapter] || {}
+          adapter = AdapterDefaults.merge! options_adapter
 
-          options_http = options.slice(:http) || {}
+          options_http = options[:http] || {}
           http = HttpDefaults.merge! options_http
 
           {
             request_middleware: request_middleware,
             response_middleware: response_middleware,
-            http: http,
             adapter: adapter
-          }
+          }.merge http
         end
       end
     end

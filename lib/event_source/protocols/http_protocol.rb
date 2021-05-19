@@ -2,6 +2,8 @@
 
 require 'faraday'
 require 'faraday_middleware'
+require 'typhoeus'
+require 'typhoeus/adapters/faraday'
 require 'uri'
 
 require_relative 'http/error'
@@ -14,7 +16,8 @@ require_relative 'http/faraday_connection_proxy'
 # require_relative 'http/faraday_message_binding'
 # require_relative 'http/faraday_operation_binding'
 
-Dir[File.expand_path('lib/event_source/protocols/http/contracts/**/*.rb')].sort.each { |f| require(f) }
+Dir[File.expand_path('lib/event_source/protocols/http/contracts/**/*.rb')].sort
+  .each { |f| require(f) }
 
 module EventSource
   module Protocols
