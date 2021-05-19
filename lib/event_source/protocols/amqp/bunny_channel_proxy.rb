@@ -112,7 +112,7 @@ module EventSource
 
         # def # @return [Bunny::ConsumerWorkPool] Thread pool dlivered messages
         #   are dispatached to
-        def(work_pool); end
+        # def(work_pool); end
 
         def delete_exchange(exchange)
           return unless exchange_exists?(exchange)
