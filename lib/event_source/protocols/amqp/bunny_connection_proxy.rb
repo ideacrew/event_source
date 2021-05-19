@@ -98,7 +98,7 @@ module EventSource
         end
 
         def add_channel(async_api_channel_item)
-          BunnyChannelProxy.new(@subject, async_api_channel_item)
+          BunnyChannelProxy.new(self, async_api_channel_item)
         end
 
         # Is the server connection started?

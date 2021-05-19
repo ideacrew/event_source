@@ -30,11 +30,23 @@ module EventSource
       add_queue(channel_item[:subscribe])
     end
 
+    def status
+      @channel_proxy.status
+    end
+
+    def close
+      @channel_proxy.close
+    end
+
     def add_exchange(publish_operation = nil)
       return unless publish_operation
       exchange_proxy = @channel_proxy.add_exchange(bindings[:exchange])
       @exchanges[bindings[:exchange][:name]] =
         EventSource::Exchange.new(exchange_proxy, publish_operation)
+    end
+
+    def exchange_by_name(name)
+      @channel_proxy.exchange_by_name(name)
     end
 
     # Add a queue configured according to the AsyncAPI ChannelItem bindings. It also binds the
@@ -53,22 +65,8 @@ module EventSource
       @channel_proxy.queue_by_name(name)
     end
 
-    def exchange_by_name(name)
-      @channel_proxy.exchange_by_name(name)
-    end
-
     def bind_queue(*args)
       @channel_proxy.bind_queue(*args)
-    end
-
-    def bind_exchange(*args)
-      @channel_proxy.bind_exchange(*args)
-    end
-
-    def respond_to_missing?(name, include_private)end
-
-    def method_missing(name, *args)
-      @channel_proxy.send(name, *args)
     end
   end
 end
