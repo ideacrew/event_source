@@ -1,4 +1,12 @@
-## Changes between EventSource 0.3.0 and 0.4.0 (in development)
+## Changes between EventSource 0.4.0 and 0.5.0 (in development)
+
+Release focuses on thtee areas:
+
+1. Add support for HTTP protocol
+2. Add resiliancy to AMQP protocol
+3. Extend documentation
+
+## Changes between EventSource 0.3.0 and 0.4.0
 
 EventSource now supports 'Connection by Configuration'. Using injected configuration
 settings, EventSource is able to connect and exchange messages with network services.
