@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 module EventSource
-  # Adapter interface for AsyncAPI protocol clients
+  # Component that receives and routes messages to the correct {EventSource::Queue}s
   class Exchange
-
+    # @attr_reader [Types] bindings virtual links between an Exchange and a
+    # {EventSource::Queue} within a broker
     attr_reader :bindings
 
     def initialize(exchange_proxy, operation)

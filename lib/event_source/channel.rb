@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 module EventSource
-  # Adapter interface for AsyncAPI protocol clients
+  # A virtual connection inside a {EventSource::Connection}.
+  # Messages are published and consumed over a Channel
+  # A Connection may have many Channels.
   class Channel
     attr_reader :bindings, :exchanges, :queues, :name
 
@@ -31,7 +33,8 @@ module EventSource
     def add_exchange(publish_operation = nil)
       return unless publish_operation
       exchange_proxy = @channel_proxy.add_exchange(bindings[:exchange])
-      @exchanges[bindings[:exchange][:name]] = EventSource::Exchange.new(exchange_proxy, publish_operation)
+      @exchanges[bindings[:exchange][:name]] =
+        EventSource::Exchange.new(exchange_proxy, publish_operation)
     end
 
     # Add a queue configured according to the AsyncAPI ChannelItem bindings. It also binds the
@@ -42,7 +45,8 @@ module EventSource
     def add_queue(subscribe_operation = nil)
       return unless subscribe_operation
       queue_proxy = @channel_proxy.add_queue(bindings[:queue], self.name)
-      @queues[bindings[:queue][:name]] = EventSource::Queue.new(queue_proxy, subscribe_operation)
+      @queues[bindings[:queue][:name]] =
+        EventSource::Queue.new(queue_proxy, subscribe_operation)
     end
 
     def queue_by_name(name)

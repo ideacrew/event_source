@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module EventSource
-  # Adapter interface for AsyncAPI protocol clients
+  # Network (TCP) connection between application and broker or remote service
   class Connection
     attr_reader :channels
 

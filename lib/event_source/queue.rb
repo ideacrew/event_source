@@ -1,9 +1,8 @@
 # frozen_string_literal: true
 
 module EventSource
-  # Adapter interface for AsyncAPI protocol clients
+  # A sequence of messages
   class Queue
-
     attr_reader :bindings
 
     def initialize(queue_proxy, operation)
