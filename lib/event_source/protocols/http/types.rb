@@ -7,6 +7,7 @@ Dry::Types.load_extensions(:maybe)
 module EventSource
   module Protocols
     module Http
+      # custom types for Http
       module Types
         send(:include, Dry.Types)
 

@@ -2,7 +2,7 @@
 
 module EventSource
   module AsyncApi
-    # A map between a variable name and its value. The value is used for substitution in the server’s URL template
+    # A map between a variable name and its value. The value is used for substitution in the servers URL template
     class Variable < Dry::Struct
       # @!attribute [r] key
       # The variable name

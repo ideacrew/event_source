@@ -3,6 +3,7 @@
 module EventSource
   module Protocols
     module Amqp
+      # BunnyConsumerProxy class
       class BunnyConsumerProxy < Bunny::Consumer
         def cancelled?
           @cancelled

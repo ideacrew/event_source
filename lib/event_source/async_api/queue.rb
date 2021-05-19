@@ -2,6 +2,7 @@
 
 module EventSource
   module AsyncApi
+    # Entity for Queue
     class Queue < Dry::Struct
       BUNNY_OPTION_DEFAULTS = {
         passive: false,

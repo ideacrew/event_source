@@ -26,7 +26,7 @@ module EventSource
           @subject = bunny_queue_for(channel_bindings)
           bind_exchange(exchange_name)
 
-          @subject
+          # @subject
         end
 
         def bind_exchange(exchange_name)
@@ -77,6 +77,8 @@ module EventSource
 
           @subject.subscribe_with(consumer_proxy)
         end
+
+        def respond_to_missing?(name, include_private)end
 
         # Forwards all missing method calls to the Bunny::Queue instance
         def method_missing(name, *args)

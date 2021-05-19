@@ -17,7 +17,10 @@ RSpec.describe EventSource::AsyncApi::Contracts::ChannelsContract do
 
   context 'Given valid required parameters' do
     # hash = {"crm.contact_created"=>
-    #   {"subscribe"=>{"operationId"=>"on_crm_contacts_contact_created", "summary"=>"CRM Contact Created", "message"=>{"$ref"=>"#/components/messages/crm_contacts_contact_created_event"}}},
+    # {"subscribe" => {
+    #                   "operationId"=>"on_crm_contacts_contact_created", "summary"=>"CRM Contact Created",
+    #                   "message"=>{"$ref"=>"#/components/messages/crm_contacts_contact_created_event"}
+    #                 }}
     #  "crm.sugar_crm.contacts.contact_created"=>
     #   {"publish"=>
     #     {"operationId"=>"on_crm_sugarcrm_contacts_contact_created",
