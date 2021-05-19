@@ -33,7 +33,7 @@ module EventSource
         # @param [Hash<EventSource::AsyncApi::ChannelItem>] async_api_channel_item {EventSource::AsyncApi::ChannelItem}
         # @return [EventSource::Protocols::Http::FaradayChannelProxy] subject
         def initialize(faraday_connection_proxy, async_api_channel_item)
-          @connection = faraday_connection_proxy
+          @connection = faraday_connection_proxy.connection
           @subject = build_faraday_request_for(async_api_channel_item)
         end
 
