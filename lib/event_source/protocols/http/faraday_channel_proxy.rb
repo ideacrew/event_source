@@ -7,7 +7,7 @@ module EventSource
       # HTTP protocol-specific information about the operation
       # @example Channel binding including both an exchange and a queue
       # channels:
-      #  employees:
+      #  '/employees':
       #   subscribe:
       #     bindings:
       #       http:
@@ -41,12 +41,13 @@ module EventSource
           return if async_api_channel_item.empty?
           bindings = async_api_channel_item[:bindings][:http]
 
-          # @connection.send
+          # # @connection.send
+          # # @connection.create { |request| }
 
-          @connection.create { |request| }
-
-          http_method = async_api_channel_item[:bindings].slice(method)
-          @connection.subject.build_request(http_method) { |request| }
+          http_method = bindings[:method]
+          @connection.build_request(http_method)
+          #  do |request|
+          # end
         end
 
         # Faraday::Request.body
