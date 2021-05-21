@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
 module EventSource
-  # A sequence of messages
+  # Queues store and forward messages to consumers.
   class Queue
+    # @attr_reader [Hash] Bindings describe an association between a Queue and an Exchange
     attr_reader :bindings
 
     def initialize(queue_proxy, operation)

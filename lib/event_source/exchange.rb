@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 module EventSource
-  # Component that receives and routes messages to the correct {EventSource::Queue}s
+  # Component that accepts and routes messages to the correct {EventSource::Queue}
   class Exchange
-    # @attr_reader [Types] bindings virtual links between an Exchange and a
+    # @attr_reader [Hash] bindings
     # {EventSource::Queue} within a broker
     attr_reader :bindings
 
@@ -16,6 +16,8 @@ module EventSource
       @exchange_proxy.publish(payload, opts.merge(bindings))
     end
 
+    # Create a virtual link between this Exchange and a {EventSource::Queue}
+    # or anonther Exchange within a broker
     def bind(*args)
       @exchange_proxy.bind(*args)
     end

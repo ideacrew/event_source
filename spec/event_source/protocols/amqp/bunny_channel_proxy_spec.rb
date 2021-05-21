@@ -168,6 +168,8 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
     end
   end
 
+  it 'should automatically recover from an unexpected closed channel'
+
   # context 'When a connection and channel item passted' do
   #   it 'should create queues and exchanges' do
   #     channel = channel_proxy.subject

@@ -78,7 +78,7 @@ module EventSource
         # @option options [Hash] :http (HttpDefaults) key/value pairs of http connection params
         # @option options [Symbol] :adapter (:typheous) the adapter Faraday will use to
         #   connect and process requests
-        # @option options [Hash] :request_middlware (RequestMiddlewareDefaults) key/value pairs for
+        # @option options [Hash] :request_middleware (RequestMiddlewareDefaults) key/value pairs for
         #   configuring Faraday request middleware
         # @option options [Hash] :response_middlware (ResponseMiddlewareDefaults) key/value pairs for
         #   configuring Faraday response middleware

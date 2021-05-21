@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require 'securerandom'
 
 module EventSource
   module Protocols
@@ -22,6 +23,9 @@ module EventSource
             )
         end
 
+        # Publish a message to this Exchange
+        # @param [Mixed] payload the message oontent
+        # @param [Hash] options
         def publish(payload, options)
           operation_bindings = operation_bindings_for(options)
           @subject.publish(payload, operation_bindings)
@@ -35,6 +39,10 @@ module EventSource
         end
 
         private
+
+        def message_id
+          SecureRandom.uuid
+        end
 
         # Unimplemented Bunny Bindings
         #   :routing_key (String) - Routing key
