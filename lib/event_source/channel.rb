@@ -8,11 +8,11 @@ module EventSource
     attr_reader :subscribe_operations, :publish_operations, :consumers
 
     ADAPTER_METHODS = %i[
-      subscribe_operations
-      publish_operations
       add_subscribe_operation
       add_publish_operation
-      bind_queue
+      name
+      status
+      close
     ].freeze
     # rename bind_queue to add_consumer
 
@@ -28,10 +28,6 @@ module EventSource
       # FIX ME: rename
       add_publish_operation(async_api_channel_item[:publish])
       add_subscribe_operation(async_api_channel_item[:subscribe])
-    end
-
-    def protocol
-      @channel_proxy.connection_proxy.protocol
     end
 
     def name

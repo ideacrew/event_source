@@ -38,6 +38,9 @@ module EventSource
           @subject = nil # Http does not have a channel object
         end
 
+        def status; end
+        def close; end
+
         # Faraday::Request.body
         # Faraday::Request.headers
         # Faraday::Request.http_method

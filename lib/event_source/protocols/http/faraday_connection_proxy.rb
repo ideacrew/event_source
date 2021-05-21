@@ -48,7 +48,7 @@ module EventSource
         #
         # Override these values using the options argument in the constructor
         RequestMiddlewareDefaults = {
-          multipart: nil,
+          json: nil,
           retry: {
             max: 5,
             interval: 0.05,
@@ -63,12 +63,14 @@ module EventSource
         #
         # Override these values using the options argument in the constructor
         ResponseMiddlewareDefaults = {
-          xml: {
-            content_type: /\bxml$/
-          },
+          # xml: {
+          #   content_type: /\bxml$/
+          # },
+          caching: nil,
           json: {
             content_type: /\bjson$/
-          }
+          },
+          logger: nil
         }
 
         # @param [Hash] async_api_server {EventSource::AsyncApi::Server} configuration
@@ -100,37 +102,24 @@ module EventSource
           response_middleware = connection_params[:response_middleware]
           adapter = connection_params[:adapter]
 
-          conn =
-            Faraday.new(
-              url: @connection_uri,
-              params: params,
-              headers: headers
-            ) do |conn|
-              request_middleware.each_pair do |component, options|
-                if options.nil?
-                  conn.request "#{component}".to_sym
-                else
-                  conn.request "#{component}".to_sym, "#{options}"
-                end
-              end
-
-              response_middleware.each_pair do |component, options|
-                if options.nil?
-                  conn.response "#{component}".to_sym
-                else
-                  conn.response "#{component}".to_sym, "#{options}"
-                end
-              end
-
-              # last middleware must be adapter
-              adapter.each_pair do |component, options|
-                if options.nil?
-                  conn.adapter "#{component}".to_sym
-                else
-                  conn.adapter "#{component}".to_sym, "#{options}"
-                end
-              end
+          Faraday.new(
+            url: @connection_uri,
+            params: params,
+            headers: headers
+          ) do |conn|
+            request_middleware.each_pair do |component, options|
+              conn.request "#{component}".to_sym, options || {}
             end
+
+            response_middleware.each_pair do |component, options|
+              conn.response "#{component}".to_sym, options || {}
+            end
+
+            # last middleware must be adapter
+            adapter.each_pair do |component, options|
+              conn.adapter "#{component}".to_sym, options || {}
+            end
+          end
         end
 
         def connection
@@ -143,14 +132,8 @@ module EventSource
           # Verify connection:
           #  Network
           #  Authentication
-        end
 
-        # Create a channel for processing HTTP protocol requests
-        # @param [EventSource::AsyncApi::ChannelItem] async_api_channel_item
-        #   Channel configuration and bindings
-        # @result [FaradayChannelProxy]
-        def add_channel(channel_item_key, async_api_channel_item)
-          FaradayChannelProxy.new(self, channel_item_key, async_api_channel_item)
+          EventSource::Noop.new
         end
 
         # The status of the connection instance
@@ -180,6 +163,14 @@ module EventSource
 
         def protocol
           :http
+        end
+
+        # Create a channel for processing HTTP protocol requests
+        # @param [EventSource::AsyncApi::ChannelItem] async_api_channel_item
+        #   Channel configuration and bindings
+        # @result [FaradayChannelProxy]
+        def add_channel(channel_item_key, async_api_channel_item)
+          FaradayChannelProxy.new(self, channel_item_key, async_api_channel_item)
         end
 
         # This class applies both the Adapter and Proxy development patterns.

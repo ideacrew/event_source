@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'config_helper'
 
 RSpec.describe EventSource::Protocols::Http::FaradayChannelProxy do
   let(:protocol) { :http }
@@ -22,7 +23,8 @@ RSpec.describe EventSource::Protocols::Http::FaradayChannelProxy do
   end
   let(:connection) { EventSource::Connection.new(client) }
 
-  let(:channel_id) { 'crm.contact_created' }
+  let(:channel_id_1) { 'crm.contact_created' }
+  let(:channel_id_2) { 'crm.contact_updated' }
 
   let(:publish_operation) do
     {
@@ -155,8 +157,8 @@ RSpec.describe EventSource::Protocols::Http::FaradayChannelProxy do
   after { connection.disconnect if connection.active? }
 
   let(:channel_proxy) do
-    described_class.new(connection, channel_item)
-    described_class.new(connection, channel_item2)
+    described_class.new(connection, channel_id_1, channel_item)
+    described_class.new(connection, channel_id_2, channel_item2)
   end
 
   context 'Adapter pattern methods are present' do
@@ -167,11 +169,11 @@ RSpec.describe EventSource::Protocols::Http::FaradayChannelProxy do
     end
   end
 
-  context 'When a connection and channel item passted' do
-    it 'should create queues and exchanges' do
-      channel = channel_proxy.subject
-      expect(channel.queues).to be_present
-      expect(channel.exchanges).to be_present
-    end
-  end
+  # context 'When a connection and channel item passted' do
+  #   it 'should create queues and exchanges' do
+  #     channel = channel_proxy.subject
+  #     expect(channel.queues).to be_present
+  #     expect(channel.exchanges).to be_present
+  #   end
+  # end
 end
