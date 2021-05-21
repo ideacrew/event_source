@@ -27,27 +27,15 @@ module EventSource
       class FaradayChannelProxy
         # @attr_reader [Faraday::Connection] connection Connection to HTTP server
         # @attr_reader [Faraday::Request] subject Channel
-        attr_reader :connection, :subject
+        attr_reader :connection, :name, :subject
 
         # @param [EventSource::AsyncApi::Connection] faraday_connection_proxy Connection instance
         # @param [Hash<EventSource::AsyncApi::ChannelItem>] async_api_channel_item {EventSource::AsyncApi::ChannelItem}
         # @return [EventSource::Protocols::Http::FaradayChannelProxy] subject
-        def initialize(faraday_connection_proxy, async_api_channel_item)
+        def initialize(faraday_connection_proxy, channel_item_key, async_api_channel_item)
           @connection = faraday_connection_proxy.connection
-          @subject = build_faraday_request_for(async_api_channel_item)
-        end
-
-        def build_faraday_request_for(async_api_channel_item)
-          return if async_api_channel_item.empty?
-          bindings = async_api_channel_item[:bindings][:http]
-
-          # # @connection.send
-          # # @connection.create { |request| }
-
-          http_method = bindings[:method]
-          @connection.build_request(http_method)
-          #  do |request|
-          # end
+          @name = channel_item_key
+          @subject = nil # Http does not have a channel object
         end
 
         # Faraday::Request.body
@@ -69,6 +57,16 @@ module EventSource
 
         #   conn.adapter(:net_http) # NB: Last middleware must be the adapter
         # end
+
+        # For Http: Build request
+        def add_publish_operation(async_api_subscribe_operation)
+          # invoke response proxy
+        end
+
+        # For Http: Build request
+        def add_subscribe_operation(async_api_subscribe_operation)
+          FaradayRequestProxy.new(self, async_api_subscribe_operation)
+        end
 
         # @return [Faraday::Response]
         def build_faraday_publish_for(async_api_channel_item)

@@ -29,17 +29,16 @@ module EventSource
       class BunnyChannelProxy
         # @attr_reader [Bunny::ConnectionProxy] connection Connection proxy instance to the RabbitMQ server
         # @attr_reader [Bunny::ChannelProxy] subject Channel channel proxy interface on the Connection
-        attr_reader :connection,
-                    :subject,
-                    :publish_bindings,
-                    :subscribe_bindings
+        attr_reader :connection, :name, :subject, :async_api_channel_item
 
         # @param bunny_connection_proxy [EventSource::Protocols::Amqp::BunnyConnectionProxy] Connection instance
         # @param async_api_channel_item [EventSource::AsyncApi::ChannelItem] Channel item configuration
         # @return [Bunny::ChannelProxy] Channel proxy instance on the RabbitMQ server {Connection}
 
-        def initialize(bunny_connection_proxy, async_api_channel_item)
+        def initialize(bunny_connection_proxy, channel_item_key, async_api_channel_item)
           @connection = connection_for(bunny_connection_proxy)
+          @name = channel_item_key
+          @async_api_channel_item = async_api_channel_item
           @subject = create_channel
         end
 
@@ -80,14 +79,22 @@ module EventSource
           exchanges[name.to_s]
         end
 
-        def add_queue(bindings, channel_name)
-          create_channel if closed?
-          BunnyQueueProxy.new(self, bindings, channel_name)
+        def add_publish_operation(async_api_subscribe_operation)
+          add_exchange
         end
 
-        def add_exchange(bindings)
+        def add_subscribe_operation(async_api_subscribe_operation)
+          add_queue
+        end
+
+        def add_queue
           create_channel if closed?
-          BunnyExchangeProxy.new(self, bindings)
+          BunnyQueueProxy.new(self, async_api_channel_item)
+        end
+
+        def add_exchange
+          create_channel if closed?
+          BunnyExchangeProxy.new(self, async_api_channel_item)
         end
 
         # @return [String] a human-readable summary for this channel

@@ -97,8 +97,8 @@ module EventSource
           end
         end
 
-        def add_channel(async_api_channel_item)
-          BunnyChannelProxy.new(self, async_api_channel_item)
+        def add_channel(channel_item_key, async_api_channel_item)
+          BunnyChannelProxy.new(self, channel_item_key, async_api_channel_item)
         end
 
         # Is the server connection started?
@@ -120,6 +120,10 @@ module EventSource
         # The version of Bunny client in use
         def client_version
           ClientVersion
+        end
+
+        def protocol
+          :amqp
         end
 
         class << self

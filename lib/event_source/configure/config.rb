@@ -18,8 +18,9 @@ module EventSource
       end
 
       def load_configurations
-        connection_manager = EventSource::ConnectionManager.instance
+        return unless @asyncapi_resources
 
+        connection_manager = EventSource::ConnectionManager.instance
         @asyncapi_resources.each do |resource|
           resource.deep_symbolize_keys!
           connection =
@@ -32,6 +33,7 @@ module EventSource
       end
 
       def load_components
+        return unless @pub_sub_root
         %w[publishers subscribers].each do |folder|
           Dir["#{@pub_sub_root}/#{folder}/**/*.rb"].sort.each do |file|
             require file

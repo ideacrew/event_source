@@ -10,13 +10,15 @@ module EventSource
         # @param [EventSource::AsyncApi::Channel] channel_proxy instance on which to open this Exchange
         # @param [Hash<EventSource::AsyncApi::Exchange>] bindings instance with configuration for this Exchange
         # @return [Bunny::Exchange]
-        def initialize(channel_proxy, bindings)
+        def initialize(channel_proxy, async_api_channel_item)
+          exchange_bindings = async_api_channel_item[:bindings][:amqp][:exchange]
+
           @subject =
             Bunny::Exchange.new(
               channel_proxy,
-              bindings[:type],
-              bindings[:name],
-              bindings.slice(:durable, :auto_delete, :vhost)
+              exchange_bindings[:type],
+              exchange_bindings[:name],
+              exchange_bindings.slice(:durable, :auto_delete, :vhost)
             )
         end
 

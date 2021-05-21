@@ -63,7 +63,7 @@ module EventSource
       def validate
         channel_name = exchange_name # .match(/^(.*).exchange$/)[1]
         channel = connection.channel_by_name(channel_name.to_sym)
-        exchange = channel.exchanges[exchange_name]
+        exchange = channel.publish_operations[exchange_name]
 
         return if exchange
         raise EventSource::AsyncApi::Error::ExchangeNotFoundError,

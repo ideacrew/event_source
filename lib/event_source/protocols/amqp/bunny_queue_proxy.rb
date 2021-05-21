@@ -22,17 +22,22 @@ module EventSource
         # @option channel_bindings [String] :vhost ('/')
         # @param exchange_name [String] Exchange name which to bind this queue
         # @return [Bunny::Queue]
-        def initialize(channel_proxy, channel_bindings, exchange_name)
+        def initialize(channel_proxy, async_api_channel_item)
           @channel = channel_proxy
-          @subject = bunny_queue_for(channel_bindings)
-          bind_exchange(exchange_name)
+          queue_bindings = async_api_channel_item[:bindings][:amqp][:queue]
+          @subject = bunny_queue_for(queue_bindings)
+          bind_exchange
 
           # @subject
         end
 
-        def bind_exchange(exchange_name)
-          if @channel.exchange_exists?(exchange_name)
-            @channel.bind_queue(@subject.name, exchange_name)
+        def exchange_name
+          @channel.name
+        end
+
+        def bind_exchange
+          if channel.exchange_exists?(exchange_name)
+            channel.bind_queue(@subject.name, exchange_name)
             logger.info "Queue #{@subject.name} bound to exchange #{exchange_name}"
           else
             raise EventSource::AsyncApi::Error::ExchangeNotFoundError,
@@ -40,12 +45,12 @@ module EventSource
           end
         end
 
-        def bunny_queue_for(channel_bindings)
+        def bunny_queue_for(queue_bindings)
           queue =
             Bunny::Queue.new(
-              @channel,
-              channel_bindings[:name],
-              channel_bindings.slice(:durable, :auto_delete, :vhost, :exclusive)
+              channel,
+              queue_bindings[:name],
+              queue_bindings.slice(:durable, :auto_delete, :vhost, :exclusive)
             )
 
           logger.info "Created queue #{queue.name}"

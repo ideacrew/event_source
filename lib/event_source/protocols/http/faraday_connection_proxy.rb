@@ -149,8 +149,8 @@ module EventSource
         # @param [EventSource::AsyncApi::ChannelItem] async_api_channel_item
         #   Channel configuration and bindings
         # @result [FaradayChannelProxy]
-        def add_channel(async_api_channel_item)
-          FaradayChannelProxy.new(self, async_api_channel_item)
+        def add_channel(channel_item_key, async_api_channel_item)
+          FaradayChannelProxy.new(self, channel_item_key, async_api_channel_item)
         end
 
         # The status of the connection instance
@@ -176,6 +176,10 @@ module EventSource
         # AsyncAPI HTTP Bindings Protocol version supported by this client
         def protocol_version
           ProtocolVersion
+        end
+
+        def protocol
+          :http
         end
 
         # This class applies both the Adapter and Proxy development patterns.
