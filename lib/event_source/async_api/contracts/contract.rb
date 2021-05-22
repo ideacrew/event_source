@@ -32,16 +32,18 @@ module EventSource
           )
         end
 
-        rule(:channels).each do
-          next unless key? && value
-          result = ChannelsContract.new.call(value)
+        rule(:channels) do
+          if key? && value
+            value.each do |key, value|
+              result = ChannelItemContract.new.call(value)
 
-          # Use dry-validation metadata form to pass error hash along with text to calling service
-          next unless result&.failure?
-          key.failure(
-            text: 'invalid channel hash',
-            error: result.errors.to_h
-          )
+              next unless result&.failure?
+              key.failure(
+                text: 'invalid channel_item',
+                error: result.errors.to_h
+              )
+            end
+          end
         end
 
         rule(:channel_items).each do

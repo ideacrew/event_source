@@ -36,7 +36,7 @@ module EventSource
     require_relative 'variable'
     require_relative 'server_binding'
     require_relative 'server'
-    require_relative 'service'
+    require_relative 'async_api_conf'
     require_relative 'contracts/contract'
 
     Dir[File.expand_path('lib/event_source/async_api/contracts/**/*.rb')].sort.each { |f| require(f) }

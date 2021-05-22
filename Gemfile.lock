@@ -16,6 +16,7 @@ PATH
       logging (~> 2.3.0)
       mime-types
       oj (~> 3.11)
+      ox (~> 2.14)
       resque-bus (~> 0.7.0)
       typhoeus (~> 1.4.0)
 
@@ -209,6 +210,7 @@ GEM
       mini_portile2 (~> 2.5.0)
       racc (~> 1.4)
     oj (3.11.5)
+    ox (2.14.4)
     parallel (1.20.1)
     parser (3.0.1.0)
       ast (~> 2.4.1)

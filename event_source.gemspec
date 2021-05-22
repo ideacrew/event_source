@@ -49,6 +49,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'logging', '~> 2.3.0'
   spec.add_dependency 'mime-types'
   spec.add_dependency 'oj', '~> 3.11'
+  spec.add_dependency 'ox', '~> 2.14'
   spec.add_dependency 'resque-bus', '~> 0.7.0'
   spec.add_dependency 'typhoeus', '~> 1.4.0'
 

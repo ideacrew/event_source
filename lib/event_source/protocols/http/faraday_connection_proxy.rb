@@ -32,9 +32,7 @@ module EventSource
         # Override these values using the options argument in the constructor
         HttpDefaults = {
           http: {
-            headers: {
-              'Content-Type': 'application/json'
-            },
+            headers: {},
             params: {}
           }
         }
@@ -48,7 +46,6 @@ module EventSource
         #
         # Override these values using the options argument in the constructor
         RequestMiddlewareDefaults = {
-          json: nil,
           retry: {
             max: 5,
             interval: 0.05,
@@ -63,13 +60,7 @@ module EventSource
         #
         # Override these values using the options argument in the constructor
         ResponseMiddlewareDefaults = {
-          # xml: {
-          #   content_type: /\bxml$/
-          # },
           caching: nil,
-          json: {
-            content_type: /\bjson$/
-          },
           logger: nil
         }
 
@@ -202,19 +193,14 @@ module EventSource
         private
 
         def connection_params_for(options)
-          options_request_middleware = options[:request_middleware] || {}
           request_middleware =
-            options_request_middleware.merge! RequestMiddlewareDefaults
+            RequestMiddlewareDefaults.merge(options[:request_middleware] || {})
 
-          options_response_middleware = options[:response_middleware] || {}
           response_middleware =
-            options_response_middleware.merge! ResponseMiddlewareDefaults
+            ResponseMiddlewareDefaults.merge(options[:response_middleware] || {})
 
-          options_adapter = options[:adapter] || {}
-          adapter = AdapterDefaults.merge! options_adapter
-
-          options_http = options[:http] || {}
-          http = HttpDefaults.merge! options_http
+          adapter = AdapterDefaults.merge(options[:adapter] || {})
+          http = HttpDefaults.merge(options[:http] || {})
 
           {
             request_middleware: request_middleware,

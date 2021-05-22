@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# AsyncAPI specification
+# AsyncAPI Configuration
 # See: https://www.asyncapi.com/docs/specifications/2.0.0/
 
 module EventSource
@@ -9,7 +9,7 @@ module EventSource
     # may be a microservice, IoT device (sensor), mainframe process, etc. An application may be written in any number
     # of different programming languages as long as they support the selected protocol. An application must also use
     # a protocol supported by the {Server} in order to connect and exchange {Message Messages}.
-    class Service < Dry::Struct
+    class AsyncApiConf < Dry::Struct
       # @!attribute [r] asyncapi
       # AsyncAPI spec version being used (required)
       # @return [String]
