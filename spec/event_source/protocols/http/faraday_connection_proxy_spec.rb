@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'config_helper'
 
 RSpec.describe EventSource::Protocols::Http::FaradayConnectionProxy do
   let(:protocol) { :http }
+
   # let(:url) { 'https://localhost:8080' }
   let(:url) { 'https://api.github.com' }
   let(:protocol_version) { '0.1.0' }

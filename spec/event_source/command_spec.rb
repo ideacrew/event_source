@@ -16,6 +16,12 @@ end
 RSpec.describe EventSource::Command do
   let(:invalid_command) { EventSource::InvalidCommand }
 
+  after(:all) do
+    connection_manager = EventSource::ConnectionManager.instance
+    connection_manager.drop_connections_for(:amqp)
+    # binding.pry
+  end
+
   context '.event' do
     let(:organization_params) do
       {

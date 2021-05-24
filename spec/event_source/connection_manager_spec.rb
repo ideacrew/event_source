@@ -23,6 +23,8 @@ RSpec.describe EventSource::ConnectionManager do
 
     context 'and no connections are present' do
 
+      before { connection_manager.drop_connections_for(:amqp) }
+
       it 'the connnections should be empty' do
         expect(connection_manager.connections).to be_empty
       end
@@ -71,9 +73,7 @@ RSpec.describe EventSource::ConnectionManager do
         context 'and connections are present' do
           let(:connection_url) { 'amqp://localhost:5672/' }
 
-          before do
-            connection_manager.add_connection(my_server)
-          end
+          before { connection_manager.add_connection(my_server) }
 
           it 'should have a connection' do
             expect(
@@ -82,7 +82,6 @@ RSpec.describe EventSource::ConnectionManager do
           end
 
           context 'and an existing connection is dropped' do
-
             it 'should close and remove the connection' do
               expect(
                 connection_manager.drop_connection(connection_url)

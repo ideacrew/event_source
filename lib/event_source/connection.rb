@@ -17,28 +17,28 @@ module EventSource
     ].freeze
 
     def initialize(connection_proxy)
-      @client = connection_proxy
+      @connection_proxy = connection_proxy
       @channels = {}
     end
 
     def connection
-      @client.connection
+      @connection_proxy.connection
     end
 
     def protocol
-      @client.protocol
+      @connection_proxy.protocol
     end
 
     def start
-      @client.start
+      @connection_proxy.start
     end
 
     def active?
-      @client.active?
+      @connection_proxy.active?
     end
 
     def disconnect
-      @client.close
+      @connection_proxy.close
     end
 
     #  '/employees':
@@ -67,7 +67,8 @@ module EventSource
     # @param [Hash] args binding options for Protocol server
     # @return Bunny::Session
     def add_channel(channel_item_key, async_api_channel_item)
-      channel_proxy = @client.add_channel(channel_item_key, async_api_channel_item)
+      channel_proxy =
+        @connection_proxy.add_channel(channel_item_key, async_api_channel_item)
       @channels[channel_item_key] =
         Channel.new(channel_proxy, async_api_channel_item)
     end
@@ -76,7 +77,7 @@ module EventSource
     # channel_by(:exchange_name, 'enroll.organizations.exchange')
     # def channel_by(type, value)
     #   return channel_by_name(value) if type == :channel_name
-    #   @client.channel_by(type, value)
+    #   @connection_proxy.channel_by(type, value)
     # end
 
     def channel_by_name(name)
@@ -84,19 +85,19 @@ module EventSource
     end
 
     def connection_params
-      @client.connection_params
+      @connection_proxy.connection_params
     end
 
     def connection_uri
-      @client.connection_uri
+      @connection_proxy.connection_uri
     end
 
     def protocol_version
-      @client.protocol_version
+      @connection_proxy.protocol_version
     end
 
     def client_version
-      @client.client_version
+      @connection_proxy.client_version
     end
   end
 end

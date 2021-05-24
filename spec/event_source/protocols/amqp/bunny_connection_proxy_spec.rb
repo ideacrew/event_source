@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
+require 'spec_helper'
+require 'config_helper'
 
 RSpec.describe EventSource::Protocols::Amqp::BunnyConnectionProxy do
   let(:protocol) { :amqp }
@@ -168,7 +169,9 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyConnectionProxy do
       let(:result) { described_class.new(valid_server) }
       after { result.close }
       it 'should successfully connect to RabbitMQ Server' do
-        expect(result).to be_a EventSource::Protocols::Amqp::BunnyConnectionProxy
+        expect(
+          result
+        ).to be_a EventSource::Protocols::Amqp::BunnyConnectionProxy
         expect(result.start).to be_truthy
         expect(result.active?).to be_truthy
       end

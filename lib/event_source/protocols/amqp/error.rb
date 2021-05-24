@@ -23,6 +23,7 @@ module EventSource
         ConnectionError = Class.new(Error)
         DuplicateConnectionError = Class.new(Error)
         UnknownConnectionProtocolError = Class.new(Error)
+        ChannelBindingContractError = Class.new(Error)
       end
     end
   end

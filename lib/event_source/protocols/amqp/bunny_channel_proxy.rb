@@ -3,29 +3,9 @@
 module EventSource
   module Protocols
     module Amqp
-      # Create and manage a RabbitMQ channel instance using Bunny client
-      # @example AsyncApi ChannelItem
-      # crm.contact_created:
-      #   subscribe:
-      #     operationId: on_crm_contacts_contact_created
-      #     summary: CRM Contact Created
-      #     message:
-      #       $ref: "#/components/messages/crm_contacts_contact_created_event"
-      # crm.sugar_crm.contacts.contact_created:
-      #   publish:
-      #     operationId: on_crm_sugarcrm_contacts_contact_created
-      #     summary: SugarCRM Contact Created
-      #     message:
-      #       $ref: "#/components/messages/crm_sugar_crm_contacts_contact_created_event"
-      #       payload:
-      #         type: object
-      #   subscribe:
-      #     operationId: crm_sugarcrm_contacts_contact_created
-      #     summary: SugarCRM Contact Created
-      #     message:
-      #       $ref: "#/components/messages/crm_sugar_crm_contacts_contact_created_event"
-      #       payload:
-      #         type: object
+      # Create and manage a RabbitMQ Channel instance using Bunny client.  Provide an interface that support
+      # the {EventSource::Channel} DSL
+
       class BunnyChannelProxy
         # @attr_reader [Bunny::ConnectionProxy] connection Connection proxy instance to the RabbitMQ server
         # @attr_reader [Bunny::ChannelProxy] subject Channel channel proxy interface on the Connection
@@ -34,8 +14,33 @@ module EventSource
         # @param bunny_connection_proxy [EventSource::Protocols::Amqp::BunnyConnectionProxy] Connection instance
         # @param async_api_channel_item [EventSource::AsyncApi::ChannelItem] Channel item configuration
         # @return [Bunny::ChannelProxy] Channel proxy instance on the RabbitMQ server {Connection}
-
-        def initialize(bunny_connection_proxy, channel_item_key, async_api_channel_item)
+        # @example AsyncApi ChannelItem
+        # crm.contact_created:
+        #   subscribe:
+        #     operationId: on_crm_contacts_contact_created
+        #     summary: CRM Contact Created
+        #     message:
+        #       $ref: "#/components/messages/crm_contacts_contact_created_event"
+        # crm.sugar_crm.contacts.contact_created:
+        #   publish:
+        #     operationId: on_crm_sugarcrm_contacts_contact_created
+        #     summary: SugarCRM Contact Created
+        #     message:
+        #       $ref: "#/components/messages/crm_sugar_crm_contacts_contact_created_event"
+        #       payload:
+        #         type: object
+        #   subscribe:
+        #     operationId: crm_sugarcrm_contacts_contact_created
+        #     summary: SugarCRM Contact Created
+        #     message:
+        #       $ref: "#/components/messages/crm_sugar_crm_contacts_contact_created_event"
+        #       payload:
+        #         type: object
+        def initialize(
+          bunny_connection_proxy,
+          channel_item_key,
+          async_api_channel_item
+        )
           @connection = connection_for(bunny_connection_proxy)
           @name = channel_item_key
           @async_api_channel_item = async_api_channel_item
@@ -43,27 +48,32 @@ module EventSource
         end
 
         def create_channel
-          Bunny::Channel.new(@connection).open
+          Bunny::Channel.new(connection).open
         end
 
+        # Returns the value of the attribute closed?
         def closed?
           @subject.closed?
         end
 
+        # Closes the channel
         def close
           @subject.close
         end
 
+        # Returns the queues collection
         def queues
           create_channel if closed?
           @subject.queues
         end
 
+        # Returns the exchanges collection
         def exchanges
           create_channel if closed?
           @subject.exchanges
         end
 
+        # Returns the queue matching the passed name
         def queue_by_name(name)
           matched = nil
           queues.each_value { |queue| matched = queue if queue.name == name }
@@ -115,7 +125,6 @@ module EventSource
         # return [Bunny::ConsumerWorkPool] Thread pool where
         #   delivered messages are dispatched
         def work_pool; end
-
 
         # def # @return [Bunny::ConsumerWorkPool] Thread pool dlivered messages
         #   are dispatached to

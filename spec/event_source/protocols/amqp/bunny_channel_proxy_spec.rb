@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
+require 'spec_helper'
+require 'config_helper'
 
 RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
   let(:protocol) { :amqp }
@@ -22,8 +23,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
   end
   let(:connection) { EventSource::Connection.new(client) }
 
-  let(:channel_id_1) { 'crm.contact_created' }
-  let(:channel_id_2) { 'crm.contact_updated' }
+  let(:channel_id) { 'crm.contact_created' }
 
   let(:publish_operation) do
     {
@@ -156,14 +156,14 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
   # after { connection.disconnect if connection.active? }
 
   let(:channel_proxy) do
-    described_class.new(client, channel_id_1, channel_item)
-    described_class.new(client, channel_id_2, channel_item2)
+    described_class.new(client, channel_id, channel_item)
+    described_class.new(client, channel_id, channel_item2)
   end
 
   context 'Adapter pattern methods are present' do
     let(:adapter_methods) { EventSource::Channel::ADAPTER_METHODS }
 
-    it 'should have all the required methods' do
+    it 'should respond to all the DSL methods' do
       expect(channel_proxy).to respond_to(*adapter_methods)
     end
   end

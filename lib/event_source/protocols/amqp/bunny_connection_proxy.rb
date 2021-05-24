@@ -7,6 +7,8 @@ module EventSource
       # @raise EventSource::Protocols::Amqp::Error::ConnectionError
       # @raise EventSource::Protocols::Amqp::Error::AuthenticationError
       class BunnyConnectionProxy
+        include EventSource::Logging
+
         # @attr_reader [String] connection_uri String used to connect with RabbitMQ server
         # @attr_reader [String] connection_params Configuration settings used when connecting with RabbitMQ server
         # @attr_reader [String] protocol_version AMQP protocol release supported by this broker client
@@ -28,6 +30,7 @@ module EventSource
           # successful reconnection? When set to false, the attempt counter will last through the entire lifetime of the connection object.
           recover_from_connection_close: true, # Bunny will try to recover from Server-initiated connection.close
           continuation_timeout: 4_000, # timeout in milliseconds for client operations that expect a response
+          # logger: EventSource::Logging,
           frame_max: 131_072 # max permissible size in bytes of a frame. Larger value may improve throughput; smaller value may improve latency
         }.freeze
 
@@ -97,6 +100,10 @@ module EventSource
           end
         end
 
+        # Adds a channel to this connection
+        # @param [String] channel_item_key a unique name for the channel
+        # @param [Hash] async_api_channel_item configuration values for the new channel
+        # @return [BunnyChannelProxy]
         def add_channel(channel_item_key, async_api_channel_item)
           BunnyChannelProxy.new(self, channel_item_key, async_api_channel_item)
         end
@@ -107,9 +114,15 @@ module EventSource
           @subject && @subject.open?
         end
 
-        # Close the server connection
-        def close
-          @subject.close if active?
+        # Close the server connection and all of its channels
+        def close(await_response = true)
+          @subject.close(await_response) if active?
+        end
+
+        # Returns true if this connection is closed
+        # @return [Boolean]
+        def closed?
+          @subject.closed?
         end
 
         # Attempt to reastablish connection to a disconnected server
@@ -163,11 +176,12 @@ module EventSource
               amqp_url = URI.parse(url)
               host = amqp_url.host || amqp_url.path # url w/single string parses into path
               port = amqp_url.port || ConnectDefaults[:port]
-              vhost = if amqp_url.path.present? && amqp_url.path != host
-                        amqp_url.path
-                      else
-                        ConnectDefaults[:vhost]
-                      end
+              vhost =
+                if amqp_url.path.present? && amqp_url.path != host
+                  amqp_url.path
+                else
+                  ConnectDefaults[:vhost]
+                end
             else
               host = url || ConnectDefaults[:host]
               port = server[:port] || ConnectDefaults[:port]

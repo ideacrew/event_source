@@ -5,11 +5,13 @@ module EventSource
   class Exchange
     # @attr_reader [Hash] bindings
     # {EventSource::Queue} within a broker
-    attr_reader :bindings
+    attr_reader :bindings, :exchange_proxy
 
-    def initialize(exchange_proxy, operation)
+    ADAPTER_METHODS = %i[publish bind]
+
+    def initialize(exchange_proxy, async_api_publish_operation)
       @exchange_proxy = exchange_proxy
-      @bindings = operation[:bindings]
+      @bindings = async_api_publish_operation[:bindings]
     end
 
     def publish(payload, opts = {})

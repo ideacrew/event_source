@@ -12,7 +12,8 @@ module EventSource
         # @param [Hash<EventSource::AsyncApi::Exchange>] bindings instance with configuration for this Exchange
         # @return [Bunny::Exchange]
         def initialize(channel_proxy, async_api_channel_item)
-          exchange_bindings = async_api_channel_item[:bindings][:amqp][:exchange]
+          exchange_bindings =
+            async_api_channel_item[:bindings][:amqp][:exchange]
 
           @subject =
             Bunny::Exchange.new(
@@ -25,10 +26,10 @@ module EventSource
 
         # Publish a message to this Exchange
         # @param [Mixed] payload the message oontent
-        # @param [Hash] options
-        def publish(payload, options)
-          operation_bindings = operation_bindings_for(options)
-          @subject.publish(payload, operation_bindings)
+        # @param [Hash] bindings
+        def publish(payload, bindings)
+          bunny_publish_bindings = sanitize_bindings(bindings)
+          @subject.publish(payload, bunny_publish_bindings)
         end
 
         def respond_to_missing?(name, include_private)end
@@ -44,17 +45,22 @@ module EventSource
           SecureRandom.uuid
         end
 
-        # Unimplemented Bunny Bindings
+        # Filtering and renaming AsyncAPI Operation bindings to Bunny/RabitMQ
+        #   bindings
+        # Supported Bunny Bindings
+        # :expiration, :priority, :mandatory, :user_id, :timestamp, :persistent,
+        #   :reply_to, :content_encoding, :type
+        # Unupported Bunny Bindings
         #   :routing_key (String) - Routing key
         #   :content_type (String) - Message content type (e.g. application/json)
         #   :correlation_id (String) - Message correlated to this one, e.g. what request this message is a reply for
         #   :message_id (String) - Any message identifier
         #   :app_id (String) - Optional application ID
-
         # Unsupported AsyncApi Bindings
         #   cc: ['user.logs']
         #   bcc: ['external.audit']
-        def operation_bindings_for(options)
+        # return [Hash] sanitized Bunny/RabitMQ bindings
+        def sanitize_bindings(options)
           operation_bindings = options.pluck(:expiration, :priority, :mandatory)
           operation_bindings[:user_id] = options[:userId] if options[:userId]
           operation_bindings[:timestamp] = Time.now if options[:timestamp]

@@ -10,57 +10,55 @@ module EventSource
       class BunnyQueueProxy
         include EventSource::Logging
 
-        attr_reader :channel
+        # @qttr_reader [Bunny::Queue] subject the queue object
+        # @qttr_reader [EventSource::Protcols::Amqp::BunnyChannelProxy] channel_proxy the channel_proxy used to access this queue
+        # @qttr_reader [String] exchange_name the Exchange to which this to bind this Queue
+        attr_reader :subject, :channel_proxy, :exchange_name
 
-
-        # @param channel_proxy [EventSource::AsyncApi::Channel] Channel definition and bindings
-        # @param [Hash] channel_bindings channel binding settings
+        # @param [EventSource::Protocols::Amqp::BunnyChannelProxy] channel_proxy channel_proxy wrapping Bunny::Channel object
+        # @param async_api_channel_item [EventSource::AsyncApi::Channel] Channel definition and bindings
         # @option channel_bindings [String] :name queue name
         # @option channel_bindings [String] :durable
         # @option channel_bindings [String] :auto_delete
         # @option channel_bindings [String] :exclusive
         # @option channel_bindings [String] :vhost ('/')
-        # @param exchange_name [String] Exchange name which to bind this queue
         # @return [Bunny::Queue]
         def initialize(channel_proxy, async_api_channel_item)
-          @channel = channel_proxy
-          queue_bindings = async_api_channel_item[:bindings][:amqp][:queue]
-          @subject = bunny_queue_for(queue_bindings)
-          bind_exchange
+          @channel_proxy = channel_proxy
+          @exchange_name = channel_proxy.name
+          bindings = async_api_channel_item[:bindings]
 
-          # @subject
+          @subject = bunny_queue_for(bindings)
+          bind_exchange(@exchange_name)
+
+          @subject
         end
 
-        def exchange_name
-          @channel.name
-        end
+        # Find a Bunny queue that matches the configuration of an {EventSource::AsyncApi::ChannelItem}
+        def bunny_queue_for(async_api_channel_item)
+          queue_bindings =
+            channel_item_queue_bindings_for(async_api_channel_item)
 
-        def bind_exchange
-          if channel.exchange_exists?(exchange_name)
-            channel.bind_queue(@subject.name, exchange_name)
-            logger.info "Queue #{@subject.name} bound to exchange #{exchange_name}"
-          else
-            raise EventSource::AsyncApi::Error::ExchangeNotFoundError,
-                  "exchange #{exchange_name} not found"
-          end
-        end
-
-        def bunny_queue_for(queue_bindings)
           queue =
             Bunny::Queue.new(
-              channel,
+              channel_proxy,
               queue_bindings[:name],
               queue_bindings.slice(:durable, :auto_delete, :vhost, :exclusive)
             )
 
-          logger.info "Created queue #{queue.name}"
+          logger.info "Found or created queue #{queue.name}"
           queue
         end
 
-        def convert_to_bunny_options(options)
-          operation_bindings = {}
-          operation_bindings[:no_ack] = !options[:ack] if options.key?(:ack)
-          operation_bindings
+        # Bind this Queue to the Exchange
+        def bind_exchange(name)
+          if channel_proxy.exchange_exists?(name)
+            channel_proxy.bind_queue(@subject.name, name)
+            logger.info "Queue #{@subject.name} bound to exchange #{name}"
+          else
+            raise EventSource::AsyncApi::Error::ExchangeNotFoundError,
+                  "exchange #{name} not found"
+          end
         end
 
         def subscribe(subscriber, options, &block)
@@ -87,9 +85,38 @@ module EventSource
 
         def respond_to_missing?(name, include_private)end
 
-        # Forwards all missing method calls to the Bunny::Queue instance
+        # Forward all missing method calls to the Bunny::Queue instance
         def method_missing(name, *args)
           @subject.send(name, *args)
+        end
+
+        private
+
+        def convert_to_bunny_options(options)
+          operation_bindings = {}
+          operation_bindings[:no_ack] = !options[:ack] if options.key?(:ack)
+          operation_bindings
+        end
+
+        def channel_item_queue_bindings_for(bindings)
+          if async_api_channel_item_bindings_valid?(bindings)
+            bindings[:amqp][:queue]
+          else
+            raise EventSource::Protocols::Amqp::Error::ChannelBindingContractErrorChannelBindingContractError,
+                  "Expected queue bindings: #{bindings}"
+          end
+        end
+
+        def async_api_channel_item_bindings_valid?(bindings)
+          result =
+            EventSource::Protocols::Amqp::Contracts::ChannelBindingContract.new
+              .call(bindings)
+          if result.success?
+            true
+          else
+            raise EventSource::Protocols::Amqp::Error::ChannelBindingContractError,
+                  "Error(s) #{result.errors.to_h} validating: #{bindings}"
+          end
         end
       end
     end
