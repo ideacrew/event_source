@@ -89,7 +89,7 @@ module EventSource
           exchanges[name.to_s]
         end
 
-        def add_publish_operation(async_api_subscribe_operation)
+        def add_publish_operation(async_api_publish_operation)
           add_exchange
         end
 

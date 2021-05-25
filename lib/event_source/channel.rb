@@ -5,7 +5,7 @@ module EventSource
   # Messages are published and consumed over a Channel
   # A Connection may have many Channels.
   class Channel
-    attr_reader :subscribe_operations, :publish_operations, :consumers
+    attr_reader :subscribe_operations, :publish_operations, :consumers, :channel_proxy
 
     ADAPTER_METHODS = %i[
       add_subscribe_operation
@@ -46,7 +46,7 @@ module EventSource
       return unless async_api_publish_operation
       publish_proxy = @channel_proxy.add_publish_operation(async_api_publish_operation)
       @publish_operations[publish_proxy.name] =
-        EventSource::PublishOperation.new(publish_proxy)
+        EventSource::PublishOperation.new(publish_proxy, async_api_publish_operation)
     end
 
     # # Add a queue configured according to the AsyncAPI ChannelItem bindings. It also binds the

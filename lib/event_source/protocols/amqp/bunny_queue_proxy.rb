@@ -35,9 +35,9 @@ module EventSource
         end
 
         # Find a Bunny queue that matches the configuration of an {EventSource::AsyncApi::ChannelItem}
-        def bunny_queue_for(async_api_channel_item)
+        def bunny_queue_for(bindings)
           queue_bindings =
-            channel_item_queue_bindings_for(async_api_channel_item)
+            channel_item_queue_bindings_for(bindings)
 
           queue =
             Bunny::Queue.new(
@@ -51,16 +51,25 @@ module EventSource
         end
 
         # Bind this Queue to the Exchange
-        def bind_exchange(name)
-          if channel_proxy.exchange_exists?(name)
-            channel_proxy.bind_queue(@subject.name, name)
-            logger.info "Queue #{@subject.name} bound to exchange #{name}"
+        def bind_exchange(exchange_name)
+          if channel_proxy.exchange_exists?(exchange_name)
+            channel_proxy.bind_queue(@subject.name, exchange_name)
+            logger.info "Queue #{@subject.name} bound to exchange #{exchange_name}"
           else
             raise EventSource::AsyncApi::Error::ExchangeNotFoundError,
                   "exchange #{name} not found"
           end
         end
 
+        #
+        # This will construct and subscribe consumer_proxy with the queue
+        #
+        # @param [Class] subscriber Subscriber class 
+        # @param [Hash] options Subscribe operation bindings
+        # @param [Proc] &block Code block that need to be executed when event received
+        #
+        # @return [BunnyConsumerProxy] Consumer proxy instance
+        #
         def subscribe(subscriber, options, &block)
           operation_bindings = convert_to_bunny_options(options[:amqp])
 
@@ -72,9 +81,10 @@ module EventSource
               operation_bindings[:no_ack],
               operation_bindings[:exclusive]
             )
+
           consumer_proxy.on_delivery do |delivery_info, metadata, payload|
             if block_given?
-              block.call(delivery_info, metadata, payload)
+              @channel_proxy.instance_exec(delivery_info, metadata, payload, &block)
             else
               subscriber.new.send(queue_name, delivery_info, metadata, payload)
             end

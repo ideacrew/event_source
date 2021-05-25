@@ -27,10 +27,12 @@ module EventSource
         # Publish a message to this Exchange
         # @param [Mixed] payload the message oontent
         # @param [Hash] bindings
-        def publish(payload, bindings)
+        def publish(payload, bindings:)
           bunny_publish_bindings = sanitize_bindings(bindings)
           @subject.publish(payload, bunny_publish_bindings)
         end
+
+        alias_method :call, :publish
 
         def respond_to_missing?(name, include_private)end
 
@@ -60,10 +62,11 @@ module EventSource
         #   cc: ['user.logs']
         #   bcc: ['external.audit']
         # return [Hash] sanitized Bunny/RabitMQ bindings
-        def sanitize_bindings(options)
-          operation_bindings = options.pluck(:expiration, :priority, :mandatory)
+        def sanitize_bindings(bindings)
+          options = bindings[:amqp]
+          operation_bindings = options.slice(:expiration, :priority, :mandatory)
           operation_bindings[:user_id] = options[:userId] if options[:userId]
-          operation_bindings[:timestamp] = Time.now if options[:timestamp]
+          # operation_bindings[:timestamp] = Time.now if options[:timestamp]
           operation_bindings[:persistent] = true if options[:deliveryMode] == 2
           operation_bindings[:reply_to] = options[:replyTo]
           operation_bindings[:content_encoding] = options[:contentEncoding]
