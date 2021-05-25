@@ -5,6 +5,7 @@ module EventSource
     module Contracts
       # Schema and validation rules for {ChannelItem}
       class ChannelItemContract < Contract
+
         # @!method call(opts)
         # @param [Hash] opts the parameters to validate using this contract
         # @option opts [String] :ref optional
@@ -20,7 +21,9 @@ module EventSource
           optional(:publish).value(:hash)
           optional(:description).value(:string)
           optional(:parameters).value(Types::HashOrNil)
-          optional(:bindings).value(Types::HashOrNil)
+          optional(:bindings).hash do
+            optional(:amqp).maybe(:hash)
+          end
         end
       end
     end

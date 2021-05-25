@@ -28,12 +28,13 @@ module EventSource
       # @!attribute [r] servers
       # connection details of servers
       # @return [Array<Server>]
-      attribute :servers, Types::Array.of(Server).meta(omittable: true)
+      # attribute :servers, Types::Array.of(Server).meta(omittable: true)
+      attribute :servers, Types::Hash.meta(omittable: false)
 
       # @!attribute [r] channels
       # available channels and messages for API (required)
       # @return [Array<Channel>]
-      attribute :channels, Channels.meta(omittable: false)
+      attribute :channels, Types::Hash.meta(omittable: false) #Channels.meta(omittable: false)
 
       # @!attribute [r] components
       # container for schemas for the specification

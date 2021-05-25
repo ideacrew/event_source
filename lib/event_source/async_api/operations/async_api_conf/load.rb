@@ -5,7 +5,7 @@ require 'yaml'
 module EventSource
   module AsyncApi
     module Operations
-      module Channels
+      module AsyncApiConf
         # Recursively loop files and load channel params. Accepts directory as input.
         class Load
           send(:include, Dry::Monads[:result, :do, :try])

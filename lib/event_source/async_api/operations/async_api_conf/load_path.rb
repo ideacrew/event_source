@@ -5,7 +5,7 @@ require 'yaml'
 module EventSource
   module AsyncApi
     module Operations
-      module Channels
+      module AsyncApiConf
         # load channel params from given file path
         class LoadPath
           send(:include, Dry::Monads[:result, :do, :try])
@@ -13,7 +13,7 @@ module EventSource
           def call(path:)
             file_io  = yield read(path)
             params   = yield deserialize(file_io)
-            # channels = yield create(params)
+            channels = yield create(params)
 
             Success(params)
           end
@@ -34,9 +34,7 @@ module EventSource
 
           def create(params)
             Try do
-              channels_params = {}
-              channels_params[:channels] = params['channels'].deep_symbolize_keys
-              result = Create.new.call(channels_params)
+              result = Create.new.call(params)
               return result if result.failure?
               result.value!
             end.to_result

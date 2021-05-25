@@ -50,10 +50,14 @@ module EventSource
                    :pub_sub_root,
                    :load_protocols,
                    :load_configurations,
-                   :load_components
+                   :load_components,
+                   :async_api_schemas=
 
     def configure
       yield(config)
+    end
+
+    def initialize!
       load_protocols
       load_configurations
       load_components

@@ -3,3 +3,5 @@
 EventSource.configure do |config|
   config.protocols = %w[amqp http]
 end
+
+EventSource.initialize!

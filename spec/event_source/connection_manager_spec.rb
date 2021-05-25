@@ -1,10 +1,18 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
+require 'spec_helper'
+require 'config_helper'
 
 RSpec.describe EventSource::ConnectionManager do
+
+  before(:all) do
+    described_class.instance.drop_connections_for(:amqp)
+    described_class.instance.drop_connections_for(:http)
+  end
+
   context 'A ConnectionManager Singleton instance' do
     let(:connection_manager) { described_class.instance }
+
     it 'should successfully initialize if there are no other ConnectionManagers are present' do
       expect(connection_manager).to be_an_instance_of described_class
     end
@@ -14,9 +22,6 @@ RSpec.describe EventSource::ConnectionManager do
     end
 
     context 'and no connections are present' do
-      before do
-        connection_manager.drop_connections_for(:amqp)
-      end
 
       it 'the connnections should be empty' do
         expect(connection_manager.connections).to be_empty

@@ -12,6 +12,11 @@ module EventSource
       @connections = Hash.new
     end
 
+    #
+    # Add connections for the given set of server definitions
+    #
+    # @param [Array] async_api_servers Async Api Server objects in Hash format
+    #
     def add_connections(async_api_servers)
       async_api_servers.each do |async_api_server|
         add_connection(async_api_server)
@@ -30,6 +35,10 @@ module EventSource
       connections[connection_uri] = EventSource::Connection.new(client)
     end
 
+    # Find and delete connection for the given connection url
+    #
+    # @param protocol [Symbol] the protocol name, `:http` or `:amqp`
+    # @return [Array] connections remaining connections collection after deletion
     def drop_connection(connection_uri)
       connection = connections[connection_uri]
       connection.disconnect if connection.active?
@@ -37,16 +46,26 @@ module EventSource
       connections
     end
 
+    # Find connections for the given protocol name.
+    #
+    # @param [Symbol] protocol the protocol name, `:http` or `:amqp`
+    # @return [Array] connections filtered by protocol
     def connections_for(protocol)
       connections.reduce(
         []
-      ) do |connections, (connection_uri, connection_instance)|
+      ) do |protocol_connections, (connection_uri, connection_instance)|
         if URI.parse(connection_uri).scheme.to_sym == protocol
-          connections.push(connection_instance)
+          protocol_connections << connection_instance
         end
+        protocol_connections
       end
     end
 
+    # 
+    # Drop connections for the given protocol
+    #
+    # @param [Symbol] protocol the protocol name, `:http` or `:amqp`
+    #
     def drop_connections_for(protocol)
       connections.each do |connection_uri, _connection_instance|
         drop_connection(connection_uri) if URI.parse(connection_uri).scheme.to_sym == protocol
@@ -57,6 +76,13 @@ module EventSource
 
     private
 
+    #
+    # Find connection proxy class for given protocol
+    #
+    # @param [Symbol] protocol the protocol name, `:http` or `:amqp`
+    #
+    # @return [Class] Protocol Specific Connection Proxy Class
+    #
     def protocol_klass_for(protocol)
       case protocol
       when :amqp, :amqps

@@ -59,7 +59,7 @@ module EventSource
         channel = connection.channels[channel_name.to_sym]
         queue = channel.subscribe_operations[queue_name.to_s]
 
-        raise EventSource::Error::SubscriberNotFound, 'unable to find queue' unless queue
+        raise EventSource::Error::SubscriberNotFound, "Unable to find queue #{queue_name}" unless queue
         queue.subscribe(self, &block)
       end
 

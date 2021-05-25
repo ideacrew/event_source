@@ -2,13 +2,13 @@
 
 require 'spec_helper'
 
-RSpec.describe EventSource::AsyncApi::Operations::Channels::Load do
+RSpec.describe EventSource::AsyncApi::Operations::AsyncApiConf::Load do
   context 'Given valid json api file path' do
 
     let(:async_api_folder) { Pathname.pwd.join('spec', 'support', 'async_api_files') }
 
-    context 'with a Channels and ChannelItem' do
-      it 'should create new Channels instance' do
+    context 'with a AsyncApiConf and ChannelItem' do
+      it 'should create new AsyncApiConf instance' do
         result = subject.call(dir: async_api_folder).value!
         expect(result.first).to be_a Hash
       end

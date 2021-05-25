@@ -9,7 +9,7 @@ module EventSource
       include EventSource::Logging
 
       # TODO: add default for pub_sub_root
-      attr_writer :asyncapi_resources, :pub_sub_root, :protocols
+      attr_writer :async_api_schemas, :pub_sub_root, :protocols
 
       def load_protocols
         @protocols.each do |protocol|
@@ -18,10 +18,10 @@ module EventSource
       end
 
       def load_configurations
-        return unless @asyncapi_resources
+        return unless @async_api_schemas
 
         connection_manager = EventSource::ConnectionManager.instance
-        @asyncapi_resources.each do |resource|
+        @async_api_schemas.each do |resource|
           resource.deep_symbolize_keys!
           connection =
             connection_manager.add_connection(resource[:servers][:production])
