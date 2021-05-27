@@ -158,7 +158,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
   end
 
   before { connection.start unless connection.active? }
-  after { connection.disconnect if connection.active? }
+  # after { connection.disconnect if connection.active? }
 
   let(:channel_proxy) do
     described_class.new(client.connection, channel_item)
