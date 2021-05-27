@@ -28,7 +28,7 @@ module EventSource
 
           def deserialize(file_io)
             Try do
-              YAML.safe_load(file_io)
+              YAML.safe_load(file_io, [Symbol])
             end.to_result
           end
 

@@ -56,7 +56,7 @@ module EventSource
         def initialize(server, options = {})
           @protocol_version = ProtocolVersion
           @client_version = ClientVersion
-          @server_options = RabbitMqOptionDefaults.merge! options
+          @server_options = options.merge(RabbitMqOptionDefaults)
           @connection_params = self.class.connection_params_for(server)
           @connection_uri = self.class.connection_uri_for(server)
           @bunny_session = Bunny.new(@connection_params, @server_options)
