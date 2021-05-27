@@ -14,5 +14,22 @@ module EventSource
     def subscribe(subscriber_klass, &block)
       @queue_proxy.subscribe(subscriber_klass, bindings, &block)
     end
+
+    def subscribe()
+    end
+
+    def add_message()
+      # For each subscriber, 
+    end
+
+    # register subscribers?
+
+    def add_subscriber()
+    end
+
+    private
+
+
+
   end
 end

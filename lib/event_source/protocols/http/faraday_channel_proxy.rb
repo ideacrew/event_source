@@ -49,25 +49,15 @@ module EventSource
         # Faraday::Request.params
         # Faraday::Request.path
 
-        # Faraday.new do |conn|
-        #   conn.request(
-        #     :retry,
-        #     max: 2,
-        #     interval: 0.05,
-        #     interval_randomness: 0.5,
-        #     backoff_factor: 2,
-        #     exceptions: [CustomException, 'Timeout::Error']
-        #   )
-
-        #   conn.adapter(:net_http) # NB: Last middleware must be the adapter
-        # end
 
         # For Http: Build request
-        def add_publish_operation(async_api_subscribe_operation); end
+        def add_publish_operation(async_api_subscribe_operation); 
+          FaradayRequestProxy.new(self, @async_api_channel_item)
+        end
 
         # For Http: Build request
         def add_subscribe_operation(async_api_subscribe_operation)
-          FaradayRequestProxy.new(self, @async_api_channel_item)
+          # FaradayRequestProxy.new(self, @async_api_channel_item)
         end
 
         # @return [Faraday::Response]

@@ -4,7 +4,7 @@ module EventSource
   module Protocols
     module Http
       # FIX ME: Reconnect to publish operation
-      class FaradayRequestProxy
+      class FaradaySubscribeProxy
         include EventSource::Logging
 
         attr_reader :channel_proxy, :subject
@@ -18,6 +18,8 @@ module EventSource
           @subject = faraday_request_for(bindings)
         end
 
+        faraday_queue_proxy = EventSource::Queue.new()
+
         def name
           channel_proxy.name
         end
@@ -29,10 +31,6 @@ module EventSource
           request
         end
 
-        # Execute the HTTP request
-        def call()
-        end
-        #
         # This will construct and subscribe consumer_proxy with the queue
         #
         # @param [Class] subscriber Subscriber class 
