@@ -5,6 +5,7 @@ require 'dry-types'
 module EventSource
   module Protocols
     module Amqp
+      # custom types for Amqp
       module Types
         send(:include, Dry.Types)
         include Dry::Logic

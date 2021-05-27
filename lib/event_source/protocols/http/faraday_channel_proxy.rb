@@ -22,6 +22,8 @@ module EventSource
 
         def build_faraday_subscriber_for(queue, subscribe_options); end
 
+        def respond_to_missing?(name, include_private)end
+
         def method_missing(name, *args)
           @subject.send(name, *args)
         end

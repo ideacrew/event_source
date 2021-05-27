@@ -2,6 +2,7 @@
 
 module EventSource
   module Uris
+    # Class for Uri
     class Uri
       def initialize(uri:)
         (uri.is_a? ::URI) ? uri : ::URI.parse(uri)

@@ -6,6 +6,7 @@ Dry::Types.load_extensions(:maybe)
 
 module EventSource
   module AsyncApi
+    # Custom types module for AsyncApi
     module Types
       send(:include, Dry.Types)
       include Dry::Logic

@@ -3,6 +3,7 @@
 require 'logging'
 
 module EventSource
+  # Module for logging
   module Logging
 
     def logger

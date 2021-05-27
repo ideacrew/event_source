@@ -8,7 +8,12 @@ module EventSource
     module Protocols
       module Amqp
         module Operations
+          # Operation for OpenProducerConnection
           class OpenProducerConnection
+
+            def call(params)
+              # implement later
+            end
           end
         end
       end

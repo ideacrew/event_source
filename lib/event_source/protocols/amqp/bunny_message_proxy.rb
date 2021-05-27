@@ -12,6 +12,8 @@ module EventSource
           @subject = bunny_message
         end
 
+        def respond_to_missing?(name, include_private)end
+
         def method_missing(name, *args)
           @subject.send(name, *args)
         end

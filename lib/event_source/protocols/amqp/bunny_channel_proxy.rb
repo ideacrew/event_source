@@ -51,6 +51,8 @@ module EventSource
           BunnyExchangeProxy.new(self, bindings)
         end
 
+        def respond_to_missing?(name, include_private)end
+
         def method_missing(name, *args)
           @subject.send(name, *args)
         end
@@ -77,10 +79,9 @@ module EventSource
         #       payload:
         #         type: object
 
-        def operations_for(channel_item); end
-
         def create_channel
-          @channel.new(@connection, id = nil, work_pool)
+          id = nil
+          @channel.new(@connection, id, work_pool)
         end
 
         # def open(channel_params)

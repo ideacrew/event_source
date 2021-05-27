@@ -10,7 +10,7 @@ module EventSource
   #
   class Event
     extend Dry::Initializer
-    attr_reader :attribute_keys, :publisher_key, :event_key, :payload
+    attr_reader :attribute_keys, :publisher_key, :payload
 
     HeaderDefaults = {
       version: '3.0',
@@ -26,7 +26,7 @@ module EventSource
 
       send(:payload=, options[:attributes] || {})
 
-      metadata = (options[:metadata] || {}).merge(event_key: event_key)
+      _metadata = (options[:metadata] || {}).merge(event_key: event_key)
 
       @publisher_key = klass_var_for(:publisher_key) || nil
       raise EventSource::Error::PublisherKeyMissing, "add 'publisher_key' to #{self.class.name}" if @publisher_key.eql?(nil)
@@ -60,7 +60,7 @@ module EventSource
     def publish
       raise EventSource::Error::AttributesInvalid, @event_errors unless valid?
 
-      publisher = publisher_klass(publisher_key)
+      _publisher = publisher_klass(publisher_key)
       # publisher.publish(self)
 
       # EventSource.adapter.enqueue(self)

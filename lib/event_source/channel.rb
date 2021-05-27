@@ -61,6 +61,8 @@ module EventSource
       @channel_proxy.bind_exchange(*args)
     end
 
+    def respond_to_missing?(name, include_private)end
+
     def method_missing(name, *args)
       @channel_proxy.send(name, *args)
     end

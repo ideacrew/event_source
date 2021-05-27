@@ -37,8 +37,7 @@ RSpec.describe EventSource::AsyncApi::Operations::Servers::Create do
     it 'should have attributes that match input params' do
       result = subject.call(required_params).value!.to_h
 
-      expect(result.reject { |k, _v| k == :url }).to eq required_params
-        .reject { |k, _v| k == :url }
+      expect(result.reject { |k, _v| k == :url }).to eq(required_params.reject { |k, _v| k == :url })
     end
   end
 
@@ -53,8 +52,7 @@ RSpec.describe EventSource::AsyncApi::Operations::Servers::Create do
     it 'should have attributes that match input params' do
       result = subject.call(all_params).value!.to_h
 
-      expect(result.reject { |k, _v| k == :url }).to eq all_params
-        .reject { |k, _v| k == :url }
+      expect(result.reject { |k, _v| k == :url }).to eq(all_params.reject { |k, _v| k == :url })
     end
   end
 
