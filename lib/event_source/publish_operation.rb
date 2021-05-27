@@ -17,11 +17,10 @@ module EventSource
       @subject.name
     end
 
-    # Publish a message 
-    # x.publish("Message", :headers => { })    
+    # Publish a message
+    # x.publish("Message", :headers => { })
     def call(args)
-      @subject.call(*args, bindings: @async_api_publish_operation[:bindings])
+      @subject.publish(*args, bindings: @async_api_publish_operation[:bindings])
     end
   end
 end
-

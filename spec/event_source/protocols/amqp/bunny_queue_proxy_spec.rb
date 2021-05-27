@@ -18,7 +18,9 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyQueueProxy do
     }
   end
 
-  let(:client) { EventSource::Protocols::Amqp::BunnyConnectionProxy.new(my_server) }  
+  let(:client) do
+    EventSource::Protocols::Amqp::BunnyConnectionProxy.new(my_server)
+  end
   let(:connection) { EventSource::Connection.new(client) }
   let(:channel_id) { 'crm_contact_created' }
   let(:publish_operation) do
@@ -93,53 +95,49 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyQueueProxy do
   end
 
   let(:async_api_publish_channel_item) do
-    {
-      publish: publish_operation,
-      bindings: channel_bindings
-    }
+    { publish: publish_operation, bindings: channel_bindings }
   end
 
   let(:async_api_subscribe_channel_item) do
-    {
-      subscribe: subscribe_operation,
-      bindings: channel_bindings
-    }
+    { subscribe: subscribe_operation, bindings: channel_bindings }
   end
 
-  let(:channel) { connection.add_channel(channel_id, async_api_publish_channel_item) }
+  let(:channel) do
+    connection.add_channel(channel_id, async_api_publish_channel_item)
+  end
   let(:channel_proxy) { channel.channel_proxy }
 
-  let(:proc_to_execute) {
-    Proc.new {|delivery_info, metadata, payload|
+  let(:proc_to_execute) do
+    Proc.new do |delivery_info, metadata, payload|
       logger.info "delivery_info---#{delivery_info}"
       logger.info "metadata---#{metadata}"
       logger.info "payload---#{payload}"
       ack(delivery_info.delivery_tag)
-      logger.info "ack sent"
-    }
-  }
+      logger.info 'ack sent'
+    end
+  end
 
-  subject { described_class.new(channel_proxy, async_api_subscribe_channel_item) }
+  subject do
+    described_class.new(channel_proxy, async_api_subscribe_channel_item)
+  end
 
   before { connection.start unless connection.active? }
   after { connection.disconnect if connection.active? }
 
   context '.subscribe' do
-
     context 'when a valid subscribe block is defined' do
-    
       it 'should execute the block' do
         subject
         expect(subject.consumer_count).to eq 0
-        subject.subscribe("SubscriberClass", subscribe_operation[:bindings], &proc_to_execute)
-        expect(subject.consumer_count).to eq 1  
+        subject.subscribe(
+          'SubscriberClass',
+          subscribe_operation[:bindings],
+          &proc_to_execute
+        )
+        expect(subject.consumer_count).to eq 1
 
         operation = channel.publish_operations.first[1]
-        puts connection.active?
-        puts connection.connection_proxy.status
-        operation.call("Hello world!!!")
-        puts connection.active?
-        puts connection.connection_proxy.status
+        operation.call('Hello world!!!')
 
         sleep 2
       end
@@ -147,18 +145,16 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyQueueProxy do
       it 'the closure should return a success exit code result'
     end
 
-    context "when an invalid subscribe block is defined" do 
-
-      context "a block with syntax error" do
-        it "should return a failure exit code result"
-        it "should raise an exception"
+    context 'when an invalid subscribe block is defined' do
+      context 'a block with syntax error' do
+        it 'should return a failure exit code result'
+        it 'should raise an exception'
       end
 
-      context "an unhandled exception occurs" do
-        it "should return a failure exit code result"
-        it "should send a critical error signal for devops"
+      context 'an unhandled exception occurs' do
+        it 'should return a failure exit code result'
+        it 'should send a critical error signal for devops'
       end
-
     end
 
     # context 'when block not passed' do

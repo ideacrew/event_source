@@ -3,64 +3,76 @@
 module EventSource
   module Protocols
     module Http
-      # FIX ME: Reconnect to publish operation
+      # HTTP protocol Adapter pattern class for {EventSource::PublishOperation}
+      # AsyncApi HTTP protocol specification includes Operation and Message
+      # Bindings only.  Server and Channel Bindings are not supported at
+      # Binding version 0.1.0
+      # @example AsyncApi HTTP protocol bindings.
+      # /determinations/eval
+      #   publish:
+      #     message:
+      #       bindings:
+      #         http:
+      #           headers:
+      #             type: object
+      #             properties:
+      #               Content-Type:
+      #                 type: string
+      #                 enum: ['application/json']
+      #           bindingVersion: '0.1.0'
+      #   subscribe:
+      #     bindings:
+      #       http:
+      #         type: request
+      #         method: GET
+      #         query:
+      #           type: object
+      #           required:
+      #             - companyId
+      #           properties:
+      #             companyId:
+      #               type: number
+      #               minimum: 1
+      #               description: The Id of the company.
+      #           additionalProperties: false
+      #         bindingVersion: '0.1.0'
       class FaradayRequestProxy
         include EventSource::Logging
 
         attr_reader :channel_proxy, :subject
 
         # @param channel_proxy [EventSource::Protocols::Http::FaradayChannelProxy] Http Channel proxy
-        # @param async_api_subscribe_operation channel_bindings Channel definition and bindings
-        # @return [Bunny::Queue]
+        # @param async_api_channel_item [Hash] channel_bindings Channel definition and bindings
+        # @return [Faraday::Request]
         def initialize(channel_proxy, async_api_channel_item)
           @channel_proxy = channel_proxy
           bindings = async_api_channel_item[:subscribe][:bindings][:http]
           @subject = faraday_request_for(bindings)
         end
 
-        def name
-          channel_proxy.name
-        end
-
-        def faraday_request_for(bindings)
-          request = connection.build_request(bindings[:method])
-          request.path = request_path
-          logger.info "Created request #{request}"
-          request
-        end
-
         # Execute the HTTP request
-        def call()
-        end
-        #
-        # This will construct and subscribe consumer_proxy with the queue
-        #
-        # @param [Class] subscriber Subscriber class 
-        # @param [Hash] options Subscribe operation bindings
-        # @param [Proc] &block Code block that need to be executed when event received
-        #
-        # @return [BunnyConsumerProxy] Consumer proxy instance
-        #
-        def subscribe(subscriber_klass, options)
-          operation_bindings = convert_to_faraday_options(options[:http])
-          # consumer_proxy = consumer_proxy_for(operation_bindings)
-  
-          # redelivered?
-          # consumer_proxy.on_delivery do |delivery_info, metadata, payload|
+        # @param [Mixed] payload event message content
+        # @param [Hash] bindings AsyncAPI HTTP message bindings
+        # @return [Faraday::Response] response
+        def publish(payload: nil, bindings: {})
+          faraday_publish_bindings = sanitize_bindings(bindings)
+          @subject.body = payload if payload
+          if faraday_publish_bindings[:headings]
+            @subject.headers.update(faraday_publish_bindings[:headings])
+          end
+          @subject.call(payload, faraday_publish_bindings)
 
-            # builder.build_response(connection, request)
-
-           
-            subscriber_instance = subscriber_klass.new
-            subscriber_instance.send(queue_name, response) if subscriber_instance.respond_to?(queue_name)
-          # end
-
-          # @subject.subscribe_with(consumer_proxy)
+          response = connection.builder.build_response(@subject, request)
+          logger.info "Executed Faraday request #{request}"
+          response
         end
 
-        def convert_to_faraday_options(options)
-          options
+        # Forwards all missing method calls to the Bunny::Queue instance
+        def method_missing(name, *args)
+          @subject.send(name, *args)
         end
+
+        private
 
         def connection
           channel_proxy.connection
@@ -70,12 +82,21 @@ module EventSource
           channel_proxy.name
         end
 
-        # Forwards all missing method calls to the Bunny::Queue instance
-        def method_missing(name, *args)
-          @subject.send(name, *args)
+        def faraday_request_for(bindings)
+          method = bindings[:method].downcase.to_sym
+          request =
+            connection.build_request(method) { |req| req.path = request_path }
+
+          logger.info "Created Faraday request #{request}"
+          request
+        end
+
+        def sanitize_bindings(bindings)
+          options = bindings[:http]
+          operation_bindings[:headers] = options[:headers] if options[:headers]
+          operation_bindings
         end
       end
     end
   end
 end
-

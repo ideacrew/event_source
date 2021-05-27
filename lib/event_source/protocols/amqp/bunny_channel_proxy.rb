@@ -6,42 +6,44 @@ module EventSource
     module Amqp
       # Create and manage a RabbitMQ Channel instance using Bunny client.  Provide an interface that support
       # the {EventSource::Channel} DSL
-
+      # @example AsyncApi ChannelItems
+      # crm_contacts_contact_created:
+      #   subscribe:
+      #     operationId: on_crm_contacts_contact_created
+      #     summary: CRM Contact Created
+      #     message:
+      #       $ref: "#/components/messages/crm_contacts_contact_created_event"
+      # crm_sugar_crm_contacts_contact_created:
+      #   publish:
+      #     operationId: crm_sugar_crm_contacts_contact_created
+      #     summary: SugarCRM Contact Created
+      #     message:
+      #       $ref: "#/components/messages/crm_sugar_crm_contacts_contact_created_event"
+      #       payload:
+      #         type: object
+      #   subscribe:
+      #     operationId: on_crm_sugar_crm_contacts_contact_created
+      #     summary: SugarCRM Contact Created
+      #     message:
+      #       $ref: "#/components/messages/crm_sugar_crm_contacts_contact_created_event"
+      #       payload:
+      #         type: object
       class BunnyChannelProxy
         include EventSource::Logging
         extend Forwardable
 
         # @attr_reader [Bunny::ConnectionProxy] connection Connection proxy instance to the RabbitMQ server
+        # @attr_reader [String] subject name unique name for the channel
         # @attr_reader [Bunny::ChannelProxy] subject Channel channel proxy interface on the Connection
+        # @attr_reader [EventSourceAsyncApi::ChannelItem] async_api_channel_item configuration settings for the Channel
         attr_reader :connection, :name, :subject, :async_api_channel_item
 
         def_delegators :@subject, :ack, :nack, :reject
 
-        # @param bunny_connection_proxy [EventSource::Protocols::Amqp::BunnyConnectionProxy] Connection instance
-        # @param async_api_channel_item [EventSource::AsyncApi::ChannelItem] Channel item configuration
+        # @param bunny_connection_proxy [EventSource::Protocols::Amqp::BunnyConnectionProxy] Connection Proxy instance
+        # @param channel_item_key [EventSource::AsyncApi::ChannelItem] unique name for the channel
+        # @param async_api_channel_item [EventSource::AsyncApi::ChannelItem] configuration settings for the Channel
         # @return [Bunny::ChannelProxy] Channel proxy instance on the RabbitMQ server {Connection}
-        # @example AsyncApi ChannelItem
-        # crm.contact_created:
-        #   subscribe:
-        #     operationId: on_crm_contacts_contact_created
-        #     summary: CRM Contact Created
-        #     message:
-        #       $ref: "#/components/messages/crm_contacts_contact_created_event"
-        # crm.sugar_crm.contacts.contact_created:
-        #   publish:
-        #     operationId: on_crm_sugarcrm_contacts_contact_created
-        #     summary: SugarCRM Contact Created
-        #     message:
-        #       $ref: "#/components/messages/crm_sugar_crm_contacts_contact_created_event"
-        #       payload:
-        #         type: object
-        #   subscribe:
-        #     operationId: crm_sugarcrm_contacts_contact_created
-        #     summary: SugarCRM Contact Created
-        #     message:
-        #       $ref: "#/components/messages/crm_sugar_crm_contacts_contact_created_event"
-        #       payload:
-        #         type: object
         def initialize(
           bunny_connection_proxy,
           channel_item_key,

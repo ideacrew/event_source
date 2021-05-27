@@ -3,11 +3,25 @@
 module EventSource
   module Protocols
     module Http
-      # Create and manage an HTTP channel instance using Faraday client
-      # HTTP protocol-specific information about the operation
-      # @example Channel binding including both an exchange and a queue
-      # channels:
-      #  '/employees':
+      # Create and manage an {EventSource::Channel} instance for Faraday supporting an interface
+      # compliant with the EventSource DSL.  Also serves as {EventSource::Queue} proxy
+      # enabling access to its API.
+      # AsyncApi HTTP protocol specification includes Operation and Message
+      # Bindings only.  Server and Channel Bindings are not supported at
+      # Binding version 0.1.0
+      # @example AsyncApi HTTP protocol bindings.
+      # /determinations/eval
+      #   publish:
+      #     message:
+      #       bindings:
+      #         http:
+      #           headers:
+      #             type: object
+      #             properties:
+      #               Content-Type:
+      #                 type: string
+      #                 enum: ['application/json']
+      #           bindingVersion: '0.1.0'
       #   subscribe:
       #     bindings:
       #       http:
@@ -23,7 +37,7 @@ module EventSource
       #               minimum: 1
       #               description: The Id of the company.
       #           additionalProperties: false
-      #         bindingVersion: '0.1.0'      # @since 0.4.0
+      #         bindingVersion: '0.1.0'
       class FaradayChannelProxy
         # @attr_reader [Faraday::Connection] connection Connection to HTTP server
         # @attr_reader [Faraday::Request] subject Channel
@@ -32,7 +46,11 @@ module EventSource
         # @param [EventSource::AsyncApi::Connection] faraday_connection_proxy Connection instance
         # @param [Hash<EventSource::AsyncApi::ChannelItem>] async_api_channel_item {EventSource::AsyncApi::ChannelItem}
         # @return [EventSource::Protocols::Http::FaradayChannelProxy] subject
-        def initialize(faraday_connection_proxy, channel_item_key, async_api_channel_item)
+        def initialize(
+          faraday_connection_proxy,
+          channel_item_key,
+          async_api_channel_item
+        )
           @connection = faraday_connection_proxy.connection
           @name = channel_item_key
           @async_api_channel_item = async_api_channel_item
@@ -49,15 +67,14 @@ module EventSource
         # Faraday::Request.params
         # Faraday::Request.path
 
-
         # For Http: Build request
-        def add_publish_operation(async_api_subscribe_operation); 
+        def add_publish_operation(async_api_subscribe_operation)
           FaradayRequestProxy.new(self, @async_api_channel_item)
         end
 
         # For Http: Build request
         def add_subscribe_operation(async_api_subscribe_operation)
-          # FaradayRequestProxy.new(self, @async_api_channel_item)
+          EventSource::Queue.new(self, @async_api_channel_item)
         end
 
         # @return [Faraday::Response]

@@ -18,7 +18,9 @@ RSpec.describe EventSource::Protocols::Http::FaradayRequestProxy do
     }
   end
 
-  let(:client) { EventSource::Protocols::Http::FaradayConnectionProxy.new(my_server) }
+  let(:client) do
+    EventSource::Protocols::Http::FaradayConnectionProxy.new(my_server)
+  end
   let(:connection) { EventSource::Connection.new(client) }
   let(:channel_proxy) { client.add_channel(channel_key, {}) }
 
@@ -42,30 +44,26 @@ RSpec.describe EventSource::Protocols::Http::FaradayRequestProxy do
               }
             },
             additionalProperties: false
-          }    
+          }
         }
       }
     }
   end
 
-  let(:channel_item) do
-    { 
-      subscribe: subscribe_operation
-    }
-  end
+  let(:channel_item) { { subscribe: subscribe_operation } }
 
   # before { connection.connect unless connection.active? }
   # after { connection.disconnect if connection.active? }
 
-  let(:request_proxy) do
-    described_class.new(channel_proxy, channel_item)
-  end
+  let(:request_proxy) { described_class.new(channel_proxy, channel_item) }
 
   context 'When channel details along with bindings passed' do
-
+    let(:request_method) do
+      subscribe_operation[:bindings][:http][:method].downcase.to_sym
+    end
     it 'should create request' do
       expect(request_proxy.subject).to be_a Faraday::Request
-      expect(request_proxy.http_method).to eq subscribe_operation[:bindings][:http][:method]
+      expect(request_proxy.http_method).to eq request_method
       expect(request_proxy.path).to eq channel_key
     end
   end
