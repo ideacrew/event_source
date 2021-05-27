@@ -9,9 +9,9 @@ module Parties
       puts "triggered --> on_enroll_parties_organizations_fein_corrected block -- #{delivery_info} --  #{metadata} -- #{payload}"
     end
 
-    def on_enroll_parties_organizations_fein_corrected(delivery_info, metadata, payload)
+    def on_enroll_parties_organizations_fein_corrected(payload)
       # Set of independent reactors for the given event that execute asynchronously
-      puts "triggered --> on_enroll_parties_organizations_fein_corrected method -- #{delivery_info} --  #{metadata} -- #{payload}"
+      puts "triggered --> on_enroll_parties_organizations_fein_corrected method --#{payload}"
     end
   end
 end

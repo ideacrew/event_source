@@ -25,9 +25,9 @@ module EventSource
         end
 
         # Publish a message to this Exchange
-        # @param [Mixed] payload the message oontent
+        # @param [Mixed] payload the message content
         # @param [Hash] bindings
-        def publish(payload, bindings:)
+        def publish(payload, bindings: {})
           bunny_publish_bindings = sanitize_bindings(bindings)
           @subject.publish(payload, bunny_publish_bindings)
         end
@@ -44,7 +44,7 @@ module EventSource
         private
 
         def message_id
-          SecureRandom.uuid
+          SecureRandom.uuid.to_s
         end
 
         # Filtering and renaming AsyncAPI Operation bindings to Bunny/RabitMQ
@@ -71,6 +71,7 @@ module EventSource
           operation_bindings[:reply_to] = options[:replyTo]
           operation_bindings[:content_encoding] = options[:contentEncoding]
           operation_bindings[:type] = options[:messageType]
+          operation_bindings[:message_id] = message_id
           operation_bindings
         end
       end

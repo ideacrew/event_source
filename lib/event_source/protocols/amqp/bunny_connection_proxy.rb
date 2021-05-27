@@ -92,11 +92,8 @@ module EventSource
                   "Unable to connect to: #{connection_params}"
           else
             sleep 1.0
-
-            # logger "#{name} connection active "
+            logger.info "Connection #{connection_uri} started." if active?
             active?
-
-            # logger "#{name} connection failed"
           end
         end
 
@@ -116,7 +113,10 @@ module EventSource
 
         # Close the server connection and all of its channels
         def close(await_response = true)
-          @subject.close(await_response) if active?
+          if active?
+            @subject.close(await_response)
+            logger.info "Connection #{connection_uri} closed."
+          end
         end
 
         # Returns true if this connection is closed
@@ -128,6 +128,7 @@ module EventSource
         # Attempt to reastablish connection to a disconnected server
         def reconnect
           @subject.reconnect!
+          logger.info "Connection #{connection_uri} reconnected."
         end
 
         # The version of Bunny client in use

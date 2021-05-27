@@ -111,35 +111,62 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyQueueProxy do
 
   let(:proc_to_execute) {
     Proc.new {|delivery_info, metadata, payload|
-      puts "delivery_info---#{delivery_info}"
-      puts "metadata---#{metadata}"
-      puts "payload---#{payload}"
+      logger.info "delivery_info---#{delivery_info}"
+      logger.info "metadata---#{metadata}"
+      logger.info "payload---#{payload}"
       ack(delivery_info.delivery_tag)
+      logger.info "ack sent"
     }
   }
 
+  subject { described_class.new(channel_proxy, async_api_subscribe_channel_item) }
+
   before { connection.start unless connection.active? }
   after { connection.disconnect if connection.active? }
-  subject { described_class.new(channel_proxy, async_api_subscribe_channel_item) }
 
   context '.subscribe' do
 
-    context 'when block passed' do
-      it 'should subscribe to the queue' do
+    context 'when a valid subscribe block is defined' do
+    
+      it 'should execute the block' do
+        subject
         expect(subject.consumer_count).to eq 0
-        subject.subscribe(Class, subscribe_operation[:bindings], &proc_to_execute)
+        subject.subscribe("SubscriberClass", subscribe_operation[:bindings], &proc_to_execute)
         expect(subject.consumer_count).to eq 1  
-        # operation = channel.publish_operations.first[1]
-        # operation.call("Hello world!!!")
+
+        operation = channel.publish_operations.first[1]
+        puts connection.active?
+        puts connection.connection_proxy.status
+        operation.call("Hello world!!!")
+        puts connection.active?
+        puts connection.connection_proxy.status
+
+        sleep 2
       end
+
+      it 'the closure should return a success exit code result'
     end
 
-    context 'when block not passed' do
-      it 'should subscribe to the queue' do
-        expect(subject.consumer_count).to eq 0
-        subject.subscribe(Class, subscribe_operation[:bindings])
-        expect(subject.consumer_count).to eq 1
+    context "when an invalid subscribe block is defined" do 
+
+      context "a block with syntax error" do
+        it "should return a failure exit code result"
+        it "should raise an exception"
       end
+
+      context "an unhandled exception occurs" do
+        it "should return a failure exit code result"
+        it "should send a critical error signal for devops"
+      end
+
     end
+
+    # context 'when block not passed' do
+    #   it 'should subscribe to the queue' do
+    #     expect(subject.consumer_count).to eq 0
+    #     subject.subscribe(Class, subscribe_operation[:bindings])
+    #     expect(subject.consumer_count).to eq 1
+    #   end
+    # end
   end
 end

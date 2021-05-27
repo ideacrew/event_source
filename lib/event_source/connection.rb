@@ -3,7 +3,7 @@
 module EventSource
   # Network (TCP) connection between application and broker or remote service
   class Connection
-    attr_reader :channels
+    attr_reader :channels, :connection_proxy
 
     ADAPTER_METHODS = %i[
       connection

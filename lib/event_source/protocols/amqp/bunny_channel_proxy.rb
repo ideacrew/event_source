@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require 'forwardable'
 
 module EventSource
   module Protocols
@@ -7,9 +8,14 @@ module EventSource
       # the {EventSource::Channel} DSL
 
       class BunnyChannelProxy
+        include EventSource::Logging
+        extend Forwardable
+
         # @attr_reader [Bunny::ConnectionProxy] connection Connection proxy instance to the RabbitMQ server
         # @attr_reader [Bunny::ChannelProxy] subject Channel channel proxy interface on the Connection
         attr_reader :connection, :name, :subject, :async_api_channel_item
+
+        def_delegators :@subject, :ack, :nack, :reject
 
         # @param bunny_connection_proxy [EventSource::Protocols::Amqp::BunnyConnectionProxy] Connection instance
         # @param async_api_channel_item [EventSource::AsyncApi::ChannelItem] Channel item configuration

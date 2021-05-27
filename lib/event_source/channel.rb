@@ -45,6 +45,7 @@ module EventSource
     def add_publish_operation(async_api_publish_operation)
       return unless async_api_publish_operation
       publish_proxy = @channel_proxy.add_publish_operation(async_api_publish_operation)
+      return false unless publish_proxy
       @publish_operations[publish_proxy.name] =
         EventSource::PublishOperation.new(publish_proxy, async_api_publish_operation)
     end

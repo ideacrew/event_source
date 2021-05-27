@@ -58,7 +58,7 @@ RSpec.describe EventSource::Protocols::Http::FaradayRequestProxy do
   # after { connection.disconnect if connection.active? }
 
   let(:request_proxy) do
-    described_class.new(channel_proxy, subscribe_operation)
+    described_class.new(channel_proxy, channel_item)
   end
 
   context 'When channel details along with bindings passed' do

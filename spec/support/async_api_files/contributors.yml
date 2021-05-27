@@ -5,10 +5,10 @@ info:
   description: An example documented AsyncApi HTTP service
 servers:
   production:
-    url: 'https://api.github.com'
+    url: "https://api.github.com"
     protocol: :http
     protocolVersion: "0.1.0"
-    description: 'Development HTTP Server'
+    description: "Development HTTP Server"
     security:
       - apiKey: []
 channels:

@@ -70,27 +70,28 @@ module EventSource
         #
         # @return [BunnyConsumerProxy] Consumer proxy instance
         #
-        def subscribe(subscriber, options, &block)
+        def subscribe(subscriber_klass, options, &block)
           operation_bindings = convert_to_bunny_options(options[:amqp])
-
-          consumer_proxy =
-            BunnyConsumerProxy.new(
-              @subject.channel,
-              @subject,
-              '',
-              operation_bindings[:no_ack],
-              operation_bindings[:exclusive]
-            )
-
+          consumer_proxy = consumer_proxy_for(operation_bindings)
+  
+          # redelivered?
           consumer_proxy.on_delivery do |delivery_info, metadata, payload|
-            if block_given?
-              @channel_proxy.instance_exec(delivery_info, metadata, payload, &block)
-            else
-              subscriber.new.send(queue_name, delivery_info, metadata, payload)
-            end
+            @channel_proxy.instance_exec(delivery_info, metadata, payload, &block) if block_given?
+            subscriber_instance = subscriber_klass.new
+            subscriber_instance.send(queue_name, payload) if subscriber_instance.respond_to?(queue_name)
           end
 
           @subject.subscribe_with(consumer_proxy)
+        end
+
+        def consumer_proxy_for(operation_bindings)
+          BunnyConsumerProxy.new(
+            @subject.channel,
+            @subject,
+            '',
+            operation_bindings[:no_ack],
+            operation_bindings[:exclusive]
+          )
         end
 
         def respond_to_missing?(name, include_private)end

@@ -35,6 +35,7 @@ module EventSource
         def initialize(faraday_connection_proxy, channel_item_key, async_api_channel_item)
           @connection = faraday_connection_proxy.connection
           @name = channel_item_key
+          @async_api_channel_item = async_api_channel_item
           @subject = nil # Http does not have a channel object
         end
 
@@ -62,13 +63,11 @@ module EventSource
         # end
 
         # For Http: Build request
-        def add_publish_operation(async_api_subscribe_operation)
-          # invoke response proxy
-        end
+        def add_publish_operation(async_api_subscribe_operation); end
 
         # For Http: Build request
         def add_subscribe_operation(async_api_subscribe_operation)
-          FaradayRequestProxy.new(self, async_api_subscribe_operation)
+          FaradayRequestProxy.new(self, @async_api_channel_item)
         end
 
         # @return [Faraday::Response]
