@@ -23,6 +23,7 @@ module EventSource
         connection_manager = EventSource::ConnectionManager.instance
         @async_api_schemas.each do |resource|
           resource.deep_symbolize_keys!
+          next unless resource[:servers]
           connection =
             connection_manager.add_connection(resource[:servers][:production])
           logger.info { "Connecting #{connection.connection_uri}" }
