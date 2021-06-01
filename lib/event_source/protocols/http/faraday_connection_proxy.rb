@@ -30,12 +30,7 @@ module EventSource
         # Default values for {::Faraday::Connection} HTTP parameters.
         #
         # Override these values using the options argument in the constructor
-        HttpDefaults = {
-          http: {
-            headers: {},
-            params: {}
-          }
-        }
+        HttpDefaults = { http: { headers: {}, params: {} } }
 
         # AsyncAPI HTTP Bindings Protocol version supported by this client
         ProtocolVersion = '0.1.0'
@@ -46,23 +41,25 @@ module EventSource
         #
         # Override these values using the options argument in the constructor
         RequestMiddlewareDefaults = {
-          retry: {
-            max: 5,
-            interval: 0.05,
-            interval_randomness: 0.5,
-            backoff_factor: 2
+          retry: :retry,
+          options: {
+            retry: {
+              max: 5,
+              interval: 0.05,
+              interval_randomness: 0.5,
+              backoff_factor: 2
+            }
           }
         }
+
+        def parse_middleware_item(); end
 
         # Default values for {::Faraday::Connection} Response Middleware. These are an
         #   ordered stack of response-related processing components (parsing response
         #   body, logging, checking reponse status). Order: lowest to highest importance
         #
         # Override these values using the options argument in the constructor
-        ResponseMiddlewareDefaults = {
-          caching: nil,
-          logger: nil
-        }
+        ResponseMiddlewareDefaults = { caching: nil, logger: nil }
 
         # @param [Hash] async_api_server {EventSource::AsyncApi::Server} configuration
         # @param [Hash] options Connection options
@@ -98,13 +95,30 @@ module EventSource
             params: params,
             headers: headers
           ) do |conn|
-            request_middleware.each_pair do |component, options|
-              conn.request "#{component}".to_sym, options || {}
-            end
+            # conn.request
 
-            response_middleware.each_pair do |component, options|
-              conn.response "#{component}".to_sym, options || {}
-            end
+            conn.response :logger
+            conn.response :json
+
+            # request_middleware.each_pair do |component, options|
+            #   binding.pry
+
+            #   if options.nil?
+            #     val = "#{component}".to_sym
+            #   else
+            #     val = "#{component}".to_sym, options
+            #   end
+            #   conn.request val
+            # end
+
+            # response_middleware.each_pair do |component, options|
+            #   if options.nil?
+            #     val = "#{component}".to_sym
+            #   else
+            #     val = "#{component}".to_sym, options
+            #   end
+            #   conn.response val
+            # end
 
             # last middleware must be adapter
             adapter.each_pair do |component, options|
@@ -161,7 +175,11 @@ module EventSource
         #   Channel configuration and bindings
         # @result [FaradayChannelProxy]
         def add_channel(channel_item_key, async_api_channel_item)
-          FaradayChannelProxy.new(self, channel_item_key, async_api_channel_item)
+          FaradayChannelProxy.new(
+            self,
+            channel_item_key,
+            async_api_channel_item
+          )
         end
 
         # This class applies both the Adapter and Proxy development patterns.
@@ -197,7 +215,9 @@ module EventSource
             RequestMiddlewareDefaults.merge(options[:request_middleware] || {})
 
           response_middleware =
-            ResponseMiddlewareDefaults.merge(options[:response_middleware] || {})
+            ResponseMiddlewareDefaults.merge(
+              options[:response_middleware] || {}
+            )
 
           adapter = AdapterDefaults.merge(options[:adapter] || {})
           http = HttpDefaults.merge(options[:http] || {})

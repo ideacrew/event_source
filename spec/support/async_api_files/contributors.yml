@@ -1,8 +1,17 @@
-asyncapi: "2.0.0"
+---
+asyncapi: 2.0.0
+id: http://github.com/api/contributors
 info:
   title: Github Contributors
-  version: "0.1.0"
+  version: 0.1.0
   description: An example documented AsyncApi HTTP service
+  contact:
+    name: API Support
+    url: http://www.asyncapi.org/support
+    email: support@asyncapi.org
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
 servers:
   production:
     url: "https://api.github.com"
@@ -14,17 +23,15 @@ servers:
 channels:
   /repos/thoughtbot/factory_girl/contributors:
     subscribe:
+      operationId: /repos/thoughtbot/factory_girl/contributors
+      description: Example HTTP restful service call
       bindings:
         http:
           type: request
           method: GET
-          query:
-            type: object
-            required:
-              - companyId
-            properties:
-              companyId:
-                type: number
-                minimum: 1
-                description: The Id of the company.
-            additionalProperties: false
+          headers:
+            Content-Type: application/json
+
+tags:
+  - name: linter_tag
+    description: this satisfies the overactive linter

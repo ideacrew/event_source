@@ -60,13 +60,6 @@ module EventSource
         def status; end
         def close; end
 
-        # Faraday::Request.body
-        # Faraday::Request.headers
-        # Faraday::Request.http_method
-        # Faraday::Request.options
-        # Faraday::Request.params
-        # Faraday::Request.path
-
         # For Http: Build request
         def add_publish_operation(async_api_subscribe_operation)
           FaradayRequestProxy.new(self, @async_api_channel_item)

@@ -2,8 +2,12 @@
 
 require 'spec_helper'
 require 'config_helper'
+require 'yaml'
 
 RSpec.describe EventSource::Protocols::Http::FaradayRequestProxy do
+  let(:asyncapi_file) { 'spec/support/async_api_files/contributors.yml' }
+  let(:asyncapi) { YAML.load(File.read(asyncapi_file)) }
+
   let(:protocol) { :http }
   let(:url) { 'https://api.github.com' }
   let(:protocol_version) { '0.9.1' }
@@ -18,12 +22,11 @@ RSpec.describe EventSource::Protocols::Http::FaradayRequestProxy do
     }
   end
 
-  let(:client) do
+  let(:connection_proxy) do
     EventSource::Protocols::Http::FaradayConnectionProxy.new(my_server)
   end
-  let(:connection) { EventSource::Connection.new(client) }
-  let(:channel_proxy) { client.add_channel(channel_key, {}) }
-
+  let(:connection) { EventSource::Connection.new(connection_proxy) }
+  let(:channel_proxy) { connection_proxy.add_channel(channel_key, {}) }
   let(:channel_key) { '/repos/thoughtbot/factory_girl/contributors' }
   let(:subscribe_operation) do
     {
@@ -32,29 +35,13 @@ RSpec.describe EventSource::Protocols::Http::FaradayRequestProxy do
       bindings: {
         http: {
           type: 'request',
-          method: 'GET',
-          query: {
-            type: 'object',
-            required: ['companyId'],
-            properties: {
-              companyId: {
-                type: 'number',
-                minimum: 1,
-                description: 'The Id of the company.'
-              }
-            },
-            additionalProperties: false
-          }
+          method: 'GET'
         }
       }
     }
   end
 
   let(:channel_item) { { subscribe: subscribe_operation } }
-
-  # before { connection.connect unless connection.active? }
-  # after { connection.disconnect if connection.active? }
-
   let(:request_proxy) { described_class.new(channel_proxy, channel_item) }
 
   context 'When channel details along with bindings passed' do
@@ -65,6 +52,14 @@ RSpec.describe EventSource::Protocols::Http::FaradayRequestProxy do
       expect(request_proxy.subject).to be_a Faraday::Request
       expect(request_proxy.http_method).to eq request_method
       expect(request_proxy.path).to eq channel_key
+    end
+
+    it 'should return expected response' do
+      response = request_proxy.publish bindings: subscribe_operation[:bindings]
+      h = response.to_hash
+      binding.pry
+
+      expect(response[:status]).to eq 200
     end
   end
 end

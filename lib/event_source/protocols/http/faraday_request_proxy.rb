@@ -50,6 +50,13 @@ module EventSource
           @subject = faraday_request_for(bindings)
         end
 
+        # Faraday::Request.body
+        # Faraday::Request.headers
+        # Faraday::Request.http_method
+        # Faraday::Request.options
+        # Faraday::Request.params
+        # Faraday::Request.path
+
         # Execute the HTTP request
         # @param [Mixed] payload event message content
         # @param [Hash] bindings AsyncAPI HTTP message bindings
@@ -60,10 +67,11 @@ module EventSource
           if faraday_publish_bindings[:headings]
             @subject.headers.update(faraday_publish_bindings[:headings])
           end
-          @subject.call(payload, faraday_publish_bindings)
 
-          response = connection.builder.build_response(@subject, request)
-          logger.info "Executed Faraday request #{request}"
+          # @subject.call(payload, faraday_publish_bindings)
+
+          response = connection.builder.build_response(connection, @subject)
+          logger.info "Executed Faraday request #{@subject.inspect}"
           response
         end
 
@@ -92,6 +100,7 @@ module EventSource
         end
 
         def sanitize_bindings(bindings)
+          return {} unless options.present?
           options = bindings[:http]
           operation_bindings[:headers] = options[:headers] if options[:headers]
           operation_bindings
