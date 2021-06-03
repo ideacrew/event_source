@@ -103,7 +103,7 @@ module EventSource
 
         # For Http: Build request
         def add_subscribe_operation(async_api_channel_item)
-          queue_proxy = FaradayQueueProxy.new(self, @async_api_channel_item)
+          queue_proxy = FaradayQueueProxy.new(self, async_api_channel_item)
           if @subscribe_operations.key?(queue_proxy.name)
             logger.warning "Faraday subscribe operation already exists for #{queue_proxy.name}"
             @subscribe_operations[queue_proxy.name]

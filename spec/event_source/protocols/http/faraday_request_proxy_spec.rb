@@ -41,13 +41,39 @@ RSpec.describe EventSource::Protocols::Http::FaradayRequestProxy do
     }
   end
 
-  let(:channel_item) { { publish: publish_operation } }
+  let(:subscribe_operation) do
+    {
+      operation_id: '/repos/thoughtbot/factory_girl/contributors',
+      summary: 'SugarCRM Contact Created',
+      bindings: {
+        http: {
+          type: 'request',
+          method: 'GET',
+          query: {
+            type: 'object',
+            required: ['companyId'],
+            properties: {
+              companyId: {
+                type: 'number',
+                minimum: 1,
+                description: 'The Id of the company.'
+              }
+            },
+            additionalProperties: false
+          }
+        }
+      }
+    }
+  end
+
+  let(:channel_item) { { publish: publish_operation, subscribe: subscribe_operation } }
   let(:request_proxy) { described_class.new(channel_proxy, channel_item) }
 
   context 'When channel details along with bindings passed' do
     let(:request_method) do
-      subscribe_operation[:bindings][:http][:method].downcase.to_sym
+      publish_operation[:bindings][:http][:method].downcase.to_sym
     end
+
     it 'should create request' do
       expect(request_proxy.subject).to be_a Faraday::Request
       expect(request_proxy.http_method).to eq request_method
@@ -55,7 +81,8 @@ RSpec.describe EventSource::Protocols::Http::FaradayRequestProxy do
     end
 
     it 'should return expected response' do
-      response = request_proxy.publish bindings: subscribe_operation[:bindings]
+      subscribe_operation = channel_proxy.add_subscribe_operation(channel_item)
+      response = request_proxy.publish bindings: publish_operation[:bindings]
       h = response.to_hash
       expect(response[:status]).to eq 200
     end
