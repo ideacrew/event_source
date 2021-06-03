@@ -93,7 +93,7 @@ module EventSource
           while active? || actions_left?
 
             action_payload = wait_for_action
-            puts "-----spawn  #{action_payload}"
+            logger.info "-----spawn  #{action_payload}"
             queue.actions.each do |action_proc|
               action_proc.call(action_payload)
             end

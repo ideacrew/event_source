@@ -115,16 +115,25 @@ module EventSource
           )
         end
 
-        rule(:tags).each do
+        rule(:tags) do
           next unless key? && value
-          result = TagContract.new.call(value)
 
-          # Use dry-validation metadata form to pass error hash along with text to calling service
-          next unless result&.failure?
-          key.failure(
-            text: 'invalid tag hash',
-            error: result.errors.to_h
-          )
+          tags = value.inject([]) do |data, tag|
+            result = TagContract.new.call(tag)
+            # Use dry-validation metadata form to pass error hash along with text to calling service
+            if result.success?
+              data << result.to_h
+            else
+              key.failure(
+                text: 'invalid tag hash',
+                error: result.errors.to_h
+              )
+            end
+            data
+          end
+
+          values.data.merge!(tags: tags) unless tags.empty?
+          values
         end
 
         rule(:external_docs).each do

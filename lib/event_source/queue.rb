@@ -4,13 +4,14 @@ module EventSource
   # Queues store and forward messages to consumers.
   class Queue
     # @attr_reader [Hash] Bindings describe an association between a Queue and an Exchange
-    attr_reader :queue_proxy, :name, :bindings
+    attr_reader :queue_proxy, :name, :bindings, :actions
 
     def initialize(queue_proxy, name, bindings = {})
       @queue_proxy = queue_proxy
       @name = name
       @bindings = bindings
       @queue = ::Queue.new
+      @actions = []
     end
 
     def subscribe(subscriber_klass, &block)
@@ -23,6 +24,10 @@ module EventSource
 
     def add_message()
       # For each subscriber,
+    end
+
+    def close
+      @queue.close
     end
 
     def closed?

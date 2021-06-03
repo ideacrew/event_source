@@ -22,6 +22,15 @@ servers:
       - apiKey: []
 channels:
   /repos/thoughtbot/factory_girl/contributors:
+    publish:
+      operationId: /repos/thoughtbot/factory_girl/contributors
+      description: Example HTTP restful service call
+      bindings:
+        http:
+          type: request
+          method: GET
+          headers:
+            Content-Type: application/json
     subscribe:
       operationId: /repos/thoughtbot/factory_girl/contributors
       description: Example HTTP restful service call
@@ -31,7 +40,6 @@ channels:
           method: GET
           headers:
             Content-Type: application/json
-
 tags:
   - name: linter_tag
     description: this satisfies the overactive linter

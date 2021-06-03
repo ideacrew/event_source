@@ -83,8 +83,8 @@ RSpec.describe EventSource::Protocols::Http::FaradayRequestProxy do
     it 'should return expected response' do
       subscribe_operation = channel_proxy.add_subscribe_operation(channel_item)
       response = request_proxy.publish bindings: publish_operation[:bindings]
-      h = response.to_hash
-      expect(response[:status]).to eq 200
+      expect(response.status).to eq 200
+      expect(response.headers["Content-Type"]).to eq "application/json"
     end
   end
 end

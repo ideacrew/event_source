@@ -42,6 +42,10 @@ module EventSource
           queue
         end
 
+        def actions
+          @subject.actions
+        end
+
         # Construct and subscribe a consumer_proxy with the queue
         # @param [Object] subscriber_klass Subscriber class
         # @param [Hash] options Subscribe operation bindings
