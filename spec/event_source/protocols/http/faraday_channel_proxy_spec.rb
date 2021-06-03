@@ -90,9 +90,9 @@ RSpec.describe EventSource::Protocols::Http::FaradayChannelProxy do
   context '.add_publish_operation' do
     context 'When a connection and channel item passted' do
       it 'should create request and add it to publish operations' do
-        publish_operation = channel_proxy.add_publish_operation(channel_item)
-        subscribe_operation = channel_proxy.add_subscribe_operation(channel_item)
-        publish_operation.publish(payload: 'Hello world!!!')
+        publish_op = channel_proxy.add_publish_operation(channel_item)
+        channel_proxy.add_subscribe_operation(channel_item)
+        publish_op.publish(payload: 'Hello world!!!')
         expect(channel_proxy.publish_operations).to be_present
       end
     end
@@ -101,13 +101,13 @@ RSpec.describe EventSource::Protocols::Http::FaradayChannelProxy do
   context '.add_subscribe_operation' do
     context 'When a connection and channel item passted' do
       it 'should create queue and add it to subscribe operations' do
-        subscribe_operation = channel_proxy.add_subscribe_operation(channel_item)
+        channel_proxy.add_subscribe_operation(channel_item)
         expect(channel_proxy.subscribe_operations).to be_present
       end
 
       it 'should create worker' do
         expect(channel_proxy.worker).to be_nil
-        publish_operation = channel_proxy.add_subscribe_operation(channel_item)
+        channel_proxy.add_subscribe_operation(channel_item)
         expect(channel_proxy.worker).to be_a EventSource::Worker
       end
     end

@@ -13,7 +13,7 @@ module EventSource
           def call(path:)
             file_io  = yield read(path)
             params   = yield deserialize(file_io)
-            channels = yield create(params)
+            _channels = yield create(params)
 
             Success(params)
           end

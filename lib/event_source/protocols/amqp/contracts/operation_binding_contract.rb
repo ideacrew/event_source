@@ -6,22 +6,22 @@ module EventSource
       module Contracts
         # Schema and validation rules for {EventSource::Protocols::Amqp::OperationBinding}
         class OperationBindingContract < Contract
-          # :routing_key (String) — Routing key
+          # :routing_key (String) - Routing key
 
-          # :expiration (Integer) — Expiration time after which the message will be deleted
-          # :user_id (String) — Optional user ID. Verified by RabbitMQ against the actual connection username
-          # :persistent (Boolean) — Should the message be persisted to disk?
-          # :mandatory (Boolean) — Should the message be returned if it cannot be routed to any queue?
-          # :reply_to (String) — Queue name other apps should send the response to
-          # :priority (Integer) — Message priority, 0 to 9. Not used by RabbitMQ, only applications
+          # :expiration (Integer) - Expiration time after which the message will be deleted
+          # :user_id (String) - Optional user ID. Verified by RabbitMQ against the actual connection username
+          # :persistent (Boolean) - Should the message be persisted to disk?
+          # :mandatory (Boolean) - Should the message be returned if it cannot be routed to any queue?
+          # :reply_to (String) - Queue name other apps should send the response to
+          # :priority (Integer) - Message priority, 0 to 9. Not used by RabbitMQ, only applications
 
-          # :timestamp (Integer) — A timestamp associated with this message
-          # :type (String) — Message type, e.g. what type of event or command this message represents. Can be any string
-          # :content_type (String) — Message content type (e.g. application/json)
-          # :content_encoding (String) — Message content encoding (e.g. gzip)
-          # :correlation_id (String) — Message correlated to this one, e.g. what request this message is a reply for
-          # :message_id (String) — Any message identifier
-          # :app_id (String) — Optional application ID
+          # :timestamp (Integer) - A timestamp associated with this message
+          # :type (String) - Message type, e.g. what type of event or command this message represents. Can be any string
+          # :content_type (String) - Message content type (e.g. application/json)
+          # :content_encoding (String) - Message content encoding (e.g. gzip)
+          # :correlation_id (String) - Message correlated to this one, e.g. what request this message is a reply for
+          # :message_id (String) - Any message identifier
+          # :app_id (String) - Optional application ID
 
           # @param [Hash] opts binding options for an AMQO operation
           # @option opts [EventSource::AsyncApi::Types::PositiveInteger] :expiration Expiration time after which the message will be deleted

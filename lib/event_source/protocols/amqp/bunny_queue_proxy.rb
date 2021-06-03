@@ -30,7 +30,6 @@ module EventSource
 
           @subject = bunny_queue_for(bindings)
           bind_exchange(@exchange_name)
-
           @subject
         end
 
