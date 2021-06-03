@@ -18,8 +18,6 @@ module EventSource
       @queue_proxy.subscribe(subscriber_klass, bindings, &block)
     end
 
-    def subscribe(); end
-
     def enqueue(); end
 
     def add_message

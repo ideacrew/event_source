@@ -193,6 +193,8 @@ module EventSource
           end
         end
 
+        def respond_to_missing?(name, include_private); end
+
         # Forwards all missing method calls to the Bunny::Queue instance
         def method_missing(name, *args)
           @subject.send(name, *args)

@@ -17,7 +17,6 @@ module EventSource
         # @attr_reader [Faraday::Connection] subject Server Connection instance
         attr_reader :connection_uri,
                     :connection_params,
-                    :protocol_version,
                     :subject
 
         # AsyncAPI HTTP Bindings Protocol version supported by this client
@@ -89,8 +88,8 @@ module EventSource
           params = @connection_params[:http][:params]
           headers = @connection_params[:http][:headers]
 
-          request_middleware = connection_params[:request_middleware]
-          response_middleware = connection_params[:response_middleware]
+          _request_middleware = connection_params[:request_middleware]
+          _response_middleware = connection_params[:response_middleware]
           adapter = connection_params[:adapter]
 
           Faraday.new(
@@ -174,6 +173,8 @@ module EventSource
             async_api_channel_item
           )
         end
+
+        def respond_to_missing?(name, include_private); end
 
         # This class applies both the Adapter and Proxy development patterns.
         # It supports the EventSource DSL via the Adapter pattern and serves

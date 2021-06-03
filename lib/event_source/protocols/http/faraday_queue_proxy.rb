@@ -13,7 +13,7 @@ module EventSource
         # @attr_reader [EventSource::Queue] subject the queue object
         # @attr_reader [EventSource::Protcols::Http::FaradayChannelProxy] channel_proxy the instance used to access this queue
         # @attr_reader [String] exchange_name the Exchange to which this to bind this Queue
-        attr_reader :subject, :channel_proxy, :exchange_name, :actions
+        attr_reader :subject, :channel_proxy, :exchange_name
 
         # @param channel_proxy [EventSource::Protocols::http::BunnyChannelProxy]  channel_proxy wrapping Bunny::Channel object
         # @param async_api_channel_item [Hash] {EventSource::AsyncApi::Channel} definition and bindings
@@ -28,7 +28,6 @@ module EventSource
           @exchange_name = channel_proxy.name
           queue_bindings = async_api_channel_item[:subscribe][:bindings][:http]
           @subject = faraday_queue_for(queue_bindings)
-          @subject
         end
 
         # Find an {EventSource::Queue} that matches the configuration of an {EventSource::AsyncApi::ChannelItem}
@@ -92,6 +91,8 @@ module EventSource
             operation_bindings[:exclusive]
           )
         end
+
+        def respond_to_missing?(name, include_private); end
 
         # Forward all missing method calls to the EventSource::Queue instance
         def method_missing(name, *args)
