@@ -51,7 +51,7 @@ module EventSource
 
         # Bind this Queue to the Exchange
         def bind_exchange(exchange_name)
-          if channel_proxy.exchange_exists?(exchange_name)
+          if channel_proxy.publish_operation_exists?(exchange_name)
             channel_proxy.bind_queue(@subject.name, exchange_name)
             logger.info "Queue #{@subject.name} bound to exchange #{exchange_name}"
           else

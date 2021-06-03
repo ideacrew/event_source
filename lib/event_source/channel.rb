@@ -11,14 +11,19 @@ module EventSource
                 :channel_proxy
 
     ADAPTER_METHODS = %i[
+      subscribe_operations
+      publish_operations
       add_subscribe_operation
       add_publish_operation
+      publish_operation_by_name
+      subscribe_operation_by_name
       name
       status
       close
     ].freeze
 
-    # @param channel_proxy [EventSource::Protocols::Amqp::BunnyChannelProxy] Channel instance
+    # @param channel_proxy [Object] an instance of the protcol's channel_proxy that responds
+    #  to Adapter pattern DSL
     # @param async_api_channel_item  [Hash] Channel item configuration
     # @return [Bunny::Channel] Channel instance on the RabbitMQ server {Connection}
     def initialize(channel_proxy, async_api_channel_item)
@@ -27,8 +32,8 @@ module EventSource
       @subscribe_operations = {}
 
       # FIX ME: rename
-      add_publish_operation(async_api_channel_item[:publish])
-      add_subscribe_operation(async_api_channel_item[:subscribe])
+      add_publish_operation(async_api_channel_item)
+      add_subscribe_operation(async_api_channel_item)
     end
 
     def name
@@ -43,44 +48,49 @@ module EventSource
       @channel_proxy.close
     end
 
-    def add_publish_operation(async_api_publish_operation)
-      return unless async_api_publish_operation
+    def add_publish_operation(async_api_channel_item)
       publish_proxy =
-        @channel_proxy.add_publish_operation(async_api_publish_operation)
+        @channel_proxy.add_publish_operation(async_api_channel_item)
       return false unless publish_proxy
       @publish_operations[publish_proxy.name] =
         EventSource::PublishOperation.new(
           publish_proxy,
-          async_api_publish_operation
+          async_api_channel_item[:publish]
         )
     end
 
     # Add a queue configured according to the AsyncAPI ChannelItem bindings
     # @param async_api_subscribe_operation [Hash] Subscribe operation configuration
     # @return [Mixed] Protocol-specific queue instance
-    def add_subscribe_operation(async_api_subscribe_operation)
-      return unless async_api_subscribe_operation
+    def add_subscribe_operation(async_api_channel_item)
       subscribe_proxy =
-        @channel_proxy.add_subscribe_operation(async_api_subscribe_operation)
+        @channel_proxy.add_subscribe_operation(async_api_channel_item)
       @subscribe_operations[subscribe_proxy.name] =
         EventSource::SubscribeOperation.new(
           subscribe_proxy,
-          async_api_subscribe_operation
+          async_api_channel_item[:subscribe]
         )
     end
 
-    def exchange_by_name(name)
-      @channel_proxy.exchange_by_name(name)
+    def publish_operation_by_name(name)
+      publish_proxy = @channel_proxy.publish_operation_by_name(name)
+      EventSource::PublishOperation.new(
+        publish_proxy,
+        @async_api_publish_operation
+      )
     end
 
-    def queue_by_name(name)
-      @channel_proxy.queue_by_name(name)
+    def subscribe_operation_by_name(name)
+      @channel_proxy.subscribe_operation_by_name(name)
     end
 
-    def bind_queue(*args)
-      @channel_proxy.bind_queue(*args)
-    end
+    # def subscribe_operations
+    # end
 
-    alias_method :add_consumer, :bind_queue
+    # def bind_queue(*args)
+    #   @channel_proxy.bind_queue(*args)
+    # end
+
+    # alias_method :add_consumer, :bind_queue
   end
 end

@@ -41,7 +41,8 @@ module EventSource
       class FaradayChannelProxy
         # @attr_reader [Faraday::Connection] connection Connection to HTTP server
         # @attr_reader [Faraday::Request] subject Channel
-        attr_reader :connection, :name, :subject
+        attr_reader :connection, :name, :subject, :worker
+        include EventSource::Logging
 
         # @param [EventSource::AsyncApi::Connection] faraday_connection_proxy Connection instance
         # @param [Hash<EventSource::AsyncApi::ChannelItem>] async_api_channel_item {EventSource::AsyncApi::ChannelItem}
@@ -51,40 +52,82 @@ module EventSource
           channel_item_key,
           async_api_channel_item
         )
+          # @subscriber_queue = Queue.new
+          @publish_operations = {}
+          @subscribe_operations = {}
           @connection = faraday_connection_proxy.connection
           @name = channel_item_key
           @async_api_channel_item = async_api_channel_item
-          @subject = nil # Http does not have a channel object
         end
 
         def status; end
-        def close; end
+        def close
+          @worker.stop if defined? @worker
+        end
 
-        # For Http: Build request
-        def add_publish_operation(async_api_subscribe_operation)
-          FaradayRequestProxy.new(self, @async_api_channel_item)
+        def active?
+          @worker.active?
+        end
+
+        def publish_operations
+          @publish_operations
+        end
+
+        def subscribe_operations
+          @subscribe_operations
+        end
+  
+        def publish_operation_exists?(publish_operation_name)
+          @publish_operations.key?(publish_operation_name)
+        end
+
+        def publish_operation_by_name(publish_operation_name)
+          @publish_operations[publish_operation_name]
+        end
+
+        def subscribe_operation_by_name(subscribe_operation_name)
+          @subscribe_operations[subscribe_operation_name]
         end
 
         # For Http: Build request
-        def add_subscribe_operation(async_api_subscribe_operation)
-          EventSource::Queue.new(self, @async_api_channel_item)
+        def add_publish_operation(async_api_channel_item)
+          request_proxy = FaradayRequestProxy.new(self, async_api_channel_item)
+          if @publish_operations.key?(request_proxy.name)
+            logger.warning "Faraday publish operation already exists for #{request_proxy.name}"
+            @publish_operations[request_proxy.name]
+          else
+            logger.info "Faraday publish operation created for #{request_proxy.name}"            
+            @publish_operations[request_proxy.name] = request_proxy
+          end
         end
 
-        # @return [Faraday::Response]
-        def build_faraday_publish_for(async_api_channel_item)
-          # faraday Connection.post
-          # faraday Connection.put
+        # For Http: Build request
+        def add_subscribe_operation(async_api_channel_item)
+          queue_proxy = FaradayQueueProxy.new(self, @async_api_channel_item)
+          if @subscribe_operations.key?(queue_proxy.name)
+            logger.warning "Faraday subscribe operation already exists for #{queue_proxy.name}"
+            @subscribe_operations[queue_proxy.name]
+          else
+            logger.info "Faraday subscribe operation created for #{queue_proxy.name}"            
+            add_worker(queue_proxy)
+            @subscribe_operations[queue_proxy.name] = queue_proxy
+          end
         end
 
-        # @return [Faraday::Response]
-        def build_faraday_subscriber_for(queue, subscribe_options)
-          # faraday Connection.get
+        def enqueue(response)
+          @worker.enqueue(response)
         end
 
         def respond_to_missing?(name, include_private)end
 
         def method_missing(name, *args)
           @subject.send(name, *args)
+        end
+
+        private
+        
+        def add_worker(queue_proxy)
+          @worker = EventSource::Worker.start({num_threads: 5}, queue_proxy)
         end
       end
     end

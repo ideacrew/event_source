@@ -34,9 +34,8 @@ module EventSource
 
         # @attr_reader [Bunny::ConnectionProxy] connection Connection proxy instance to the RabbitMQ server
         # @attr_reader [String] subject name unique name for the channel
-        # @attr_reader [Bunny::ChannelProxy] subject Channel channel proxy interface on the Connection
         # @attr_reader [EventSourceAsyncApi::ChannelItem] async_api_channel_item configuration settings for the Channel
-        attr_reader :connection, :name, :subject, :async_api_channel_item
+        attr_reader :connection, :name, :async_api_channel_item
 
         def_delegators :@subject, :ack, :nack, :reject
 
@@ -49,6 +48,7 @@ module EventSource
           channel_item_key,
           async_api_channel_item
         )
+
           @connection = connection_for(bunny_connection_proxy)
           @name = channel_item_key
           @async_api_channel_item = async_api_channel_item
@@ -69,50 +69,32 @@ module EventSource
           @subject.close
         end
 
-        # Returns the queues collection
-        def queues
-          create_channel if closed?
-          @subject.queues
-        end
-
-        # Returns the exchanges collection
-        def exchanges
-          create_channel if closed?
+        def publish_operations
           @subject.exchanges
         end
 
-        # Returns the queue matching the passed name
-        def queue_by_name(name)
-          matched = nil
-          queues.each_value { |queue| matched = queue if queue.name == name }
-          matched
+        def subscribe_operations
+          @subject.queues
         end
 
-        def exchange_exists?(exchange_name)
-          !exchange_by_name(exchange_name).nil?
+        def publish_operation_exists?(publish_operation_name)
+          exchange_exists?(publish_operation_name)
         end
 
-        def exchange_by_name(name)
-          create_channel if closed?
-          exchanges[name.to_s]
+        def publish_operation_by_name(publish_operation_name)
+          exchange_by_name(publish_operation_name)
+        end
+        
+        def subscribe_operation_by_name(subscribe_operation_name)
+          queue_by_name(subscribe_operation_name)
         end
 
-        def add_publish_operation(async_api_publish_operation)
+        def add_publish_operation(_async_api_publish_operation)
           add_exchange
         end
 
-        def add_subscribe_operation(async_api_subscribe_operation)
+        def add_subscribe_operation(_async_api_subscribe_operation)
           add_queue
-        end
-
-        def add_queue
-          create_channel if closed?
-          BunnyQueueProxy.new(self, async_api_channel_item)
-        end
-
-        def add_exchange
-          create_channel if closed?
-          BunnyExchangeProxy.new(self, async_api_channel_item)
         end
 
         # @return [String] a human-readable summary for this channel
@@ -125,18 +107,56 @@ module EventSource
           @subject.status
         end
 
-        # Enables or disables message flow for channel
-        # def channel_flow(active)
-        #   @subject.channel_flow(active)
-        # end
+       #  Enables or disables message flow for channel
+        def channel_flow(active)
+          @subject.channel_flow(active)
+        end
 
         # return [Bunny::ConsumerWorkPool] Thread pool where
         #   delivered messages are dispatched
         def work_pool; end
 
-        # def # @return [Bunny::ConsumerWorkPool] Thread pool dlivered messages
+        # def # @return [Bunny::ConsumerWorkPool] Thread pool edlivered messages
         #   are dispatached to
         # def(work_pool); end
+
+        # Bind a queue to an exchange
+        # In order to receive messages, a queue needs to be
+        # bound to at least one exchange
+        def bind_queue(name, exchange, options = {})
+          create_channel if closed?
+          @subject.queue_bind(name, exchange, options)
+        end
+
+        def respond_to_missing?(name, include_private); end
+
+        def method_missing(name, *args)
+          create_channel if closed?
+          @subject.send(name, *args)
+        end
+
+        private
+
+        def exchange_by_name(name)
+          create_channel if closed?
+          exchanges[name.to_s]
+        end
+
+        def exchange_exists?(exchange_name)
+          !exchange_by_name(exchange_name).nil?
+        end
+
+        # Returns the queues collection
+        def queues
+          create_channel if closed?
+          @subject.queues
+        end
+        # Returns the queue matching the passed name
+        def queue_by_name(name)
+          matched = nil
+          queues.each_value { |queue| matched = queue if queue.name == name }
+          matched
+        end
 
         def delete_exchange(exchange)
           return unless exchange_exists?(exchange)
@@ -147,17 +167,9 @@ module EventSource
           end
         end
 
-        # Bind a queue to an exchange
-        # In order to receive messages, a queue needs to be
-        # bound to at least one exchange
-        def bind_queue(name, exchange, options = {})
-          create_channel if closed?
-          @subject.queue_bind(name, exchange, options)
-        end
-
         # Remove all messages from a queue
         def purge_queue(name, options = {})
-          queue_purge(name, options)
+         @subject. queue_purge(name, options)
         end
 
         def delete_queue(queue_name)
@@ -169,14 +181,17 @@ module EventSource
           end
         end
 
-        def respond_to_missing?(name, include_private); end
-
-        def method_missing(name, *args)
+        def add_queue
           create_channel if closed?
-          @subject.send(name, *args)
+          BunnyQueueProxy.new(self, async_api_channel_item)
         end
 
-        private
+        def add_exchange
+          create_channel if closed?
+          exchange_bindings =
+            async_api_channel_item[:bindings][:amqp][:exchange]
+          BunnyExchangeProxy.new(self, exchange_bindings)
+        end
 
         def connection_for(connection_proxy)
           connection_proxy.connection

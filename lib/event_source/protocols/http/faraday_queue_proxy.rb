@@ -2,7 +2,7 @@
 
 module EventSource
   module Protocols
-    module http
+    module Http
       # Create and manage an {EventSource::Queue} instance for Faraday supporting an interface
       # compliant with the EventSource DSL.  Also serves as {EventSource::Queue} proxy
       # enabling access to its API.
@@ -13,7 +13,7 @@ module EventSource
         # @attr_reader [EventSource::Queue] subject the queue object
         # @attr_reader [EventSource::Protcols::Http::FaradayChannelProxy] channel_proxy the instance used to access this queue
         # @attr_reader [String] exchange_name the Exchange to which this to bind this Queue
-        attr_reader :subject, :channel_proxy, :exchange_name
+        attr_reader :subject, :channel_proxy, :exchange_name, :actions
 
         # @param channel_proxy [EventSource::Protocols::http::BunnyChannelProxy]  channel_proxy wrapping Bunny::Channel object
         # @param async_api_channel_item [Hash] {EventSource::AsyncApi::Channel} definition and bindings
@@ -26,38 +26,20 @@ module EventSource
         def initialize(channel_proxy, async_api_channel_item)
           @channel_proxy = channel_proxy
           @exchange_name = channel_proxy.name
-          bindings = async_api_channel_item[:bindings]
-
-          @subject = faraday_queue_for(bindings)
-          bind_exchange(@exchange_name)
-
+          queue_bindings = async_api_channel_item[:subscribe][:bindings][:http]
+          @subject = faraday_queue_for(queue_bindings)
           @subject
         end
 
         # Find an {EventSource::Queue} that matches the configuration of an {EventSource::AsyncApi::ChannelItem}
-        def faraday_queue_for(bindings)
-          queue_bindings = channel_item_queue_bindings_for(bindings)
-
-          queue =
+        def faraday_queue_for(queue_bindings)
+          queue = 
             EventSource::Queue.new(
               channel_proxy,
-              queue_bindings[:name],
-              queue_bindings.slice(:durable, :auto_delete, :vhost, :exclusive)
+              "on_#{channel_proxy.name.match(/^(\/)?(.*)/)[2].gsub(/\//, '_')}"
             )
-
           logger.info "Found or created Faraday queue #{queue.name}"
           queue
-        end
-
-        # Bind this Queue to the Exchange
-        def bind_exchange(exchange_name)
-          if channel_proxy.exchange_exists?(exchange_name)
-            channel_proxy.bind_queue(@subject.name, exchange_name)
-            logger.info "Queue #{@subject.name} bound to exchange #{exchange_name}"
-          else
-            raise EventSource::AsyncApi::Error::ExchangeNotFoundError,
-                  "exchange #{name} not found"
-          end
         end
 
         # Construct and subscribe a consumer_proxy with the queue
@@ -66,26 +48,27 @@ module EventSource
         # @param [Proc] &block Code block to execute when event is received
         # @return [BunnyConsumerProxy] Consumer proxy instance
         def subscribe(subscriber_klass, options, &block)
-          operation_bindings = convert_to_faraday_options(options[:http])
-          consumer_proxy = consumer_proxy_for(operation_bindings)
+          # operation_bindings = convert_to_faraday_options(options[:http])
+          # consumer_proxy = consumer_proxy_for(operation_bindings)
 
-          # redelivered?
-          consumer_proxy.on_delivery do |delivery_info, metadata, payload|
-            if block_given?
-              @channel_proxy.instance_exec(
-                delivery_info,
-                metadata,
-                payload,
-                &block
-              )
-            end
-            subscriber_instance = subscriber_klass.new
-            if subscriber_instance.respond_to?(queue_name)
-              subscriber_instance.send(queue_name, payload)
-            end
-          end
+          # # redelivered?
+          # consumer_proxy.on_delivery do |delivery_info, metadata, payload|
+          #   if block_given?
+          #     @channel_proxy.instance_exec(
+          #       delivery_info,
+          #       metadata,
+          #       payload,
+          #       &block
+          #     )
+          #   end
+          #   subscriber_instance = subscriber_klass.new
+          #   if subscriber_instance.respond_to?(queue_name)
+          #     subscriber_instance.send(queue_name, payload)
+          #   end
+          # end
+          @subject.actions << block
 
-          @subject.subscribe_with(consumer_proxy)
+          # @subject.subscribe_with(consumer_proxy)
         end
 
         def consumer_proxy_for(operation_bindings)
@@ -118,9 +101,14 @@ module EventSource
             raise EventSource::Protocols::Http::Error::ChannelBindingContractError,
                   "Expected queue bindings: #{bindings}"
           end
+        rescue
+          {}
         end
 
+        # FIX ME: HTTP don't have channel bindings according to AsyncApi protocol
         def async_api_channel_item_bindings_valid?(bindings)
+          return true
+ 
           result =
             EventSource::Protocols::Http::Contracts::ChannelBindingContract.new
               .call(bindings)

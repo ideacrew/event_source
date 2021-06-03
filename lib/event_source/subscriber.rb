@@ -57,10 +57,10 @@ module EventSource
       def subscribe(queue_name, &block)
         channel_name = exchange_name # .match(/^(.*).exchange$/)[1]
         channel = connection.channels[channel_name.to_sym]
-        queue = channel.subscribe_operations[queue_name.to_s]
+        subscribe_operation = channel.subscribe_operations[queue_name.to_s]
 
-        raise EventSource::Error::SubscriberNotFound, "Unable to find queue #{queue_name}" unless queue
-        queue.subscribe(self, &block)
+        raise EventSource::Error::SubscriberNotFound, "Unable to find queue #{queue_name}" unless subscribe_operation
+        subscribe_operation.subscribe(self, &block)
       end
 
       def register_subscription_methods

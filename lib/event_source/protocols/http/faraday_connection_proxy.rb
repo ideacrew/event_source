@@ -80,7 +80,7 @@ module EventSource
 
           @connection_params = connection_params_for(options)
           @connection_uri = self.class.connection_uri_for(async_api_server)
-
+          @channel_proxies = {}
           # @connection_params = self.class.connection_params_for(server)
           @subject = build_connection_for(async_api_server)
         end
@@ -134,12 +134,14 @@ module EventSource
 
         # The status of the connection instance
         def active?
-          true
+          return true if @channel_proxies.empty?
+          @channel_proxies.values.any?{|channel_proxy| channel_proxy.active? }
         end
 
         # Closes the underlying resources and connections. For persistent
         #  connections this closes all currently open connections
         def close
+          @channel_proxies.values.each(&:close)
           @subject.close
         end
 
@@ -166,7 +168,7 @@ module EventSource
         #   Channel configuration and bindings
         # @result [FaradayChannelProxy]
         def add_channel(channel_item_key, async_api_channel_item)
-          FaradayChannelProxy.new(
+          @channel_proxies[channel_item_key] = FaradayChannelProxy.new(
             self,
             channel_item_key,
             async_api_channel_item

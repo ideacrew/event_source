@@ -39,15 +39,16 @@ module EventSource
       class FaradayRequestProxy
         include EventSource::Logging
 
-        attr_reader :channel_proxy, :subject
+        attr_reader :channel_proxy, :subject, :name
 
         # @param channel_proxy [EventSource::Protocols::Http::FaradayChannelProxy] Http Channel proxy
         # @param async_api_channel_item [Hash] channel_bindings Channel definition and bindings
         # @return [Faraday::Request]
         def initialize(channel_proxy, async_api_channel_item)
           @channel_proxy = channel_proxy
-          bindings = async_api_channel_item[:subscribe][:bindings][:http]
-          @subject = faraday_request_for(bindings)
+          @name = channel_proxy.name
+          request_bindings = async_api_channel_item[:publish][:bindings][:http]
+          @subject = faraday_request_for(request_bindings)
         end
 
         # Faraday::Request.body
@@ -69,9 +70,9 @@ module EventSource
           end
 
           # @subject.call(payload, faraday_publish_bindings)
-
           response = connection.builder.build_response(connection, @subject)
           logger.info "Executed Faraday request #{@subject.inspect}"
+          @channel_proxy.enqueue(response)
           response
         end
 

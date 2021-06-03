@@ -11,9 +11,9 @@ module EventSource
         # @param [EventSource::AsyncApi::Channel] channel_proxy instance on which to open this Exchange
         # @param [Hash<EventSource::AsyncApi::Exchange>] bindings instance with configuration for this Exchange
         # @return [Bunny::Exchange]
-        def initialize(channel_proxy, async_api_channel_item)
-          exchange_bindings =
-            async_api_channel_item[:bindings][:amqp][:exchange]
+        def initialize(channel_proxy, exchange_bindings)
+          # exchange_bindings =
+          #   async_api_channel_item[:bindings][:amqp][:exchange]
 
           @subject =
             Bunny::Exchange.new(
@@ -26,9 +26,9 @@ module EventSource
 
         # Publish a message to this Exchange
         # @param [Mixed] payload the message content
-        # @param [Hash] bindings
-        def publish(payload, bindings: {})
-          bunny_publish_bindings = sanitize_bindings(bindings)
+        # @param [Hash] publish_bindings
+        def publish(payload, publish_bindings: {})
+          bunny_publish_bindings = sanitize_bindings(publish_bindings)
           @subject.publish(payload, bunny_publish_bindings)
         end
 

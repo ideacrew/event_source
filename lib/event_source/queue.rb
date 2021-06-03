@@ -25,6 +25,18 @@ module EventSource
       # For each subscriber,
     end
 
+    def closed?
+      @queue.closed?
+    end
+
+    def pop(non_block = false)
+      @queue.pop(non_block)
+    end
+
+    def push(value)
+      @queue.push(value)
+    end
+
     # register subscribers?
 
     def add_subscriber(); end

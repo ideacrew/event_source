@@ -4,10 +4,12 @@ require 'spec_helper'
 require 'config_helper'
 
 RSpec.describe EventSource::Protocols::Http::FaradayChannelProxy do
-  let(:protocol) { :http }
-  let(:url) { 'http://localhost' }
-  let(:protocol_version) { '0.9.1' }
-  let(:description) { 'Development Http Server' }
+ let(:protocol) { :http }
+
+  # let(:url) { 'https://localhost:8080' }
+  let(:url) { 'https://api.github.com' }
+  let(:protocol_version) { '0.1.0' }
+  let(:description) { 'Development HTTP Server' }
 
   let(:my_server) do
     {
@@ -23,10 +25,10 @@ RSpec.describe EventSource::Protocols::Http::FaradayChannelProxy do
   end
 
   let(:connection) { EventSource::Connection.new(client) }
-  let(:channel_id) { 'crm.contact_created' }
+  let(:channel_id) { '/repos/thoughtbot/factory_girl/contributors' }
   let(:publish_operation) do
     {
-      operation_id: 'on_crm_sugarcrm_contacts_contact_created',
+      operation_id: '/repos/thoughtbot/factory_girl/contributors',
       summary: 'SugarCRM Contact Created',
       bindings: {
         http: {
@@ -39,7 +41,7 @@ RSpec.describe EventSource::Protocols::Http::FaradayChannelProxy do
 
   let(:subscribe_operation) do
     {
-      operation_id: 'crm_sugarcrm_contacts_contact_created',
+      operation_id: '/repos/thoughtbot/factory_girl/contributors',
       summary: 'SugarCRM Contact Created',
       bindings: {
         http: {
@@ -85,11 +87,29 @@ RSpec.describe EventSource::Protocols::Http::FaradayChannelProxy do
     end
   end
 
-  # context 'When a connection and channel item passted' do
-  #   it 'should create queues and exchanges' do
-  #     channel = channel_proxy.subject
-  #     expect(channel.queues).to be_present
-  #     expect(channel.exchanges).to be_present
-  #   end
-  # end
+  context '.add_publish_operation' do 
+    context 'When a connection and channel item passted' do
+      it 'should create request and add it to publish operations' do
+        publish_operation = channel_proxy.add_publish_operation(channel_item)
+        # subscribe_operation = channel_proxy.add_subscribe_operation(channel_item)
+        publish_operation.publish(payload: 'Hello world!!!')
+        expect(channel_proxy.publish_operations).to be_present
+      end
+    end
+  end
+
+  context '.add_subscribe_operation' do 
+    context 'When a connection and channel item passted' do
+      it 'should create queue and add it to subscribe operations' do
+        subscribe_operation = channel_proxy.add_subscribe_operation(channel_item)
+        expect(channel_proxy.subscribe_operations).to be_present
+      end
+
+      it 'should create worker' do
+        expect(channel_proxy.worker).to be_empty
+        publish_operation = channel_proxy.add_subscribe_operation(channel_item)
+        expect(channel_proxy.worker).to be_a EventSource::Worker
+      end
+    end
+  end
 end
