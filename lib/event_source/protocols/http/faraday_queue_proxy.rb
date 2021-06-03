@@ -33,10 +33,10 @@ module EventSource
 
         # Find an {EventSource::Queue} that matches the configuration of an {EventSource::AsyncApi::ChannelItem}
         def faraday_queue_for(queue_bindings)
-          queue = 
+          queue =
             EventSource::Queue.new(
               channel_proxy,
-              "on_#{channel_proxy.name.match(/^(\/)?(.*)/)[2].gsub(/\//, '_')}"
+              "on_#{channel_proxy.name.match(%r{^(\/)?(.*)})[2].gsub(%r{\/}, '_')}"
             )
           logger.info "Found or created Faraday queue #{queue.name}"
           queue
@@ -65,18 +65,28 @@ module EventSource
           #       &block
           #     )
           #   end
-          #   subscriber_instance = subscriber_klass.new
+          #   subscriber_instance =  subscriber_klass.new
           #   if subscriber_instance.respond_to?(queue_name)
           #     subscriber_instance.send(queue_name, payload)
           #   end
           # end
-          @subject.actions << block
 
-          # @subject.subscribe_with(consumer_proxy)
+          if block_given?
+            @subject.actions << block
+          else
+            method_proc =
+              Proc.new do |headers, payload|
+                subscriber_instance = subscriber_klass.new
+                if subscriber_instance.respond_to?(@subject.name)
+                  subscriber_instance.send(@subject.name, headers, payload)
+                end
+              end
+            @subject.actions << method_proc
+          end
         end
 
         def consumer_proxy_for(operation_bindings)
-         FaradayConsumerProxy.new(
+          FaradayConsumerProxy.new(
             @subject.channel,
             @subject,
             '',
@@ -105,14 +115,14 @@ module EventSource
             raise EventSource::Protocols::Http::Error::ChannelBindingContractError,
                   "Expected queue bindings: #{bindings}"
           end
-        rescue
+        rescue StandardError
           {}
         end
 
         # FIX ME: HTTP don't have channel bindings according to AsyncApi protocol
         def async_api_channel_item_bindings_valid?(bindings)
           return true
- 
+
           result =
             EventSource::Protocols::Http::Contracts::ChannelBindingContract.new
               .call(bindings)

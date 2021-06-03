@@ -10,13 +10,14 @@
 # Worker (EventSource::Worker.start(configuration, queue_proxy))
 # Subscribe (queue_proxy.actions << block)
 
-# Request.publish 
-  # execute request (returns a response)
-  # get queue_proxy by name from channel_proxy
-  # queue_proxy.push(response)
-  # actions.each do |action|
-  #  action.call(response)
-  # end
+# Request.publish
+
+# execute request (returns a response)
+# get queue_proxy by name from channel_proxy
+# queue_proxy.push(response)
+# actions.each do |action|
+#  action.call(response)
+# end
 #
 
 module EventSource
@@ -29,7 +30,9 @@ module EventSource
 
     def self.start(config, queue)
       num_threads = config[:num_threads]
-      logger.info("start worker for Queue: #{queue.name}; threads #{num_threads} ")
+      logger.info(
+        "start worker for Queue: #{queue.name}; threads #{num_threads} "
+      )
 
       instance = new(queue)
       instance.spawn_threads(num_threads)
@@ -91,11 +94,10 @@ module EventSource
       num_threads.times do
         threads << Thread.new do
           while active? || actions_left?
-
             action_payload = wait_for_action
             logger.info "-----spawn  #{action_payload}"
             queue.actions.each do |action_proc|
-              action_proc.call(action_payload)
+              action_proc.call(action_payload.headers, action_payload.body)
             end
 
             # action_proc, action_payload = wait_for_action

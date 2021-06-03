@@ -2,11 +2,18 @@
 
 module MagiMedicaid
   class EligbilityDeterminationsSubscriber
-    # include ::EventSource::Subscriber[http: 'magi_medicaid/mitc.events/aqhp_eligibility_determined']
+    include ::EventSource::Subscriber[http: '/determinations/eval']
 
-    # def on_magi_medicaid_mitc_events_aqhp_eligibility_determined(payload)
-    #   # Set of independent reactors for the given event that execute asynchronously
-    #   puts "triggered --> on_magi_medicaid_mitc_events_aqhp_eligibility_determined method -- #{payload}"
-    # end
+    # from: MagiMedicaidEngine of EA after Application's submission
+    # { event: magi_medicaid_application_submitted, payload: :magi_medicaid_application }
+    subscribe(:on_determinations_eval) do |headers, payload|
+      puts "block headers------#{headers}"
+      puts "block payload-----#{payload}"
+    end
+
+    def on_determinations_eval(headers, payload)
+      puts "method headers----#{headers}"
+      puts "method payload----#{payload}"
+    end
   end
 end

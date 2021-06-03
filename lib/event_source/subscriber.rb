@@ -8,7 +8,7 @@ module EventSource
   # Subscribes to the events
   class Subscriber < Module
     # module Subscriber
-    include Dry::Equalizer(:protocol, :exchange)
+    include Dry.Equalizer(:protocol, :exchange)
 
     attr_reader :protocol, :exchange
 
@@ -32,7 +32,10 @@ module EventSource
     end
 
     def included(base)
-      self.class.subscriber_container[base] = { exchange: exchange, protocol: protocol }
+      self.class.subscriber_container[base] = {
+        exchange: exchange,
+        protocol: protocol
+      }
       base.extend ClassMethods
 
       TracePoint.trace(:end) do |t|
@@ -45,7 +48,6 @@ module EventSource
 
     # methods to register subscriptions
     module ClassMethods
-
       def exchange_name
         EventSource::Subscriber.subscriber_container[self][:exchange]
       end
@@ -56,10 +58,14 @@ module EventSource
 
       def subscribe(queue_name, &block)
         channel_name = exchange_name # .match(/^(.*).exchange$/)[1]
+        binding.pry
         channel = connection.channels[channel_name.to_sym]
         subscribe_operation = channel.subscribe_operations[queue_name.to_s]
 
-        raise EventSource::Error::SubscriberNotFound, "Unable to find queue #{queue_name}" unless subscribe_operation
+        unless subscribe_operation
+          raise EventSource::Error::SubscriberNotFound,
+                "Unable to find queue #{queue_name}"
+        end
         subscribe_operation.subscribe(self, &block)
       end
 

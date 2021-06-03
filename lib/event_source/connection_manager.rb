@@ -61,14 +61,16 @@ module EventSource
       end
     end
 
-    # 
+    #
     # Drop connections for the given protocol
     #
     # @param [Symbol] protocol the protocol name, `:http` or `:amqp`
     #
     def drop_connections_for(protocol)
       connections.each do |connection_uri, _connection_instance|
-        drop_connection(connection_uri) if URI.parse(connection_uri).scheme.to_sym == protocol
+        if URI.parse(connection_uri).scheme.to_sym == protocol
+          drop_connection(connection_uri)
+        end
       end
     end
 
