@@ -20,7 +20,7 @@ RSpec.describe EventSource::Connection do
       )
     end
     let(:channel) do
-      EventSource::AsyncApi::Operations::Channels::LoadPath
+      EventSource::AsyncApi::Operations::AsyncApiConf::LoadPath
         .new
         .call(path: async_api_file)
         .value!

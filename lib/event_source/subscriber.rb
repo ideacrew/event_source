@@ -58,7 +58,6 @@ module EventSource
 
       def subscribe(queue_name, &block)
         channel_name = exchange_name # .match(/^(.*).exchange$/)[1]
-        binding.pry
         channel = connection.channels[channel_name.to_sym]
         subscribe_operation = channel.subscribe_operations[queue_name.to_s]
 

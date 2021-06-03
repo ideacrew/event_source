@@ -108,7 +108,7 @@ module EventSource
         # Is the server connection started?
         # return [Boolean]
         def active?
-          @subject && @subject.open?
+          @subject&.open?
         end
 
         # Close the server connection and all of its channels

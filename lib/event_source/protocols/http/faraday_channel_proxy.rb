@@ -42,6 +42,7 @@ module EventSource
         # @attr_reader [Faraday::Connection] connection Connection to HTTP server
         # @attr_reader [Faraday::Request] subject Channel
         attr_reader :connection, :name, :subject, :worker
+
         include EventSource::Logging
 
         # @param [EventSource::AsyncApi::Connection] faraday_connection_proxy Connection instance
@@ -61,6 +62,7 @@ module EventSource
         end
 
         def status; end
+
         def close
           @worker.stop if defined? @worker
         end
@@ -69,14 +71,8 @@ module EventSource
           @worker.active?
         end
 
-        def publish_operations
-          @publish_operations
-        end
+        attr_reader :publish_operations, :subscribe_operations
 
-        def subscribe_operations
-          @subscribe_operations
-        end
-  
         def publish_operation_exists?(publish_operation_name)
           @publish_operations.key?(publish_operation_name)
         end
@@ -96,7 +92,7 @@ module EventSource
             logger.warning "Faraday publish operation already exists for #{request_proxy.name}"
             @publish_operations[request_proxy.name]
           else
-            logger.info "Faraday publish operation created for #{request_proxy.name}"            
+            logger.info "Faraday publish operation created for #{request_proxy.name}"
             @publish_operations[request_proxy.name] = request_proxy
           end
         end
@@ -108,7 +104,7 @@ module EventSource
             logger.warning "Faraday subscribe operation already exists for #{queue_proxy.name}"
             @subscribe_operations[queue_proxy.name]
           else
-            logger.info "Faraday subscribe operation created for #{queue_proxy.name}"            
+            logger.info "Faraday subscribe operation created for #{queue_proxy.name}"
             add_worker(queue_proxy)
             @subscribe_operations[queue_proxy.name] = queue_proxy
           end
@@ -125,9 +121,9 @@ module EventSource
         end
 
         private
-        
+
         def add_worker(queue_proxy)
-          @worker = EventSource::Worker.start({num_threads: 5}, queue_proxy)
+          @worker = EventSource::Worker.start({ num_threads: 5 }, queue_proxy)
         end
       end
     end

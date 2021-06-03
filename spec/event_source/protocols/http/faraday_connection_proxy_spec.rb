@@ -175,7 +175,7 @@ RSpec.describe EventSource::Protocols::Http::FaradayConnectionProxy do
 
       let(:result) { described_class.new(valid_server) }
       after { result.close }
-      it 'should successfully connect to HTTP Server' #do
+      it 'should successfully connect to HTTP Server' # do
       #   expect(
       #     result
       #   ).to be_a EventSource::Protocols::Http::FaradayConnectionProxy

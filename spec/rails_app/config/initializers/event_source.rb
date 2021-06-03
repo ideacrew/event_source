@@ -24,7 +24,7 @@ end
 
 dir = Pathname.pwd.join('spec', 'support', 'async_api_files')
 EventSource.async_api_schemas = ::Dir[::File.join(dir, '**', '*')].reject { |p| ::File.directory? p }.reduce([]) do |memo, file|
-  # read 
+  # read
   # serialize yaml to hash
   # Add to memo
   memo << EventSource::AsyncApi::Operations::AsyncApiConf::LoadPath.new.call(path: file).success.to_h

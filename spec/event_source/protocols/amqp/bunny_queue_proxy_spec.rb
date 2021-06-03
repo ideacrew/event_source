@@ -108,7 +108,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyQueueProxy do
   let(:channel_proxy) { channel.channel_proxy }
 
   let(:proc_to_execute) do
-    Proc.new do |delivery_info, metadata, payload|
+    proc do |delivery_info, metadata, payload|
       logger.info "delivery_info---#{delivery_info}"
       logger.info "metadata---#{metadata}"
       logger.info "payload---#{payload}"

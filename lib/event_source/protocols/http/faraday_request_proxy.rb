@@ -65,9 +65,7 @@ module EventSource
         def publish(payload: nil, bindings: {})
           faraday_publish_bindings = sanitize_bindings(bindings)
           @subject.body = payload if payload
-          if faraday_publish_bindings[:headings]
-            @subject.headers.update(faraday_publish_bindings[:headings])
-          end
+          @subject.headers.update(faraday_publish_bindings[:headings]) if faraday_publish_bindings[:headings]
 
           # @subject.call(payload, faraday_publish_bindings)
           response = connection.builder.build_response(connection, @subject)

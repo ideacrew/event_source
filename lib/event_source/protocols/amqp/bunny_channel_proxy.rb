@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'forwardable'
 
 module EventSource
@@ -84,7 +85,7 @@ module EventSource
         def publish_operation_by_name(publish_operation_name)
           exchange_by_name(publish_operation_name)
         end
-        
+
         def subscribe_operation_by_name(subscribe_operation_name)
           queue_by_name(subscribe_operation_name)
         end
@@ -107,7 +108,7 @@ module EventSource
           @subject.status
         end
 
-       #  Enables or disables message flow for channel
+        #  Enables or disables message flow for channel
         def channel_flow(active)
           @subject.channel_flow(active)
         end
@@ -151,6 +152,7 @@ module EventSource
           create_channel if closed?
           @subject.queues
         end
+
         # Returns the queue matching the passed name
         def queue_by_name(name)
           matched = nil
@@ -169,7 +171,7 @@ module EventSource
 
         # Remove all messages from a queue
         def purge_queue(name, options = {})
-         @subject. queue_purge(name, options)
+          @subject.queue_purge(name, options)
         end
 
         def delete_queue(queue_name)

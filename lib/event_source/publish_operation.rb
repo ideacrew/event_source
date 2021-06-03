@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module EventSource
   # A protocol-level object responsible for publishing messages
   class PublishOperation

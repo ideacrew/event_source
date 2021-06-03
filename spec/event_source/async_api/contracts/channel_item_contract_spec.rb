@@ -28,7 +28,7 @@ RSpec.describe EventSource::AsyncApi::Contracts::ChannelItemContract do
           auto_delete: true,
           vhost: '/',
           exclusive: true
-        } 
+        }
       }
     }
   end
@@ -88,7 +88,7 @@ RSpec.describe EventSource::AsyncApi::Contracts::ChannelItemContract do
       end
     end
 
-    # context 'Given invalid channel bindings params' do 
+    # context 'Given invalid channel bindings params' do
     #   let(:amqp_channel_binding) do
     #     {
     #       amqp: {
@@ -97,16 +97,16 @@ RSpec.describe EventSource::AsyncApi::Contracts::ChannelItemContract do
     #           name: :on_enroll_parties_organizations_fein_corrected,
     #           auto_delete: true,
     #           vhost: '/'
-    #         } 
+    #         }
     #       }
     #     }
     #   end
 
-    #   it 'should fail validation' do 
+    #   it 'should fail validation' do
     #     result = subject.call(subscribe_params)
 
     #     expect(result.success?).to be_falsey
-    #     binding.pry        
+    #     binding.pry
     #   end
     # end
   end

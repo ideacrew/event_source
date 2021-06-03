@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'securerandom'
 
 module EventSource
@@ -31,7 +32,7 @@ module EventSource
           @subject.publish(payload, bunny_publish_bindings)
         end
 
-        alias_method :call, :publish
+        alias call publish
 
         def respond_to_missing?(name, include_private)end
 

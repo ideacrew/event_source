@@ -54,9 +54,7 @@ module EventSource
       connections.reduce(
         []
       ) do |protocol_connections, (connection_uri, connection_instance)|
-        if URI.parse(connection_uri).scheme.to_sym == protocol
-          protocol_connections << connection_instance
-        end
+        protocol_connections << connection_instance if URI.parse(connection_uri).scheme.to_sym == protocol
         protocol_connections
       end
     end
@@ -68,9 +66,7 @@ module EventSource
     #
     def drop_connections_for(protocol)
       connections.each do |connection_uri, _connection_instance|
-        if URI.parse(connection_uri).scheme.to_sym == protocol
-          drop_connection(connection_uri)
-        end
+        drop_connection(connection_uri) if URI.parse(connection_uri).scheme.to_sym == protocol
       end
     end
 

@@ -28,11 +28,11 @@ module EventSource
 
         # Default value for {::Faraday::Connection} Adapter
         # Override this value using the options argument in the constructor
-        AdapterDefaults = { typhoeus: nil }
+        AdapterDefaults = { typhoeus: nil }.freeze
 
         # Default values for {::Faraday::Connection} HTTP parameters.
         # Override these values using the options argument in the constructor
-        HttpDefaults = { http: { headers: {}, params: {} } }
+        HttpDefaults = { http: { headers: {}, params: {} } }.freeze
 
         # Default values for {::Faraday::Connection} Request Middleware. These are an
         #   ordered stack of request-related processing components (setting headers,
@@ -48,7 +48,7 @@ module EventSource
               backoff_factor: 2
             }
           }
-        }
+        }.freeze
 
         # Default values for {::Faraday::Connection} Response Middleware. These are an
         #   ordered stack of response-related processing components (parsing response
@@ -62,7 +62,7 @@ module EventSource
               options: nil
             }
           }
-        }
+        }.freeze
 
         # @param [Hash] async_api_server {EventSource::AsyncApi::Server} configuration
         # @param [Hash] options Connection options
@@ -85,7 +85,7 @@ module EventSource
           @subject = build_connection_for(async_api_server)
         end
 
-        def build_connection_for(async_api_server)
+        def build_connection_for(_async_api_server)
           params = @connection_params[:http][:params]
           headers = @connection_params[:http][:headers]
 
@@ -113,7 +113,7 @@ module EventSource
 
             # last middleware must be adapter
             adapter.each_pair do |component, options|
-              conn.adapter "#{component}".to_sym, options || {}
+              conn.adapter component.to_s.to_sym, options || {}
             end
           end
         end
@@ -135,7 +135,7 @@ module EventSource
         # The status of the connection instance
         def active?
           return true if @channel_proxies.empty?
-          @channel_proxies.values.any?{|channel_proxy| channel_proxy.active? }
+          @channel_proxies.values.any?(&:active?)
         end
 
         # Closes the underlying resources and connections. For persistent

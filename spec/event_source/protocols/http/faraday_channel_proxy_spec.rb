@@ -4,7 +4,7 @@ require 'spec_helper'
 require 'config_helper'
 
 RSpec.describe EventSource::Protocols::Http::FaradayChannelProxy do
- let(:protocol) { :http }
+  let(:protocol) { :http }
 
   # let(:url) { 'https://localhost:8080' }
   let(:url) { 'https://api.github.com' }
@@ -87,7 +87,7 @@ RSpec.describe EventSource::Protocols::Http::FaradayChannelProxy do
     end
   end
 
-  context '.add_publish_operation' do 
+  context '.add_publish_operation' do
     context 'When a connection and channel item passted' do
       it 'should create request and add it to publish operations' do
         publish_operation = channel_proxy.add_publish_operation(channel_item)
@@ -98,7 +98,7 @@ RSpec.describe EventSource::Protocols::Http::FaradayChannelProxy do
     end
   end
 
-  context '.add_subscribe_operation' do 
+  context '.add_subscribe_operation' do
     context 'When a connection and channel item passted' do
       it 'should create queue and add it to subscribe operations' do
         subscribe_operation = channel_proxy.add_subscribe_operation(channel_item)

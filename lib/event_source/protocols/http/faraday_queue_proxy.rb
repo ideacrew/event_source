@@ -32,11 +32,11 @@ module EventSource
         end
 
         # Find an {EventSource::Queue} that matches the configuration of an {EventSource::AsyncApi::ChannelItem}
-        def faraday_queue_for(queue_bindings)
+        def faraday_queue_for(_queue_bindings)
           queue =
             EventSource::Queue.new(
               channel_proxy,
-              "on_#{channel_proxy.name.match(%r{^(\/)?(.*)})[2].gsub(%r{\/}, '_')}"
+              "on_#{channel_proxy.name.match(%r{^(/)?(.*)})[2].gsub(%r{/}, '_')}"
             )
           logger.info "Found or created Faraday queue #{queue.name}"
           queue
@@ -51,7 +51,7 @@ module EventSource
         # @param [Hash] options Subscribe operation bindings
         # @param [Proc] &block Code block to execute when event is received
         # @return [BunnyConsumerProxy] Consumer proxy instance
-        def subscribe(subscriber_klass, options, &block)
+        def subscribe(subscriber_klass, _options, &block)
           # operation_bindings = convert_to_faraday_options(options[:http])
           # consumer_proxy = consumer_proxy_for(operation_bindings)
 
@@ -75,11 +75,9 @@ module EventSource
             @subject.actions << block
           else
             method_proc =
-              Proc.new do |headers, payload|
+              proc do |headers, payload|
                 subscriber_instance = subscriber_klass.new
-                if subscriber_instance.respond_to?(@subject.name)
-                  subscriber_instance.send(@subject.name, headers, payload)
-                end
+                subscriber_instance.send(@subject.name, headers, payload) if subscriber_instance.respond_to?(@subject.name)
               end
             @subject.actions << method_proc
           end
@@ -125,7 +123,7 @@ module EventSource
 
           result =
             EventSource::Protocols::Http::Contracts::ChannelBindingContract.new
-              .call(bindings)
+                                                                           .call(bindings)
           if result.success?
             true
           else

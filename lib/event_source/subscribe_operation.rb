@@ -1,14 +1,16 @@
+# frozen_string_literal: true
+
 module EventSource
   class SubscribeOperation
 
-  	attr_reader :subject
+    attr_reader :subject
 
-  	def initialize(subscribe_proxy, async_api_subscribe_operation)
-  	  @subject = subscribe_proxy
-  	  @async_api_subscribe_operation = async_api_subscribe_operation
-  	end
+    def initialize(subscribe_proxy, async_api_subscribe_operation)
+      @subject = subscribe_proxy
+      @async_api_subscribe_operation = async_api_subscribe_operation
+    end
 
-  	def call(args)
+    def call(args)
       subject.call(*args)
     end
 

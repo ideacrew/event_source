@@ -6,7 +6,7 @@ require 'yaml'
 
 RSpec.describe EventSource::Protocols::Http::FaradayRequestProxy do
   let(:asyncapi_file) { 'spec/support/async_api_files/contributors.yml' }
-  let(:asyncapi) { YAML.load(File.read(asyncapi_file)) }
+  let(:asyncapi) { YAML.safe_load(File.read(asyncapi_file)) }
 
   let(:protocol) { :http }
   let(:url) { 'https://api.github.com' }

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require "spec_helper"
 RSpec.describe EventSource::AsyncApi::Contracts::AsyncApiConfContract do
   let(:asyncapi)      { "2.0" }
@@ -53,19 +54,19 @@ RSpec.describe EventSource::AsyncApi::Contracts::AsyncApiConfContract do
       it { expect(subject.call({}).error?(:asyncapi)).to be_truthy }
     end
     context "and :asyncapi parameter only" do
-      it { expect(subject.call({asyncapi: asyncapi}).success?).to be_falsey }
-      it { expect(subject.call({asyncapi: asyncapi}).error?(:channels)).to be_truthy }
-      it { expect(subject.call({asyncapi: asyncapi}).error?(:info)).to be_truthy }
+      it { expect(subject.call({ asyncapi: asyncapi }).success?).to be_falsey }
+      it { expect(subject.call({ asyncapi: asyncapi }).error?(:channels)).to be_truthy }
+      it { expect(subject.call({ asyncapi: asyncapi }).error?(:info)).to be_truthy }
     end
     context "and :info parameter only" do
-      it { expect(subject.call({info: info}).success?).to be_falsey }
-      it { expect(subject.call({info: info}).error?(:channels)).to be_truthy }
-      it { expect(subject.call({info: info}).error?(:asyncapi)).to be_truthy }
+      it { expect(subject.call({ info: info }).success?).to be_falsey }
+      it { expect(subject.call({ info: info }).error?(:channels)).to be_truthy }
+      it { expect(subject.call({ info: info }).error?(:asyncapi)).to be_truthy }
     end
     context "and :channels parameter only" do
-      it { expect(subject.call({channels: channels}).success?).to be_falsey }
-      it { expect(subject.call({channels: channels}).error?(:asyncapi)).to be_truthy }
-      it { expect(subject.call({asyncapi: asyncapi}).error?(:info)).to be_truthy }
+      it { expect(subject.call({ channels: channels }).success?).to be_falsey }
+      it { expect(subject.call({ channels: channels }).error?(:asyncapi)).to be_truthy }
+      it { expect(subject.call({ asyncapi: asyncapi }).error?(:info)).to be_truthy }
     end
   end
   context "Given valid parameters" do
@@ -74,7 +75,7 @@ RSpec.describe EventSource::AsyncApi::Contracts::AsyncApiConfContract do
       it { expect(subject.call(required_params).to_h).to eq required_params }
     end
     context "and required and optional parameters" do
-      
+
       it { expect(subject.call(all_params).success?).to be_truthy }
       it { expect(subject.call(all_params).to_h).to eq all_params }
     end

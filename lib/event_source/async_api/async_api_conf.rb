@@ -34,7 +34,7 @@ module EventSource
       # @!attribute [r] channels
       # available channels and messages for API (required)
       # @return [Array<Channel>]
-      attribute :channels, Types::Hash.meta(omittable: false) #Channels.meta(omittable: false)
+      attribute :channels, Types::Hash.meta(omittable: false) # Channels.meta(omittable: false)
 
       # @!attribute [r] components
       # container for schemas for the specification

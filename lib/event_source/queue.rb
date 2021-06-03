@@ -22,7 +22,7 @@ module EventSource
 
     def enqueue(); end
 
-    def add_message()
+    def add_message
       # For each subscriber,
     end
 
@@ -46,6 +46,5 @@ module EventSource
 
     def add_subscriber(); end
 
-    private
   end
 end

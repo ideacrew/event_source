@@ -80,9 +80,7 @@ module EventSource
               )
             end
             subscriber_instance = subscriber_klass.new
-            if subscriber_instance.respond_to?(queue_name)
-              subscriber_instance.send(queue_name, payload)
-            end
+            subscriber_instance.send(queue_name, payload) if subscriber_instance.respond_to?(queue_name)
           end
 
           @subject.subscribe_with(consumer_proxy)
@@ -125,7 +123,7 @@ module EventSource
         def async_api_channel_item_bindings_valid?(bindings)
           result =
             EventSource::Protocols::Amqp::Contracts::ChannelBindingContract.new
-              .call(bindings)
+                                                                           .call(bindings)
           if result.success?
             true
           else

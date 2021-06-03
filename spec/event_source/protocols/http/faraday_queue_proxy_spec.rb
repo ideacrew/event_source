@@ -6,7 +6,7 @@ require 'yaml'
 
 RSpec.describe EventSource::Protocols::Http::FaradayQueueProxy do
   let(:asyncapi_file) { 'spec/support/async_api_files/contributors.yml' }
-  let(:asyncapi) { YAML.load(File.read(asyncapi_file)) }
+  let(:asyncapi) { YAML.safe_load(File.read(asyncapi_file)) }
 
   let(:protocol) { :http }
   let(:url) { 'https://api.github.com' }
@@ -50,9 +50,9 @@ RSpec.describe EventSource::Protocols::Http::FaradayQueueProxy do
     # end
 
     it 'should create request' do
-    #   expect(queue_proxy.subject).to be_a Faraday::Request
-    #   expect(queue_proxy.http_method).to eq request_method
-    #   expect(queue_proxy.path).to eq channel_key
+      #   expect(queue_proxy.subject).to be_a Faraday::Request
+      #   expect(queue_proxy.http_method).to eq request_method
+      #   expect(queue_proxy.path).to eq channel_key
     end
 
     # it 'should return expected response' do
