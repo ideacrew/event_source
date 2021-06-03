@@ -20,30 +20,28 @@ module EventSource
                     :protocol_version,
                     :subject
 
-        # Default value for {::Faraday::Connection} Adapter
-        # Override this value using the options argument in the constructor
-        AdapterDefaults = { typhoeus: nil }
+        # AsyncAPI HTTP Bindings Protocol version supported by this client
+        ProtocolVersion = '0.1.0'
 
         # Faraday gem version used by this client
         ClientVersion = Faraday::VERSION
 
+        # Default value for {::Faraday::Connection} Adapter
+        # Override this value using the options argument in the constructor
+        AdapterDefaults = { typhoeus: nil }
+
         # Default values for {::Faraday::Connection} HTTP parameters.
-        #
         # Override these values using the options argument in the constructor
         HttpDefaults = { http: { headers: {}, params: {} } }
-
-        # AsyncAPI HTTP Bindings Protocol version supported by this client
-        ProtocolVersion = '0.1.0'
 
         # Default values for {::Faraday::Connection} Request Middleware. These are an
         #   ordered stack of request-related processing components (setting headers,
         #   encoding parameters). Order: highest to loweest importance
-        #
         # Override these values using the options argument in the constructor
         RequestMiddlewareDefaults = {
-          retry: :retry,
-          options: {
-            retry: {
+          retry: {
+            order: 10,
+            options: {
               max: 5,
               interval: 0.05,
               interval_randomness: 0.5,
@@ -52,14 +50,19 @@ module EventSource
           }
         }
 
-        def parse_middleware_item(); end
-
         # Default values for {::Faraday::Connection} Response Middleware. These are an
         #   ordered stack of response-related processing components (parsing response
         #   body, logging, checking reponse status). Order: lowest to highest importance
         #
         # Override these values using the options argument in the constructor
-        ResponseMiddlewareDefaults = { caching: nil, logger: nil }
+        ResponseMiddlewareDefaults = {
+          response: {
+            json: {
+              order: 10,
+              options: nil
+            }
+          }
+        }
 
         # @param [Hash] async_api_server {EventSource::AsyncApi::Server} configuration
         # @param [Hash] options Connection options
@@ -95,29 +98,17 @@ module EventSource
             params: params,
             headers: headers
           ) do |conn|
-            # conn.request
-
             conn.response :logger
             conn.response :json
 
-            # request_middleware.each_pair do |component, options|
+            # request_middleware.each do |middleware, value|
             #   binding.pry
-
-            #   if options.nil?
-            #     val = "#{component}".to_sym
-            #   else
-            #     val = "#{component}".to_sym, options
-            #   end
-            #   conn.request val
+            #   conn.request middleware.to_sym, value[:options]
             # end
 
-            # response_middleware.each_pair do |component, options|
-            #   if options.nil?
-            #     val = "#{component}".to_sym
-            #   else
-            #     val = "#{component}".to_sym, options
-            #   end
-            #   conn.response val
+            # response_middleware.each do |middleware, value|
+            #   binding.pry
+            #   conn.response middleware.to_sym, value[:options]
             # end
 
             # last middleware must be adapter
@@ -204,8 +195,6 @@ module EventSource
               port: server_uri.port
             ).to_s
           end
-
-          def connection_params_for(async_api_server); end
         end
 
         private
