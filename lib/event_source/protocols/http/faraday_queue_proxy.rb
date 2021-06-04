@@ -51,34 +51,15 @@ module EventSource
         # @param [Proc] &block Code block to execute when event is received
         # @return [BunnyConsumerProxy] Consumer proxy instance
         def subscribe(subscriber_klass, _options, &block)
-          # operation_bindings = convert_to_faraday_options(options[:http])
-          # consumer_proxy = consumer_proxy_for(operation_bindings)
-
-          # # redelivered?
-          # consumer_proxy.on_delivery do |delivery_info, metadata, payload|
-          #   if block_given?
-          #     @channel_proxy.instance_exec(
-          #       delivery_info,
-          #       metadata,
-          #       payload,
-          #       &block
-          #     )
-          #   end
-          #   subscriber_instance =  subscriber_klass.new
-          #   if subscriber_instance.respond_to?(queue_name)
-          #     subscriber_instance.send(queue_name, payload)
-          #   end
-          # end
-
           if block_given?
-            @subject.actions << block
+            @subject.actions.push(block)
           else
             method_proc =
               proc do |headers, payload|
                 subscriber_instance = subscriber_klass.new
                 subscriber_instance.send(@subject.name, headers, payload) if subscriber_instance.respond_to?(@subject.name)
               end
-            @subject.actions << method_proc
+            @subject.actions.push(method_proc)
           end
         end
 
