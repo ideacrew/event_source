@@ -6,6 +6,7 @@ require 'dry/types/type'
 require 'dry/monads'
 require 'dry/monads/do'
 require 'dry/monads/result'
+require 'dry/inflector'
 require 'dry/validation'
 require 'dry-struct'
 require 'oj'
@@ -41,6 +42,8 @@ module EventSource
       'no operation'
     end
   end
+
+  Inflector = Dry::Inflector.new
 
   class << self
 
