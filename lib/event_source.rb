@@ -36,6 +36,7 @@ require 'event_source/operations/codec64'
 
 # Event source provides ability to compose, publish and subscribe to events
 module EventSource
+  # Noop Event class
   class Noop
     def to_s
       'no operation'

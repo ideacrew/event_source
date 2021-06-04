@@ -8,7 +8,8 @@ module EventSource
         class Create
           send(:include, Dry::Monads[:result, :do])
 
-          # @param [Hash] params Values to use to create the AsyncApiConf instance. Validated using {Validators::AsyncApiConfContract AsyncApiConfContract}
+          # @param [Hash] params Values to use to create the AsyncApiConf instance.
+          #   Validated using {Validators::AsyncApiConfContract AsyncApiConfContract}
           # @example
           #  { channel_id: "user_enrollments" channel_item: { subscribe: { summary: 'A customer enrolled' } } }
           # @return [Dry::Monads::Result::Success<Channel>] if Channel is created

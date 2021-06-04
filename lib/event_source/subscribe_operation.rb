@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module EventSource
+  # Subscribe operation event class
   class SubscribeOperation
 
     attr_reader :subject

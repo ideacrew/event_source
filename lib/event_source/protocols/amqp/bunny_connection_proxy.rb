@@ -113,10 +113,10 @@ module EventSource
 
         # Close the server connection and all of its channels
         def close(await_response = true)
-          if active?
-            @subject.close(await_response)
-            logger.info "Connection #{connection_uri} closed."
-          end
+          return unless active?
+
+          @subject.close(await_response)
+          logger.info "Connection #{connection_uri} closed."
         end
 
         # Returns true if this connection is closed
