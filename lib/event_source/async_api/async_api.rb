@@ -41,7 +41,7 @@ module EventSource
     require_relative 'operations/async_api_conf/load_path'
     require_relative 'operations/async_api_conf/load'
 
-    Dir[File.expand_path('lib/event_source/async_api/contracts/**/*.rb')].sort.each { |f| require(f) }
-    Dir[File.expand_path('lib/event_source/async_api/operations/**/*.rb')].sort.each { |f| require(f) }
+    Gem.find_files('event_source/async_api/contracts/**/*.rb').sort.each { |f| require(f) }
+    Gem.find_files('event_source/async_api/operations/**/*.rb').sort.each { |f| require(f) }
   end
 end

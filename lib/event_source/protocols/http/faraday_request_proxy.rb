@@ -62,8 +62,8 @@ module EventSource
         # @param [Mixed] payload event message content
         # @param [Hash] bindings AsyncAPI HTTP message bindings
         # @return [Faraday::Response] response
-        def publish(payload: nil, bindings: {})
-          faraday_publish_bindings = sanitize_bindings(bindings)
+        def publish(payload: nil, publish_bindings: {})
+          faraday_publish_bindings = sanitize_bindings(publish_bindings)
           @subject.body = payload if payload
           @subject.headers.update(faraday_publish_bindings[:headings]) if faraday_publish_bindings[:headings]
 
@@ -94,15 +94,16 @@ module EventSource
         def faraday_request_for(bindings)
           method = bindings[:method].downcase.to_sym
           request =
-            connection.build_request(method) { |req| req.path = request_path }
+            connection.build_request(method) { |req| req.path = request_path.to_s }
 
           logger.info "Created Faraday request #{request}"
           request
         end
 
         def sanitize_bindings(bindings)
-          return {} unless options.present?
+          return {} unless bindings.present?
           options = bindings[:http]
+          operation_bindings = {}
           operation_bindings[:headers] = options[:headers] if options[:headers]
           operation_bindings
         end

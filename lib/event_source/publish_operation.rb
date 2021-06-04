@@ -22,7 +22,7 @@ module EventSource
     # Publish a message
     # x.publish("Message", :headers => { })
     def call(args)
-      @subject.publish(*args, publish_bindings: @async_api_publish_operation[:bindings])
+      @subject.publish(payload: args, publish_bindings: @async_api_publish_operation[:bindings])
     end
   end
 end
