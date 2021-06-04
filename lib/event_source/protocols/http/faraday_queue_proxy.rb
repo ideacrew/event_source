@@ -100,18 +100,18 @@ module EventSource
         end
 
         # FIX ME: HTTP don't have channel bindings according to AsyncApi protocol
-        def async_api_channel_item_bindings_valid?(bindings)
-          return true
+        def async_api_channel_item_bindings_valid?(_bindings)
+          true
 
-          result =
-            EventSource::Protocols::Http::Contracts::ChannelBindingContract.new
-                                                                           .call(bindings)
-          if result.success?
-            true
-          else
-            raise EventSource::Protocols::Http::Error::ChannelBindingContractError,
-                  "Error(s) #{result.errors.to_h} validating: #{bindings}"
-          end
+          # result =
+          #   EventSource::Protocols::Http::Contracts::ChannelBindingContract.new
+          #                                                                  .call(bindings)
+          # if result.success?
+          #   true
+          # else
+          #   raise EventSource::Protocols::Http::Error::ChannelBindingContractError,
+          #         "Error(s) #{result.errors.to_h} validating: #{bindings}"
+          # end
         end
       end
     end
