@@ -8,30 +8,30 @@ module EventSource
 
     # @attr_reader [EventSource::Queue] queue the queue isntance assigned to this worker
     # @attr_reader [array<Thread>] threads process threads managed by this worker
-    attr_reader :queue, :threads
+    attr_reader :queue_proxy, :threads
 
-    def self.start(config, queue)
+    def self.start(config, queue_proxy)
       num_threads = config[:num_threads]
       logger.info(
-        "Start Worker for Queue: #{queue.name}, number of threads #{num_threads} "
+        "Start Worker for Queue: #{queue_proxy.name}, number of threads #{num_threads} "
       )
 
-      instance = new(queue)
+      instance = new(queue_proxy)
       instance.spawn_threads(num_threads)
       instance
     end
 
     # @param queue [EventSource::Queue] queue used to organize and dispatch actions
-    def initialize(queue)
+    def initialize(queue_proxy)
       @threads = []
-      @queue = queue
+      @queue_proxy = queue_proxy
     end
 
     # Add an action to the queue for processing
     # @return [EventSource::Queue]
     def enqueue(payload)
-      logger.info("On Queue: #{queue.name}, enqueue payload: #{payload}")
-      queue.push(payload)
+      logger.info("On Queue: #{queue_proxy.name}, enqueue payload: #{payload}")
+      queue_proxy.enqueue(payload)
     end
 
     # def spawn_threads(num_threads)
@@ -79,7 +79,7 @@ module EventSource
           while active? || actions_left?
             action_payload = wait_for_action
             logger.info "Spawn payload action: #{action_payload}"
-            queue.actions.each do |action_proc|
+            queue_proxy.actions.each do |action_proc|
               action_proc.call(action_payload.headers, action_payload.body)
             end
 
@@ -92,34 +92,34 @@ module EventSource
 
     # Perform an orderly shutdown
     def stop
-      logger.info("Stop Worker for Queue: #{queue.name}")
-      queue.close
+      logger.info("Stop Worker for Queue: #{queue_proxy.name}")
+      queue_proxy.close
       threads.each(&:exit)
       threads.clear
       true
     end
 
     def active?
-      !queue.closed?
+      !queue_proxy.closed?
     end
 
     private
 
     def actions_left?
-      !queue.empty?
+      !queue_proxy.empty?
     end
 
     def no_acitons?
-      queue.empty?
+      queue_proxy.empty?
     end
 
     def dequeue_action
-      queue.pop(true)
+      queue_proxy.dequeue(true)
     end
 
     # Suspend current thread if queue is empty
     def wait_for_action
-      queue.pop(nonblock = false)
+      queue_proxy.dequeue(false)
     end
 
     def spawned_threads_count

@@ -56,6 +56,11 @@ module EventSource
       @connection_proxy.close
     end
 
+    def publish_operation_by_id(publisher_operation_id)
+      channel = channels[publish_operation_by_id]
+      channel.publish_operations[publish_operation_by_id]
+    end
+
     # Create and register a collection of new {EventSource::Channel} instances
     def add_channels(async_api_channels)
       async_api_channels[:channels]

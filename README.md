@@ -226,34 +226,56 @@ end
 A good convention for Rails applications is to group EventSource components under the `app/` into three subfolders: `event_source`, `events` and `operations`. For example:
 
 ```ruby
+enroll system
+
 app
   |- contracts
   |- entities
   | |- organizations
-  | | |- organization
+  | | |- organization.rb
   |- event_source
-  | |- organizations
-  | | |- events
-  | | | |- created.rb
+  | |- events
+  | | |- organizations
+  | | | |- general_organization_created.rb
   | | | |- fein_corrected.rb
   | | | |- fein_updated.rb
-  | |- publishers
-  | | |- organization_publisher.rb
   | |- subscribers
-  | | |- organization_subscriber.rb
+  | | |- polypress
+  | | | |- enroll_medicaid_notices.rb
+  | | |- medicaid_gateway
+  | | | |- eligiblity_determinations.rb
+  | |- publishers
+  | | |- enroll
+  | | |- organizations
+  | | | | |- organization_publisher.rb
   |- operations
   | |- organizations
   | | |- correct_or_update_organization_fein.rb
   | | |- create_organization.rb
 
-  organizations.organization_contract (contract)
   organizations.general_organization (entity)
   organizations.exempt_organization (entity)
+  organizations.organization_contract (contract)
+
   organizations.general_organization_model (model)
   organizations.exempt_organization_model (model)
-  organizations.correct_or_update_organization_fein (operation)
-  organizations.events.general_organization_created (event)
 
+  organizations.create_organization (command/operation)
+
+  events.organization_created (event)
+  enroll.organizations.organization_created (namespaced event)
+
+  publishers.enroll.organizations_publisher (publisher)
+  subscribers.polypress.organizations_subscriber (subscriber)
+  subscribers.medicaid_gateway.enroll_medicaid_notices (subscriber)
+
+
+medicaid_gateway: channal_item_name: magi_medicaid.mitc.eligibilities.determined_mixed_eligible:
+medicaid_gateway: publish_operation_id: magi_medicaid.mitc.eligibilities.determined_mixed_eligible:
+medicaid_gateway: publish_operation_id: magi_medicaid.mitc.eligibilities.determined_mixed_eligible:
+medicaid_gateway exchange name (bindings): magi_medicaid.mitc.eligibilities
+medicaid_gateway routing key (bindings): magi_medicaid.mitc.eligibilities.determined_mixed_eligible:
+polypress subscriber: on_polypress.magi_medicaid.mitc.eligibilities
 
 publisher: crm_gateway
   crms.sugar_crm.events.account_created (gateway event)

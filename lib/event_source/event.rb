@@ -63,8 +63,8 @@ module EventSource
     def publish
       raise EventSource::Error::AttributesInvalid, @event_errors unless valid?
 
-      _publisher = publisher_klass(publisher_key)
-      # publisher.publish(self)
+      publisher_klass = publisher_klass(publisher_key)
+      publisher_klass.publish(self)
 
       # EventSource.adapter.enqueue(self)
       # EventSource.adapter.publish("on_#{event_key}".gsub(/\./, '_'), payload)

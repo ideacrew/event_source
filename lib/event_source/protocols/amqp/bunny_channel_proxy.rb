@@ -52,11 +52,11 @@ module EventSource
           @connection = connection_for(bunny_connection_proxy)
           @name = channel_item_key
           @async_api_channel_item = async_api_channel_item
-          @subject = create_channel
+          create_channel
         end
 
         def create_channel
-          Bunny::Channel.new(connection).open
+          @subject = Bunny::Channel.new(connection).open
         end
 
         # Returns the value of the attribute closed?

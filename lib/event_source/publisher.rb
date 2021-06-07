@@ -58,6 +58,25 @@ module EventSource
     module ClassMethods
       attr_reader :events
 
+      # TODO: coordinate server connection name with dev ops
+      def publish(event)
+        event_name =
+          EventSource::Inflector.underscore(event.class.name.split('::').last)
+
+        publisher_operation_id = exchange_name + event_name
+        connection.publish_operation_by_id(publisher_operation_id).call(event_payload)
+        # connection.publish_operations[exchange_name].call(event_payload)
+      end
+
+      def channel_name
+        exchange_name.to_sym
+      end
+
+      def connection
+        connection_manager = EventSource::ConnectionManager.instance
+        connection_manager.connections_for(protocol).first
+      end
+
       def register_event(event_key, options = {})
         @events = {} unless defined?(@events)
         @events[event_key] = options
@@ -72,11 +91,6 @@ module EventSource
         return if exchange
         raise EventSource::AsyncApi::Error::ExchangeNotFoundError,
               "exchange #{exchange_name} not found"
-      end
-
-      def connection
-        connection_manager = EventSource::ConnectionManager.instance
-        connection_manager.connections_for(protocol).first
       end
 
       def exchange_name
