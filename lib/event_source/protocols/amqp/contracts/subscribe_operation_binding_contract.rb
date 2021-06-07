@@ -13,14 +13,14 @@ module EventSource
           # @option opts [Boolean] :exclusive whether the queue should be used only by one connection or not
           # @option opts [Hash] :arguments Additional (optional) arguments, typically used by RabbitMQ extensions
           # @option opts [String] :on_canellation Block to execute when this consumer is cancelled remotely (e.g. via the RabbitMQ Management plugin)
-          # @option opts [EventSource::AsyncApi::Types::AmqpBindingVersionKind] :binding_version
+          # @option opts [EventSource::AsyncApi::Types::AmqpBindingVersionKind] :bindingVersion
           params do
             optional(:consumer_tag).maybe(:string)
             optional(:ack).maybe(:bool)
             optional(:exclusive).maybe(:bool)
             optional(:on_cancellation).maybe(:string)
             optional(:arguments).maybe(:hash)
-            optional(:binding_version).maybe(
+            optional(:bindingVersion).maybe(
               EventSource::AsyncApi::Types::AmqpBindingVersionKind
             )
           end
