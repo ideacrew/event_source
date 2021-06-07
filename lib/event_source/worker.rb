@@ -1,31 +1,13 @@
 # frozen_string_literal: true
 
-# worker_one = EventSource::Worker.start(configuration, queue_one)
-# worker_one.stop
-
-# worker_two = EventSource::Worker.start(configuration, queue_two)
-# worker_two.stop
-
-# queue_proxy
-# Worker (EventSource::Worker.start(configuration, queue_proxy))
-# Subscribe (queue_proxy.actions << block)
-
-# Request.publish
-
-# execute request (returns a response)
-# get queue_proxy by name from channel_proxy
-# queue_proxy.push(response)
-# actions.each do |action|
-#  action.call(response)
-# end
-#
-
 module EventSource
-  # = Perform actions async
+  # Create and manage process threads
   class Worker
     extend EventSource::Logging
     include EventSource::Logging
 
+    # @attr_reader [EventSource::Queue] queue the queue isntance assigned to this worker
+    # @attr_reader [array<Thread>] threads process threads managed by this worker
     attr_reader :queue, :threads
 
     def self.start(config, queue)
@@ -39,13 +21,14 @@ module EventSource
       instance
     end
 
-    # @param queue [Queue] Queue to manage worker actions
-    # @return [Queue]
+    # @param queue [EventSource::Queue] queue used to organize and dispatch actions
     def initialize(queue)
       @threads = []
       @queue = queue
     end
 
+    # Add an action to the queue for processing
+    # @return [EventSource::Queue]
     def enqueue(payload)
       logger.info("On Queue: #{queue.name}, enqueue payload: #{payload}")
       queue.push(payload)
@@ -107,6 +90,7 @@ module EventSource
       end
     end
 
+    # Perform an orderly shutdown
     def stop
       logger.info("Stop Worker for Queue: #{queue.name}")
       queue.close
@@ -133,8 +117,9 @@ module EventSource
       queue.pop(true)
     end
 
+    # Suspend current thread if queue is empty
     def wait_for_action
-      queue.pop(false)
+      queue.pop(nonblock = false)
     end
 
     def spawned_threads_count

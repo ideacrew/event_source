@@ -42,14 +42,12 @@ module EventSource
 
     # Return an entry from the queue for processing
     # @param [Boolean] non_block whether the enrty is sync or async
-    # return [Mixed] queue entry
     def pop(non_block = false)
       @queue.pop(non_block)
     end
 
     # Add an entry to the queue
     # @param [Mixed] value an action to post to queue for processing
-    # return [Queue] queue entries
     def push(value)
       @queue.push(value)
     end
