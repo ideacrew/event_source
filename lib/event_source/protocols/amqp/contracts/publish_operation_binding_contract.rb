@@ -37,7 +37,7 @@ module EventSource
             optional(:contentEncoding).maybe(:string)
             optional(:correlation_id).maybe(:string)
             optional(:priority).maybe(
-              :EventSource::AsyncApi::Types::PositiveInteger
+              EventSource::AsyncApi::Types::PositiveInteger
             )
             optional(:message_id).maybe(:string)
             optional(:app_id).maybe(:string)
