@@ -31,7 +31,7 @@ channels:
           method: GET
           headers:
             Content-Type: application/json
-            Acccept: application/json
+            Accept: application/json
     publish:
       operationId: /determinations/eval
       description: EventSource Subscriber that publishes MitC eligibility determination responses
@@ -41,7 +41,7 @@ channels:
           method: POST
           headers:
             Content-Type: application/json
-            Acccept: application/json
+            Accept: application/json
 
 tags:
   - name: linter_tag

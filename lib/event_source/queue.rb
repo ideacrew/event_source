@@ -10,39 +10,29 @@ module EventSource
       @queue_proxy = queue_proxy
       @name = name
       @bindings = bindings
-      @queue = ::Queue.new
+      @subject = ::Queue.new
       @actions = []
     end
 
-    def subscribe(subscriber_klass, &block)
-      @queue_proxy.subscribe(subscriber_klass, bindings, &block)
+    # def subscribe(subscriber_klass, &block)
+    #   @queue_proxy.subscribe(subscriber_klass, bindings, &block)
+    # end
+    # def add_subscriber(); end
+
+    def enqueue(value)
+      @subject.push(value)
     end
 
-    def enqueue(); end
-
-    def add_message
-      # For each subscriber,
+    def dequeue(non_block = false)
+      @subject.pop(non_block)
     end
 
     def close
-      @queue.close
+      @subject.close
     end
 
     def closed?
-      @queue.closed?
+      @subject.closed?
     end
-
-    def pop(non_block = false)
-      @queue.pop(non_block)
-    end
-
-    def push(value)
-      @queue.push(value)
-    end
-
-    # register subscribers?
-
-    def add_subscriber(); end
-
   end
 end

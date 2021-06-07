@@ -41,6 +41,11 @@ module EventSource
       @connection_proxy.close
     end
 
+    def publish_operation_by_id(publisher_operation_id)
+      channel = channels[publish_operation_by_id]
+      channel.publish_operations[publish_operation_by_id]
+    end
+
     #  '/employees':
     #   subscribe:
     #     bindings:

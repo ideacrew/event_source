@@ -26,29 +26,28 @@ module EventSource
     extend EventSource::Logging
     include EventSource::Logging
 
-    attr_reader :queue, :threads
+    attr_reader :queue_proxy, :threads
 
-    def self.start(config, queue)
+    def self.start(config, queue_proxy)
       num_threads = config[:num_threads]
       logger.info(
-        "start worker for Queue: #{queue.name}; threads #{num_threads} "
+        "start worker for Queue: #{queue_proxy.name}; threads #{num_threads} "
       )
 
-      instance = new(queue)
+      instance = new(queue_proxy)
       instance.spawn_threads(num_threads)
       instance
     end
 
     # @param [Hash<EventSource::AsyncApi::ChannelItem>] async_api_channel_item {EventSource::AsyncApi::ChannelItem}
     # @return [EventSource::Protocols::Http::FaradayChannelProxy] subject
-    def initialize(queue)
-      @queue = queue
+    def initialize(queue_proxy)
+      @queue_proxy = queue_proxy
       @threads = []
     end
 
     def enqueue(payload)
-      puts "-----worker enqueue #{payload} #{active?}"
-      queue.push(payload)
+      queue_proxy.enqueue(payload)
     end
 
     # def spawn_threads(num_threads)
@@ -96,7 +95,7 @@ module EventSource
           while active? || actions_left?
             action_payload = wait_for_action
             logger.info "-----spawn  #{action_payload}"
-            queue.actions.each do |action_proc|
+            queue_proxy.actions.each do |action_proc|
               action_proc.call(action_payload.headers, action_payload.body)
             end
 
@@ -108,33 +107,33 @@ module EventSource
     end
 
     def stop
-      logger.info("stop worker for Queue: #{queue.name}")
-      queue.close
+      logger.info("stop worker for Queue: #{queue_proxy.name}")
+      queue_proxy.close
       threads.each(&:exit)
       threads.clear
       true
     end
 
     def active?
-      !queue.closed?
+      !queue_proxy.closed?
     end
 
     private
 
     def actions_left?
-      !queue.empty?
+      !queue_proxy.empty?
     end
 
     def no_acitons?
-      queue.empty?
+      queue_proxy.empty?
     end
 
     def dequeue_action
-      queue.pop(true)
+      queue_proxy.dequeue(true)
     end
 
     def wait_for_action
-      queue.pop(false)
+      queue_proxy.dequeue(false)
     end
 
     def spawned_threads_count
