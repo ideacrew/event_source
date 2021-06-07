@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-
 require 'securerandom'
 
 module EventSource
@@ -11,7 +10,6 @@ module EventSource
       class BunnyExchangeProxy
         # @param [EventSource::AsyncApi::Channel] channel_proxy instance on which to open this Exchange
         # @param [Hash<EventSource::AsyncApi::Exchange>] exchange_bindings instance with configuration for this Exchange
-        # @return [Bunny::Exchange]
         def initialize(channel_proxy, exchange_bindings)
           # exchange_bindings =
           #   async_api_channel_item[:bindings][:amqp][:exchange]
@@ -49,32 +47,44 @@ module EventSource
 
         # Filtering and renaming AsyncAPI Operation bindings to Bunny/RabitMQ
         #   bindings
+        #
         # Auto-generated
         #   :message_id
+        #
         # Supported Bunny Bindings
         #   :expiration, :priority, :mandatory, :user_id, :timestamp, :persistent,
-        #   :reply_to, :content_encoding, :type, :message_id
-        # Unupported Bunny Bindings
-        #   :routing_key (String) - Routing key
-        #   :content_type (String) - Message content type (e.g. application/json)
-        #   :correlation_id (String) - Message correlated to this one, e.g. what request this message is a reply for
-        #   :app_id (String) - Optional application ID
+        #   :reply_to, :content_encoding, :type, :message_id, :routing_key,
+        #   :content_type, :correlation_id, :app_id
+        #
         # Unsupported AsyncApi Bindings
-        #   cc: ['user.logs']
         #   bcc: ['external.audit']
-        # return [Hash] sanitized Bunny/RabitMQ bindings
+        # @return [Hash] sanitized Bunny/RabitMQ bindings
         def sanitize_bindings(bindings)
           options = bindings[:amqp]
-          operation_bindings = options.slice(:expiration, :priority, :mandatory)
-          operation_bindings[:user_id] = options[:userId] if options[:userId]
-          operation_bindings[:message_id] = message_id
 
+          operation_bindings[:routing_key] = options[:cc] if options[:cc]
+          operation_bindings[:persistent] = true if options[:deliveryMode] == 2
+          operation_bindings = options.slice(:expiration, :priority, :mandatory)
           operation_bindings[:timestamp] =
             DateTime.now.strftime('%Q').to_i if options[:timestamp]
-          operation_bindings[:persistent] = true if options[:deliveryMode] == 2
-          operation_bindings[:reply_to] = options[:replyTo]
-          operation_bindings[:content_encoding] = options[:contentEncoding]
-          operation_bindings[:type] = options[:messageType]
+          operation_bindings[:type] = options[:messageType] if options[
+            :messageType
+          ]
+          operation_bindings[:reply_to] = options[:replyTo] if options[:replyTo]
+          operation_bindings[:content_type] = options[:content_type] if options[
+            :content_type
+          ]
+          operation_bindings[:content_encoding] =
+            options[:contentEncoding] if options[:contentEncoding]
+          operation_bindings[:correlation_id] =
+            options[:correlation_id] if options[:correlation_id]
+          operation_bindings[:priority] = options[:priority] if options[
+            :priority
+          ]
+          operation_bindings[:message_id] = message_id if options[:message_id]
+          operation_bindings[:app_id] = options[:app_id] if options[:app_id]
+          operation_bindings[:user_id] = options[:userId] if options[:userId]
+
           operation_bindings
         end
       end

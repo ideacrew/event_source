@@ -108,7 +108,22 @@ module EventSource
 
         def convert_to_bunny_options(options)
           operation_bindings = {}
+          operation_bindings[:consumer_type] =
+            options[:consumer_type] if options.key?(:consumer_type)
           operation_bindings[:no_ack] = !options[:ack] if options.key?(:ack)
+          operation_bindings[:exclusive] = options[:exclusive] if options.key?(
+            :exclusive
+          )
+          operation_bindings[:exclusive] = options[:exclusive] if options.key?(
+            :exclusive
+          )
+          operation_bindings[:on_cancellation] =
+            options[:on_cancellation] if options.key?(:on_cancellation)
+          operation_bindings[:arguments] = options[:arguments] if options.key?(
+            :arguments
+          )
+          operation_bindings[:binding_version] =
+            options[:bindingVersion] if options.key?(:bindingVersion)
           operation_bindings
         end
 
