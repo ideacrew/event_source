@@ -1,37 +1,19 @@
 # frozen_string_literal: true
 
-# worker_one = EventSource::Worker.start(configuration, queue_one)
-# worker_one.stop
-
-# worker_two = EventSource::Worker.start(configuration, queue_two)
-# worker_two.stop
-
-# queue_proxy
-# Worker (EventSource::Worker.start(configuration, queue_proxy))
-# Subscribe (queue_proxy.actions << block)
-
-# Request.publish
-
-# execute request (returns a response)
-# get queue_proxy by name from channel_proxy
-# queue_proxy.push(response)
-# actions.each do |action|
-#  action.call(response)
-# end
-#
-
 module EventSource
-  # = Perform actions async
+  # Create and manage process threads
   class Worker
     extend EventSource::Logging
     include EventSource::Logging
 
+    # @attr_reader [EventSource::Queue] queue the queue isntance assigned to this worker
+    # @attr_reader [array<Thread>] threads process threads managed by this worker
     attr_reader :queue_proxy, :threads
 
     def self.start(config, queue_proxy)
       num_threads = config[:num_threads]
       logger.info(
-        "start worker for Queue: #{queue_proxy.name}; threads #{num_threads} "
+        "Start Worker for Queue: #{queue_proxy.name}, number of threads #{num_threads} "
       )
 
       instance = new(queue_proxy)
@@ -39,14 +21,16 @@ module EventSource
       instance
     end
 
-    # @param [Hash<EventSource::AsyncApi::ChannelItem>] async_api_channel_item {EventSource::AsyncApi::ChannelItem}
-    # @return [EventSource::Protocols::Http::FaradayChannelProxy] subject
+    # @param queue [EventSource::Queue] queue used to organize and dispatch actions
     def initialize(queue_proxy)
-      @queue_proxy = queue_proxy
       @threads = []
+      @queue_proxy = queue_proxy
     end
 
+    # Add an action to the queue for processing
+    # @return [EventSource::Queue]
     def enqueue(payload)
+      logger.info("On Queue: #{queue_proxy.name}, enqueue payload: #{payload}")
       queue_proxy.enqueue(payload)
     end
 
@@ -89,12 +73,12 @@ module EventSource
     # end
 
     def spawn_threads(num_threads)
-      logger.info("spawn_threads #{num_threads}")
+      logger.info("Spawn Threads #{num_threads}")
       num_threads.times do
         threads << Thread.new do
           while active? || actions_left?
             action_payload = wait_for_action
-            logger.info "-----spawn  #{action_payload}"
+            logger.info "Spawn payload action: #{action_payload}"
             queue_proxy.actions.each do |action_proc|
               action_proc.call(action_payload.headers, action_payload.body)
             end
@@ -106,8 +90,9 @@ module EventSource
       end
     end
 
+    # Perform an orderly shutdown
     def stop
-      logger.info("stop worker for Queue: #{queue_proxy.name}")
+      logger.info("Stop Worker for Queue: #{queue_proxy.name}")
       queue_proxy.close
       threads.each(&:exit)
       threads.clear
@@ -132,6 +117,7 @@ module EventSource
       queue_proxy.dequeue(true)
     end
 
+    # Suspend current thread if queue is empty
     def wait_for_action
       queue_proxy.dequeue(false)
     end

@@ -1,53 +1,69 @@
 # frozen_string_literal: true
 
 module EventSource
-  # A virtual connection inside a {EventSource::Connection}.
-  # Messages are published and consumed over a Channel
-  # A Connection may have many Channels.
+  # A DSL for a virtual Channel that manages message communication
+  #   over a {EventSource::Connection}. A Connection may have
+  #   many Channels over which messages are transmitted
   class Channel
+    # @attr_reader [Hash] subscribe_operations The collection of registered {EventSource::SubscribOperation} on this Connection
+    # @attr_reader [Hash] publish_operations The collection of registered {EventSource::Publishperation} on this Connection
+    # @attr_reader [Hash] consumers
+    # @attr_reader [Object] channel_proxy The protocol adapter instance for this DSL
     attr_reader :subscribe_operations,
                 :publish_operations,
                 :consumers,
                 :channel_proxy
 
+    # The list of DSL methods that a protocol's injected channel proxy class
+    # must respond to
     ADAPTER_METHODS = %i[
       subscribe_operations
       publish_operations
       add_subscribe_operation
       add_publish_operation
-      publish_operation_by_name
-      subscribe_operation_by_name
+      find_publish_operation_by_name
+      find_subscribe_operation_by_name
       name
       status
       close
     ].freeze
 
-    # @param channel_proxy [Object] an instance of the protcol's channel_proxy that responds
-    #  to Adapter pattern DSL
-    # @param async_api_channel_item  [Hash] Channel item configuration
-    # @return [Bunny::Channel] Channel instance on the RabbitMQ server {Connection}
+    # @param channel_proxy [Object] an instance of the Connection protcol's
+    #  channel adapter that responds to this Channel DSL
+    # @param async_api_channel_item [Hash] configuration values in the form of
+    #   a {EventSource::AsyncApi::ChannelItem}
+    # @return [Object]
     def initialize(channel_proxy, async_api_channel_item)
       @channel_proxy = channel_proxy
       @publish_operations = {}
       @subscribe_operations = {}
 
-      # FIX ME: rename
       add_publish_operation(async_api_channel_item)
       add_subscribe_operation(async_api_channel_item)
     end
 
+    # The unique identifier for this Channel instance
+    # @return [String] name
     def name
       @channel_proxy.name
     end
 
+    # This Channel instance's currrent state. Values for states vary by
+    #   protcol type
+    # @return [Symbol] status
     def status
       @channel_proxy.status
     end
 
+    # Stop all communication using this Channel instance
     def close
       @channel_proxy.close
     end
 
+    # Create and register an operation to broadcast messages
+    # @param async_api_channel_item [Hash] configuration values in the form of
+    #   an {EventSource::AsyncApi::ChannelItem}
+    # @return [EventSource::PublishOperation]
     def add_publish_operation(async_api_channel_item)
       publish_proxy =
         @channel_proxy.add_publish_operation(async_api_channel_item)
@@ -61,9 +77,11 @@ module EventSource
         )
     end
 
-    # Add a queue configured according to the AsyncAPI ChannelItem bindings
-    # @param async_api_subscribe_operation [Hash] Subscribe operation configuration
-    # @return [Mixed] Protocol-specific queue instance
+    # Create and register an operation to receive messages broadcast by a PublishOperation.
+    # PublishOperation names must be unique across all Channels.
+    # @param async_api_channel_item [Hash] configuration values in the form of
+    #   an {EventSource::AsyncApi::ChannelItem}
+    # @return [EventSource::SubscribeOperation]
     def add_subscribe_operation(async_api_channel_item)
       subscribe_proxy =
         @channel_proxy.add_subscribe_operation(async_api_channel_item)
@@ -76,25 +94,24 @@ module EventSource
         )
     end
 
-    def publish_operation_by_name(name)
-      publish_proxy = @channel_proxy.publish_operation_by_name(name)
+    # Find a PublishOperation in the registry.
+    # PublishOperations are unique and accessible from any channel on a Connection
+    # @param [String] name The unique key to match for the registered PublishOperation
+    # @return [EventSource::PublishOperation] a matching PublishOperation
+    def find_publish_operation_by_name(name)
+      publish_proxy = @channel_proxy.find_publish_operation_by_name(name)
       EventSource::PublishOperation.new(
         publish_proxy,
         @async_api_publish_operation
       )
     end
 
-    def subscribe_operation_by_name(name)
-      @channel_proxy.subscribe_operation_by_name(name)
+    # Find a SubscribeOperation in the registry
+    # SubscribeOperations are unique and accessible from any channel on a Connection
+    # @param [String] name The unique key to match for the registered SubScribeOperation
+    # @return [EventSource::SubscribeOperation] a matching SubScribeOperation
+    def find_subscribe_operation_by_name(name)
+      @channel_proxy.find_subscribe_operation_by_name(name)
     end
-
-    # def subscribe_operations
-    # end
-
-    # def bind_queue(*args)
-    #   @channel_proxy.bind_queue(*args)
-    # end
-
-    # alias_method :add_consumer, :bind_queue
   end
 end

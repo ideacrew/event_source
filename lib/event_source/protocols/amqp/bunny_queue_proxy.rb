@@ -4,7 +4,7 @@ module EventSource
   module Protocols
     module Amqp
       # Create and manage a RabbitMQ Queue instance using Bunny client.  Provides an interface
-      # that responds to AMQP adapter pattern DSL.  Also serves as {Bunny::Queue} proxy
+      # that responds to AMQP adapter pattern DSL.  Also serves as proxy for Bunny::Queue object
       # enabling access to its API.
       # @since 0.4.0
       class BunnyQueueProxy
@@ -15,13 +15,13 @@ module EventSource
         # @attr_reader [String] exchange_name the Exchange to which this to bind this Queue
         attr_reader :subject, :channel_proxy, :exchange_name
 
-        # @param channel_proxy [EventSource::Protocols::Amqp::BunnyChannelProxy]  channel_proxy wrapping Bunny::Channel object
-        # @param async_api_channel_item [Hash] {EventSource::AsyncApi::Channel} definition and bindings
-        # @option channel_bindings [String] :name queue name
-        # @option channel_bindings [String] :durable
-        # @option channel_bindings [String] :auto_delete
-        # @option channel_bindings [String] :exclusive
-        # @option channel_bindings [String] :vhost ('/')
+        # @param channel_proxy [EventSource::Protocols::Amqp::BunnyChannelProxy] channel_proxy wrapping Bunny::Channel object
+        # @param async_api_channel_item [Hash] {EventSource::AsyncApi::ChannelItem} definition and bindings
+        # @option async_api_channel_item [String] :name queue name
+        # @option async_api_channel_item [String] :durable
+        # @option async_api_channel_item [String] :auto_delete
+        # @option async_api_channel_item [String] :exclusive
+        # @option async_api_channel_item [String] :vhost ('/')
         # @return [Bunny::Queue]
         def initialize(channel_proxy, async_api_channel_item)
           @channel_proxy = channel_proxy
@@ -62,7 +62,7 @@ module EventSource
         # Construct and subscribe a consumer_proxy with the queue
         # @param [Object] subscriber_klass Subscriber class
         # @param [Hash] options Subscribe operation bindings
-        # @param [Proc] &block Code block to execute when event is received
+        # @param [Proc] block Code block to execute when event is received
         # @return [BunnyConsumerProxy] Consumer proxy instance
         def subscribe(subscriber_klass, options, &block)
           operation_bindings = convert_to_bunny_options(options[:amqp])
@@ -79,7 +79,9 @@ module EventSource
               )
             end
             subscriber_instance = subscriber_klass.new
-            subscriber_instance.send(queue_name, payload) if subscriber_instance.respond_to?(queue_name)
+            if subscriber_instance.respond_to?(queue_name)
+              subscriber_instance.send(queue_name, payload)
+            end
           end
 
           @subject.subscribe_with(consumer_proxy)
@@ -95,7 +97,7 @@ module EventSource
           )
         end
 
-        def respond_to_missing?(name, include_private)end
+        def respond_to_missing?(name, include_private); end
 
         # Forward all missing method calls to the Bunny::Queue instance
         def method_missing(name, *args)
@@ -122,7 +124,7 @@ module EventSource
         def async_api_channel_item_bindings_valid?(bindings)
           result =
             EventSource::Protocols::Amqp::Contracts::ChannelBindingContract.new
-                                                                           .call(bindings)
+              .call(bindings)
           if result.success?
             true
           else

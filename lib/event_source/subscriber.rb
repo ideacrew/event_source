@@ -1,15 +1,21 @@
 # frozen_string_literal: true
 
 require 'dry/inflector'
-# require 'forwardable'
 require 'concurrent/map'
 
 module EventSource
-  # Subscribes to the events
+  # Mixin that provides a DSL to register and receive published {EventSource::Event}
+  #   messages
   class Subscriber < Module
-    # module Subscriber
-    include Dry.Equalizer(:protocol, :exchange)
+    send(:include, Dry.Equalizer(:protocol, :exchange))
 
+    # include Dry.Equalizer(:protocol, :exchange)
+
+    # @attr_reader [Symbol] protocol communication protocol used by this
+    #   subscriber (for example: :amqp)
+    # @attr_reader [String] exchange the unique key for publisher broadcasting event
+    #   messsages that this subsciber will receive
+    # TODO: Ram update the references to :exchange to reflect publisher or publish_operation
     attr_reader :protocol, :exchange
 
     # @api private

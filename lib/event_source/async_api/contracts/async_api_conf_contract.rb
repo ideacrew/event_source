@@ -3,7 +3,7 @@
 module EventSource
   module AsyncApi
     module Contracts
-      # Schema and validation rules for {Service} domain object
+      # Schema and validation rules for {EventSource::AsyncApi::AsyncApi} domain object
       class AsyncApiConfContract < Contract
         # @!method call(opts)
         # @param [Hash] opts the parameters to validate using this contract
@@ -22,16 +22,20 @@ module EventSource
           required(:info).value(:hash)
           required(:channels).value(:hash)
           optional(:id).maybe(:symbol)
+
           # optional(:servers).array(Types::HashOrNil)
           optional(:servers).value(:hash)
           optional(:components).array(Types::HashOrNil)
           optional(:tags).array(Types::HashOrNil)
           optional(:external_docs).array(Types::HashOrNil)
+
           # @!macro [attach] beforehook
           #   @!method $0($1)
           #   Coerce ID attribute to Symbol if passed as String
           before(:value_coercer) do |result|
-            result.to_h.merge!({ id: result.to_h[:id].to_sym }) if result.to_h.key? :id
+            if result.to_h.key? :id
+              result.to_h.merge!({ id: result.to_h[:id].to_sym })
+            end
           end
         end
       end

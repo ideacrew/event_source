@@ -4,15 +4,21 @@ module EventSource
   module AsyncApi
     module Operations
       module Channels
-        # Create a {Channel} instance
+        # Create a {EventSource::Channel} instance
         class Create
           send(:include, Dry::Monads[:result, :do])
 
-          # @param [Hash] params Values to use to create the Channel instance. Validated using {Validators::ChannelContract ChannelContract}
+          # @param [Hash] params Values to use to create the Channel instance
           # @example
-          #  { channel_id: "user_enrollments" channel_item: { subscribe: { summary: 'A customer enrolled' } } }
-          # @return [Dry::Monads::Result::Success<Channel>] if Channel is created
-          # @return [Dry::Monads::Result::Failure<Hash>] if Channel creation fails
+          #   {
+          #     channel_id: 'user_enrollments',
+          #     channel_item: {
+          #       subscribe: {
+          #         summary: 'A customer enrolled'
+          #       }
+          #     }
+          #   }
+          # @return [Dry::Monads::Result] result
           def call(params)
             values = yield validate(params)
             entity = yield create(values)
@@ -24,7 +30,9 @@ module EventSource
 
           def validate(params)
             result =
-              EventSource::AsyncApi::Contracts::ChannelsContract.new.call(params)
+              EventSource::AsyncApi::Contracts::ChannelsContract.new.call(
+                params
+              )
             result.success? ? Success(result) : Failure(result)
           end
 

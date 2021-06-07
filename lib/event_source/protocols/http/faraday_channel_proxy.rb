@@ -64,7 +64,7 @@ module EventSource
         def status; end
 
         def close
-          @worker.stop if defined? @worker
+          @worker.stop if defined?(@worker)
         end
 
         def active?
@@ -77,11 +77,11 @@ module EventSource
           @publish_operations.key?(publish_operation_name)
         end
 
-        def publish_operation_by_name(publish_operation_name)
+        def find_publish_operation_by_name(publish_operation_name)
           @publish_operations[publish_operation_name]
         end
 
-        def subscribe_operation_by_name(subscribe_operation_name)
+        def find_subscribe_operation_by_name(subscribe_operation_name)
           @subscribe_operations[subscribe_operation_name]
         end
 

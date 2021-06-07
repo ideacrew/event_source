@@ -47,9 +47,9 @@ module EventSource
 
         # Construct and subscribe a consumer_proxy with the queue
         # @param [Object] subscriber_klass Subscriber class
-        # @param [Hash] options Subscribe operation bindings
-        # @param [Proc] &block Code block to execute when event is received
-        # @return [BunnyConsumerProxy] Consumer proxy instance
+        # @param [Hash] _options Subscribe operation bindings
+        # @param [Proc] block Code block to execute when event is received
+        # @return [Queue] Queue instance
         def subscribe(subscriber_klass, _options, &block)
           if block_given?
             @subject.actions.push(block)
@@ -57,7 +57,9 @@ module EventSource
             method_proc =
               proc do |headers, payload|
                 subscriber_instance = subscriber_klass.new
-                subscriber_instance.send(@subject.name, headers, payload) if subscriber_instance.respond_to?(@subject.name)
+                if subscriber_instance.respond_to?(@subject.name)
+                  subscriber_instance.send(@subject.name, headers, payload)
+                end
               end
             @subject.actions.push(method_proc)
           end

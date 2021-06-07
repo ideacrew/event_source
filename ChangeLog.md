@@ -1,10 +1,13 @@
-## Changes between EventSource 0.4.0 and 0.5.0 (in development)
+## Changes between EventSource 0.4.0 and 0.5.0 (June 3, 2021)
 
-Release focuses on thtee areas:
+### Added support for HTTP protocol
 
-1. Add support for HTTP protocol
-2. Add resiliancy to AMQP protocol
-3. Extend documentation
+EventSource now supports HTTP protocol.
+
+### Added resiliancy to AMQP protocol
+
+Improvements to the DSL removed references to AMQP protocol-specific objects in the
+adapter methods. Spec coverage was broadened to verify additional scenarios.
 
 ## Changes between EventSource 0.3.0 and 0.4.0
 

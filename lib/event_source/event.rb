@@ -1,15 +1,13 @@
 # frozen_string_literal: true
 
 module EventSource
-  # A class for generating a notification that something has happened in the system
-  #
-  # @attr_reader [Array<String>] attribute_keys optional list of attributes that must be included in { Payload }
-  # @attr_reader [String] publisher_key namespaced key indicating the class that registers event for publishing
-  # @attr_reader [String] event_key the name of the event instance
-  # @attr_reader [String] payload attribute/value pairs for the message that accompanies the event
-  #
+  # Generate and forwared a notification that something has happened in the system
   class Event
     extend Dry::Initializer
+
+    # @attr_reader [Array<String>] attribute_keys optional list of attributes that must be included in { Payload }
+    # @attr_reader [String] publisher_key namespaced key indicating the class that registers event for publishing
+    # @attr_reader [String] payload attribute/value pairs for the message that accompanies the event
     attr_reader :attribute_keys, :publisher_key, :payload
 
     HeaderDefaults = {
@@ -29,7 +27,10 @@ module EventSource
       _metadata = (options[:metadata] || {}).merge(event_key: event_key)
 
       @publisher_key = klass_var_for(:publisher_key) || nil
-      raise EventSource::Error::PublisherKeyMissing, "add 'publisher_key' to #{self.class.name}" if @publisher_key.eql?(nil)
+      if @publisher_key.eql?(nil)
+        raise EventSource::Error::PublisherKeyMissing,
+              "add 'publisher_key' to #{self.class.name}"
+      end
     end
 
     # Set payload
@@ -37,7 +38,9 @@ module EventSource
     #   @param [Hash] payload New payload
     #   @return [Event] A copy of the event with the provided payload
     def payload=(values)
-      raise ArgumentError, 'payload must be a hash' unless values.instance_of?(Hash)
+      unless values.instance_of?(Hash)
+        raise ArgumentError, 'payload must be a hash'
+      end
 
       values.symbolize_keys!
 
@@ -49,7 +52,7 @@ module EventSource
       validate_attribute_presence
     end
 
-    # Verify an event instance has no errors and may be published
+    # Verify this instance is complete and may be published
     # @return [Boolean]
     def valid?
       event_errors.empty?
@@ -120,7 +123,9 @@ module EventSource
 
       def set_instance_variable_for(element, value)
         if value.nil?
-          return instance_variable_get("@#{element}") if instance_variable_defined?("@#{element}")
+          if instance_variable_defined?("@#{element}")
+            return instance_variable_get("@#{element}")
+          end
         else
           instance_variable_set("@#{element}", value)
         end
@@ -133,7 +138,9 @@ module EventSource
       return unless attribute_keys.present?
       gapped_keys = attribute_keys - payload.keys
       @event_errors = []
-      event_errors.push("missing required keys: #{gapped_keys}") unless gapped_keys.empty?
+      unless gapped_keys.empty?
+        event_errors.push("missing required keys: #{gapped_keys}")
+      end
     end
 
     def constant_for(value)
