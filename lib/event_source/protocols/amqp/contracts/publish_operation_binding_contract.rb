@@ -29,7 +29,7 @@ module EventSource
             optional(:mandatory).maybe(:bool)
             optional(:timestamp).maybe(:bool)
             optional(:expiration).value(
-              EventSource::AsyncApi::Types::PositiveInteger
+              ::EventSource::AsyncApi::Types::PositiveInteger
             )
             optional(:messageType).maybe(:string)
             optional(:replyTo).maybe(:string)
@@ -37,13 +37,13 @@ module EventSource
             optional(:contentEncoding).maybe(:string)
             optional(:correlation_id).maybe(:string)
             optional(:priority).maybe(
-              :EventSource::AsyncApi::Types::PositiveInteger
+              ::EventSource::AsyncApi::Types::PositiveInteger
             )
             optional(:message_id).maybe(:string)
             optional(:app_id).maybe(:string)
             optional(:userId).maybe(:string)
             optional(:bindingVersion).maybe(
-              EventSource::AsyncApi::Types::AmqpBindingVersionKind
+              ::EventSource::AsyncApi::Types::AmqpBindingVersionKind
             )
           end
         end
