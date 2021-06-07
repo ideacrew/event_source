@@ -27,8 +27,8 @@ module EventSource
         # Publish a message to this Exchange
         # @param [Mixed] payload the message content
         # @param [Hash] publish_bindings
-        def publish(payload, publish_bindings: {})
-          bunny_publish_bindings = sanitize_bindings(publish_bindings)
+        def publish(payload:, publish_bindings:)
+          bunny_publish_bindings = sanitize_bindings(publish_bindings || {})
           @subject.publish(payload, bunny_publish_bindings)
         end
 
