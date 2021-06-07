@@ -69,8 +69,8 @@ module EventSource
           operation_bindings[:user_id] = options[:userId] if options[:userId]
           operation_bindings[:message_id] = message_id
 
-          # operation_bindings[:timestamp] =
-          #   DateTime.now.strftime('%Q') if options[:timestamp]
+          operation_bindings[:timestamp] =
+            DateTime.now.strftime('%Q').to_i if options[:timestamp]
           operation_bindings[:persistent] = true if options[:deliveryMode] == 2
           operation_bindings[:reply_to] = options[:replyTo]
           operation_bindings[:content_encoding] = options[:contentEncoding]

@@ -36,16 +36,14 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyQueueProxy do
       },
       bindings: {
         amqp: {
-          binding_version: '0.2.0',
-          timestamp: Time.now.to_i,
+          bindingVersion: '0.2.0',
+          timestamp: true,
           expiration: 1,
-          # cc: ['user.logs'],
           priority: 1,
-          # bcc: ['external.audit'],
           mandatory: true,
-          # delivery_mode: 2,
-          reply_to: 'crm.contact_created',
-          user_id: 'guest'
+          deliveryMode: 2,
+          replyTo: 'crm.contact_created',
+          userId: 'guest'
         }
       }
     }
@@ -57,15 +55,8 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyQueueProxy do
       summary: 'SugarCRM Contact Created',
       bindings: {
         amqp: {
-          binding_version: '0.2.0',
-          timestamp: true,
-          ack: true,
-          expiration: 1,
-          # cc: ['user.logs'],
-          priority: 1,
-          delivery_mode: 2
-          # reply_to: 'crm.contact_created',
-          # user_id: 'enroll_app.system'
+          bindingVersion: '0.2.0',
+          ack: true
         }
       }
     }
@@ -81,7 +72,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyQueueProxy do
           durable: true,
           auto_delete: true,
           vhost: '/',
-          exclusive: true
+          exclusive: false
         },
         exchange: {
           name: 'crm_contact_created',
