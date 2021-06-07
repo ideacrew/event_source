@@ -17,7 +17,6 @@ module EventSource
         # @!macro [attach] rulemacro
         #   Validates a nested hash of $1 params
         #   @!method $0($1)
-        #   @!param [Symbol] $1 key
         #   @return [Dry::Monads::Result::Success] if nested $1 params pass validation
         #   @return [Dry::Monads::Result::Failure] if nested $1 params fail validation
         rule(:components).each do
@@ -26,10 +25,7 @@ module EventSource
 
           # Use dry-validation metadata form to pass error hash along with text to calling service
           next unless result&.failure?
-          key.failure(
-            text: 'invalid component hash',
-            error: result.errors.to_h
-          )
+          key.failure(text: 'invalid component hash', error: result.errors.to_h)
         end
 
         rule(:channels) do
@@ -109,28 +105,24 @@ module EventSource
 
           # Use dry-validation metadata form to pass error hash along with text to calling service
           next unless result&.failure?
-          key.failure(
-            text: 'invalid server hash',
-            error: result.errors.to_h
-          )
+          key.failure(text: 'invalid server hash', error: result.errors.to_h)
         end
 
         rule(:tags) do
           next unless key? && value
 
-          tags = value.inject([]) do |data, tag|
-            result = TagContract.new.call(tag)
-            # Use dry-validation metadata form to pass error hash along with text to calling service
-            if result.success?
-              data << result.to_h
-            else
-              key.failure(
-                text: 'invalid tag hash',
-                error: result.errors.to_h
-              )
+          tags =
+            value.inject([]) do |data, tag|
+              result = TagContract.new.call(tag)
+
+              # Use dry-validation metadata form to pass error hash along with text to calling service
+              if result.success?
+                data << result.to_h
+              else
+                key.failure(text: 'invalid tag hash', error: result.errors.to_h)
+              end
+              data
             end
-            data
-          end
 
           values.data.merge!(tags: tags) unless tags.empty?
           values

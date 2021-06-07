@@ -31,7 +31,7 @@ module EventSource
     def self.start(config, queue)
       num_threads = config[:num_threads]
       logger.info(
-        "start worker for Queue: #{queue.name}; threads #{num_threads} "
+        "Start Worker for Queue: #{queue.name}, number of threads #{num_threads} "
       )
 
       instance = new(queue)
@@ -39,15 +39,15 @@ module EventSource
       instance
     end
 
-    # @param [Hash<EventSource::AsyncApi::ChannelItem>] async_api_channel_item {EventSource::AsyncApi::ChannelItem}
-    # @return [EventSource::Protocols::Http::FaradayChannelProxy] subject
+    # @param queue [Queue] Queue to manage worker actions
+    # @return [Queue]
     def initialize(queue)
-      @queue = queue
       @threads = []
+      @queue = queue
     end
 
     def enqueue(payload)
-      puts "-----worker enqueue #{payload} #{active?}"
+      logger.info("On Queue: #{queue.name}, enqueue payload: #{payload}")
       queue.push(payload)
     end
 
@@ -90,12 +90,12 @@ module EventSource
     # end
 
     def spawn_threads(num_threads)
-      logger.info("spawn_threads #{num_threads}")
+      logger.info("Spawn Threads #{num_threads}")
       num_threads.times do
         threads << Thread.new do
           while active? || actions_left?
             action_payload = wait_for_action
-            logger.info "-----spawn  #{action_payload}"
+            logger.info "Spawn payload action: #{action_payload}"
             queue.actions.each do |action_proc|
               action_proc.call(action_payload.headers, action_payload.body)
             end
@@ -108,7 +108,7 @@ module EventSource
     end
 
     def stop
-      logger.info("stop worker for Queue: #{queue.name}")
+      logger.info("Stop Worker for Queue: #{queue.name}")
       queue.close
       threads.each(&:exit)
       threads.clear

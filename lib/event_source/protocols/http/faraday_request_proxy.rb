@@ -51,21 +51,23 @@ module EventSource
           @subject = faraday_request_for(request_bindings)
         end
 
+        # TODO - update the payload arg to parse following components:
         # Faraday::Request.body
         # Faraday::Request.headers
-        # Faraday::Request.http_method
         # Faraday::Request.options
         # Faraday::Request.params
         # Faraday::Request.path
 
         # Execute the HTTP request
-        # @param [Mixed] payload event message content
-        # @param [Hash] bindings AsyncAPI HTTP message bindings
+        # @param [Mixed] payload request content
+        # @param [Hash] publish_bindings AsyncAPI HTTP message bindings
         # @return [Faraday::Response] response
         def publish(payload: nil, publish_bindings: {})
           faraday_publish_bindings = sanitize_bindings(publish_bindings)
           @subject.body = payload if payload
-          @subject.headers.update(faraday_publish_bindings[:headers]) if faraday_publish_bindings[:headers]
+          if faraday_publish_bindings[:headers]
+            @subject.headers.update(faraday_publish_bindings[:headers])
+          end
 
           # @subject.call(payload, faraday_publish_bindings)
           response = connection.builder.build_response(connection, @subject)
@@ -94,7 +96,9 @@ module EventSource
         def faraday_request_for(bindings)
           method = bindings[:method].downcase.to_sym
           request =
-            connection.build_request(method) { |req| req.path = request_path.to_s }
+            connection.build_request(method) do |req|
+              req.path = request_path.to_s
+            end
 
           logger.info "Created Faraday request #{request}"
           request

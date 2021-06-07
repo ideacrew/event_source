@@ -3,8 +3,7 @@
 module EventSource
   module AsyncApi
     module Contracts
-
-      # Schema and validation rules for {EventSource::AsyncApi::Channel}
+      # Schema and validation rules for {EventSource::AsyncApi::Channels}
       class ChannelsContract < Contract
         # @!method call(opts)
         # @param [Hash] opts the parameters to validate using this contract

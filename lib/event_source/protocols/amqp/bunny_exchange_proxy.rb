@@ -10,7 +10,7 @@ module EventSource
       # @since 0.4.0
       class BunnyExchangeProxy
         # @param [EventSource::AsyncApi::Channel] channel_proxy instance on which to open this Exchange
-        # @param [Hash<EventSource::AsyncApi::Exchange>] bindings instance with configuration for this Exchange
+        # @param [Hash<EventSource::AsyncApi::Exchange>] exchange_bindings instance with configuration for this Exchange
         # @return [Bunny::Exchange]
         def initialize(channel_proxy, exchange_bindings)
           # exchange_bindings =
@@ -34,7 +34,7 @@ module EventSource
 
         alias call publish
 
-        def respond_to_missing?(name, include_private)end
+        def respond_to_missing?(name, include_private); end
 
         # Forwards all missing method calls to the Bunny::Queue instance
         def method_missing(name, *args)

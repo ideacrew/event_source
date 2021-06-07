@@ -14,7 +14,8 @@ module EventSource
             new.call(params)
           end
 
-          # @param [Hash] params Values to use to create the Server instance. Validated using {Validators::ServerContract ServerContract}
+          # @param [Hash] params Values to use to create the Server instance
+          # @option params [EventSource::AsyncApi::Server] an AsyncApi::Server configuration
           # @example
           #   { protocol:         :amqp,
           #     url:              "amqp://localhost",

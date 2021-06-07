@@ -66,7 +66,9 @@ RSpec.describe EventSource::Protocols::Http::FaradayRequestProxy do
     }
   end
 
-  let(:channel_item) { { publish: publish_operation, subscribe: subscribe_operation } }
+  let(:channel_item) do
+    { publish: publish_operation, subscribe: subscribe_operation }
+  end
   let(:request_proxy) { described_class.new(channel_proxy, channel_item) }
 
   context 'When channel details along with bindings passed' do
@@ -82,9 +84,10 @@ RSpec.describe EventSource::Protocols::Http::FaradayRequestProxy do
 
     it 'should return expected response' do
       channel_proxy.add_subscribe_operation(channel_item)
-      response = request_proxy.publish bindings: publish_operation[:bindings]
+      response =
+        request_proxy.publish publish_bindings: publish_operation[:bindings]
       expect(response.status).to eq 200
-      expect(response.headers["Content-Type"]).to eq "application/json"
+      expect(response.headers['Content-Type']).to eq 'application/json'
     end
   end
 end

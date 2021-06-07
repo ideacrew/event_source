@@ -9,9 +9,16 @@ module EventSource
           send(:include, Dry::Monads[:result, :do])
 
           # @param [Hash] params Values to use to create the AsyncApiConf instance.
-          #   Validated using {Validators::AsyncApiConfContract AsyncApiConfContract}
+          #   Validated using {EventSource::AsyncApi::Contracts::AsyncApiConfContract}
           # @example
-          #  { channel_id: "user_enrollments" channel_item: { subscribe: { summary: 'A customer enrolled' } } }
+          #   {
+          #     channel_id: 'user_enrollments',
+          #     channel_item: {
+          #       subscribe: {
+          #         summary: 'A customer enrolled'
+          #       }
+          #     }
+          #   }
           # @return [Dry::Monads::Result::Success<Channel>] if Channel is created
           # @return [Dry::Monads::Result::Failure<Hash>] if Channel creation fails
           def call(params)
@@ -25,12 +32,15 @@ module EventSource
 
           def validate(params)
             result =
-              EventSource::AsyncApi::Contracts::AsyncApiConfContract.new.call(params)
+              EventSource::AsyncApi::Contracts::AsyncApiConfContract.new.call(
+                params
+              )
             result.success? ? Success(result) : Failure(result)
           end
 
           def create(values)
-            async_api_conf = EventSource::AsyncApi::AsyncApiConf.new(values.to_h)
+            async_api_conf =
+              EventSource::AsyncApi::AsyncApiConf.new(values.to_h)
             Success(async_api_conf)
           end
         end

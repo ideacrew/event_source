@@ -49,7 +49,6 @@ module EventSource
           channel_item_key,
           async_api_channel_item
         )
-
           @connection = connection_for(bunny_connection_proxy)
           @name = channel_item_key
           @async_api_channel_item = async_api_channel_item
@@ -82,11 +81,11 @@ module EventSource
           exchange_exists?(publish_operation_name)
         end
 
-        def publish_operation_by_name(publish_operation_name)
+        def find_publish_operation_by_name(publish_operation_name)
           exchange_by_name(publish_operation_name)
         end
 
-        def subscribe_operation_by_name(subscribe_operation_name)
+        def find_subscribe_operation_by_name(subscribe_operation_name)
           queue_by_name(subscribe_operation_name)
         end
 

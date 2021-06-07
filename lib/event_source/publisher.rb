@@ -4,12 +4,16 @@ require 'dry/inflector'
 require 'concurrent/map'
 
 module EventSource
-  # Mixin to register and publish Events
+  # Mixin that provides a DSL to register and forward {EventSource::Event} messages
   class Publisher < Module
-    include Dry.Equalizer(:protocol, :exchange)
+    send(:include, Dry.Equalizer(:protocol, :exchange))
 
-    # @attr_reader [String] protocol communication protocol used by this publisher (for example: amqp)
-    # @attr_reader [String] exchange name of the Exchange where event messages are published
+    # include Dry.Equalizer(:protocol, :exchange)
+
+    # @attr_reader [Symbol] protocol communication protocol used by this
+    #   publisher (for example: amqp)
+    # @attr_reader [String] exchange name of the Exchange where event
+    #   messages are published
     attr_reader :protocol, :exchange
 
     # Internal publisher registry, which is used to identify them globally
@@ -62,7 +66,7 @@ module EventSource
 
       def validate
         channel_name = exchange_name # .match(/^(.*).exchange$/)[1]
-        channel = connection.channel_by_name(channel_name.to_sym)
+        channel = connection.find_channel_by_name(channel_name.to_sym)
         exchange = channel.publish_operations[exchange_name]
 
         return if exchange

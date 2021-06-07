@@ -15,9 +15,7 @@ module EventSource
         # @attr_reader [String] connection_params Settings used for configuring {::Faraday::Connection}
         # @attr_reader [String] protocol_version AsyncAPI HTTP protocol release supported by this client
         # @attr_reader [Faraday::Connection] subject Server Connection instance
-        attr_reader :connection_uri,
-                    :connection_params,
-                    :subject
+        attr_reader :connection_uri, :connection_params, :subject
 
         # AsyncAPI HTTP Bindings Protocol version supported by this client
         ProtocolVersion = '0.1.0'
@@ -80,6 +78,7 @@ module EventSource
           @connection_params = connection_params_for(options)
           @connection_uri = self.class.connection_uri_for(async_api_server)
           @channel_proxies = {}
+
           # @connection_params = self.class.connection_params_for(server)
           @subject = build_connection_for(async_api_server)
         end
@@ -165,13 +164,14 @@ module EventSource
         # Create a channel for processing HTTP protocol requests
         # @param [EventSource::AsyncApi::ChannelItem] async_api_channel_item
         #   Channel configuration and bindings
-        # @result [FaradayChannelProxy]
+        # @return [FaradayChannelProxy]
         def add_channel(channel_item_key, async_api_channel_item)
-          @channel_proxies[channel_item_key] = FaradayChannelProxy.new(
-            self,
-            channel_item_key,
-            async_api_channel_item
-          )
+          @channel_proxies[channel_item_key] =
+            FaradayChannelProxy.new(
+              self,
+              channel_item_key,
+              async_api_channel_item
+            )
         end
 
         def respond_to_missing?(name, include_private); end
