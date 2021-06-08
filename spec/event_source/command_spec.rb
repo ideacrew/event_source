@@ -53,13 +53,8 @@ RSpec.describe EventSource::Command do
 
       let(:command) { Parties::Organization::CorrectOrUpdateFein }
 
-      # before do
-      #   allow(EventSource.adapter).to receive(:publish).and_return(true)
-      # end
-
       it 'should register event' do
         result = command.new.call(payload)
-
         expect(result).to be_success
         expect(result.success.fein).to eq new_fein
       end

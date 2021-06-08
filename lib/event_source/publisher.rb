@@ -63,8 +63,8 @@ module EventSource
         event_name =
           EventSource::Inflector.underscore(event.class.name.split('::').last)
 
-        publisher_operation_id = exchange_name + event_name
-        connection.publish_operation_by_id(publisher_operation_id).call(event_payload)
+        publisher_operation_id = exchange_name # [exchange_name, event_name].join('.')
+        connection.publish_operation_by_id(publisher_operation_id).call(event.to_h)
         # connection.publish_operations[exchange_name].call(event_payload)
       end
 

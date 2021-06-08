@@ -61,7 +61,7 @@ module EventSource
         # @return [Hash] sanitized Bunny/RabitMQ bindings
         def sanitize_bindings(bindings)
           options = bindings[:amqp]
-
+          operation_bindings = {}
           operation_bindings[:routing_key] = options[:cc] if options[:cc]
           operation_bindings[:persistent] = true if options[:deliveryMode] == 2
           operation_bindings = options.slice(:expiration, :priority, :mandatory)

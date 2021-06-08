@@ -56,9 +56,9 @@ module EventSource
       @connection_proxy.close
     end
 
-    def publish_operation_by_id(publisher_operation_id)
-      channel = channels[publish_operation_by_id]
-      channel.publish_operations[publish_operation_by_id]
+    def publish_operation_by_id(publish_operation_id)
+      channel = channels[publish_operation_id.to_sym]
+      channel.publish_operations[publish_operation_id]
     end
 
     # Create and register a collection of new {EventSource::Channel} instances
