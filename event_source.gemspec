@@ -44,7 +44,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'dry-struct', '~> 1.4'
   spec.add_dependency 'dry-types', '~> 1.5'
   spec.add_dependency 'dry-validation', '~> 1.6'
-  spec.add_dependency 'dry-schema', '1.5.6'
+  spec.add_dependency 'dry-schema', '1.6.2'
   spec.add_dependency 'faraday', '~> 1.4.1'
   spec.add_dependency 'faraday_middleware', '~> 1.0'
   spec.add_dependency 'logging', '~> 2.3.0'
