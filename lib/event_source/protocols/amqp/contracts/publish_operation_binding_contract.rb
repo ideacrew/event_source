@@ -4,12 +4,12 @@ module EventSource
   module Protocols
     module Amqp
       module Contracts
-        # Schema and validation rules for {EventSource::PublishOperation}
+        # Schema and validation rules for AMQP protocol's for {EventSource::PublishOperation}
         class PublishOperationBindingContract < Contract
           # @!method call(opts)
           # @param opts [Hash] the parameters to validate using this contract
           # @option opts [String] :cc Message routing key
-          # @option opts [Boolean] :deliveryMode Delivery mode of the message. Its value MUST be either 1 (transient) or 2 (persistent).
+          # @option opts [Integer] :deliveryMode Delivery mode of the message. Its value MUST be either 1 (transient) or 2 (persistent).
           # @option opts [Boolean] :mandatory Should the message be returned if it cannot be routed to any queue?
           # @option opts [Boolean] :timestamp Whether the message should include a timestamp or not
           # @option opts [EventSource::AsyncApi::Types::PositiveInteger] :expiration Expiration time after which the message will be deleted
@@ -28,7 +28,7 @@ module EventSource
             optional(:deliveryMode).maybe(:integer)
             optional(:mandatory).maybe(:bool)
             optional(:timestamp).maybe(:bool)
-            optional(:expiration).value(
+            optional(:expiration).maybe(
               ::EventSource::AsyncApi::Types::PositiveInteger
             )
             optional(:messageType).maybe(:string)
@@ -40,8 +40,8 @@ module EventSource
               ::EventSource::AsyncApi::Types::PositiveInteger
             )
             optional(:message_id).maybe(:string)
-            optional(:app_id).maybe(:string)
             optional(:userId).maybe(:string)
+            optional(:app_id).maybe(:string)
             optional(:bindingVersion).maybe(
               ::EventSource::AsyncApi::Types::AmqpBindingVersionKind
             )
