@@ -6,28 +6,28 @@ EventSource.configure do |config|
   # config.environment = Rails.env
 
   config.servers do |server|
-    #mitc
+    # mitc
     # server.http do |http|
     #   http.environment = :production
     #   http.host = ENV['RABBITMQ_HOST']
-    #   # http.port = 
-    #   # http.user_name = 
+    #   # http.port =
+    #   # http.user_name =
     # end
 
     # # fdsh
     # server.http do |http|
     #   http.environment = :test
     #   http.host = ENV['RABBITMQ_HOST']
-    #   # http.port = 
-    #   # http.user_name = 
+    #   # http.port =
+    #   # http.user_name =
     # end
-     
+
     # server.amqp do |amqp|
     #   amqp.environment = :production
     #   amqp.host = 'localhost' # ENV['RABBITMQ_HOST']
     #   amqp.vhost = '/event_source' # ENV['RABBITMQ_HOST']
-    #   # amqp.port = 
-    #   # amqp.user_name = 
+    #   # amqp.port =
+    #   # amqp.user_name =
     # end
 
     server.http do |http|
@@ -39,19 +39,18 @@ EventSource.configure do |config|
     end
 
     server.amqp do |amqp|
-      amqp.url =  "amqp://localhost:5672/"
+      amqp.url = "amqp://localhost:5672/"
     end
   end
 
   # config.servers = [
   #   amqp: {
-        
+
   #   },
   #   http: {
 
   #   }
   # ]
-    
 
   # Server Options will be coming from ENV which will be set by Docker
   # config.servers = [

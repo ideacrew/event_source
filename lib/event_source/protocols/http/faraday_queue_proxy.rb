@@ -57,9 +57,7 @@ module EventSource
             method_proc =
               proc do |headers, payload|
                 subscriber_instance = subscriber_klass.new
-                if subscriber_instance.respond_to?(@subject.name)
-                  subscriber_instance.send(@subject.name, headers, payload)
-                end
+                subscriber_instance.send(@subject.name, headers, payload) if subscriber_instance.respond_to?(@subject.name)
               end
             @subject.actions.push(method_proc)
           end

@@ -40,7 +40,7 @@ module EventSource
           require "event_source/protocols/#{protocol}_protocol"
         end
       end
-     
+
       def servers
         @server_configurations = Servers.new
         yield(@server_configurations)
@@ -64,7 +64,7 @@ module EventSource
 
           connection =
             connection_manager.fetch_connection(resource[:servers][:production])
-          
+
           unless connection
             logger.error { "Unable to find connection for #{resource[:servers][:production]}" }
             next

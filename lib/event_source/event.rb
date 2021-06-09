@@ -38,9 +38,7 @@ module EventSource
     #   @param [Hash] payload New payload
     #   @return [Event] A copy of the event with the provided payload
     def payload=(values)
-      unless values.instance_of?(Hash)
-        raise ArgumentError, 'payload must be a hash'
-      end
+      raise ArgumentError, 'payload must be a hash' unless values.instance_of?(Hash)
 
       values.symbolize_keys!
 
@@ -123,9 +121,7 @@ module EventSource
 
       def set_instance_variable_for(element, value)
         if value.nil?
-          if instance_variable_defined?("@#{element}")
-            return instance_variable_get("@#{element}")
-          end
+          return instance_variable_get("@#{element}") if instance_variable_defined?("@#{element}")
         else
           instance_variable_set("@#{element}", value)
         end
@@ -138,9 +134,7 @@ module EventSource
       return unless attribute_keys.present?
       gapped_keys = attribute_keys - payload.keys
       @event_errors = []
-      unless gapped_keys.empty?
-        event_errors.push("missing required keys: #{gapped_keys}")
-      end
+      event_errors.push("missing required keys: #{gapped_keys}") unless gapped_keys.empty?
     end
 
     def constant_for(value)

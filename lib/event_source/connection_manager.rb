@@ -75,16 +75,14 @@ module EventSource
       connections.reduce(
         []
       ) do |protocol_connections, (connection_uri, connection_instance)|
-        if URI.parse(connection_uri).scheme.to_sym == protocol
-          protocol_connections << connection_instance
-        end
+        protocol_connections << connection_instance if URI.parse(connection_uri).scheme.to_sym == protocol
         protocol_connections
       end
     end
 
     def connection_by_protocol_and_channel(protocol, channel_key)
       connections_for(protocol)
-        .detect{|connection| connection.channels.key?(channel_key.to_sym)}
+        .detect {|connection| connection.channels.key?(channel_key.to_sym)}
     end
 
     # Drop all registered connections for the given protocol
@@ -93,9 +91,7 @@ module EventSource
     # @return [Array<EventSource::Connection>] registered connections
     def drop_connections_for(protocol)
       connections.each do |connection_uri, _connection_instance|
-        if URI.parse(connection_uri).scheme.to_sym == protocol
-          drop_connection(connection_uri)
-        end
+        drop_connection(connection_uri) if URI.parse(connection_uri).scheme.to_sym == protocol
       end
     end
 

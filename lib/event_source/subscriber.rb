@@ -83,7 +83,7 @@ module EventSource
         end
       end
 
-       def connection
+      def connection
         connection_manager = EventSource::ConnectionManager.instance
         connection_manager.connection_by_protocol_and_channel(protocol, channel_name)
       end
