@@ -7,7 +7,6 @@ module EventSource
     module Amqp
       # Create and manage a RabbitMQ Channel instance using Bunny client.  Provide an interface that support
       # the {EventSource::Channel} DSL
-
       class BunnyChannelProxy
         include EventSource::Logging
         extend Forwardable

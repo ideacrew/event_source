@@ -8,7 +8,10 @@ module EventSource
         class SubscribeOperationBindingContract < Contract
           # @!method call(opts)
           # @param opts [Hash] the parameters to validate using this contract
-          # @option opts [String] :consumer_tag unique consumer (aka Queue Subscription) identifier. It is usually recommended to let Bunny generate it for you.
+          # @option opts [String] :consumer_tag unique consumer (aka Queue
+          #                                     Subscription) identifier.
+          #                                     It is usually recommended to
+          #                                     let Bunny generate it for you.
           # @option opts [Boolean] :ack will this consumer use manual acknowledgements?
           # @option opts [Boolean] :exclusive whether the queue should be used only by one connection or not
           # @option opts [Hash] :arguments Additional (optional) arguments, typically used by RabbitMQ extensions

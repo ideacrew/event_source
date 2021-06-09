@@ -5,6 +5,7 @@ require 'deep_merge'
 module EventSource
   module Configure
 
+    # Represents a server configuration.
     class Servers
 
       attr_reader :configurations

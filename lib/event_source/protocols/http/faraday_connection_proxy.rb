@@ -79,10 +79,8 @@ module EventSource
         end
 
         def build_connection
-          request_middleware_params =
-            connection_params[:request_middleware_params]
-          response_middleware_params =
-            connection_params[:response_middleware_params]
+          request_middleware_params = connection_params[:request_middleware_params]
+          response_middleware_params = connection_params[:response_middleware_params]
           http_params = connection_params[:http][:params]
           headers = connection_params[:http][:headers]
           adapter = connection_params[:adapter]
@@ -92,13 +90,13 @@ module EventSource
             params: http_params,
             headers: headers
           ) do |conn|
-            request_middleware_params.sort_by do |k, v|
+            request_middleware_params.sort_by do |_k, v|
               v[:order]
             end.each do |middleware, value|
               conn.request middleware.to_sym, value[:options]
             end
 
-            response_middleware_params.sort_by do |k, v|
+            response_middleware_params.sort_by do |_k, v|
               v[:order]
             end.each do |middleware, value|
               conn.response middleware.to_sym, value[:options]
@@ -198,9 +196,9 @@ module EventSource
         # Set request_middleware_params
         # @overload request_middleware_params=(values)
         #   @param [Hash] values New values
-        #   @return [Event] A copy of the event with the provided values
+        #   @return [Object] An assignment method, so always returns the RHS
         def request_middleware_params=(values = nil)
-          return @request_middleware_params unless values.instance_of?(Hash)
+          return unless values.instance_of?(Hash)
 
           values.symbolize_keys!
 
@@ -215,10 +213,10 @@ module EventSource
         def connection_params_for(options)
           request_middleware_params =
             options[:request_middleware_params] ||
-              RequestMiddlewareParamsDefault
+            RequestMiddlewareParamsDefault
           response_middleware_params =
             options[:response_middleware_params] ||
-              ResponseMiddlewareParamsDefault
+            ResponseMiddlewareParamsDefault
 
           adapter = AdapterDefaults.merge(options[:adapter] || {})
           http = HttpDefaults.merge(options[:http] || {})
