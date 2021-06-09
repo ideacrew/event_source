@@ -4,12 +4,36 @@ require 'deep_merge'
 
 module EventSource
   module Configure
+
+    class Servers
+
+      attr_reader :configurations
+
+      Configuration = Struct.new(:protocol, :environment, :url, :vhost)
+
+      def initialize
+        @configurations = []
+      end
+
+      def http
+        http_conf = Configuration.new(:http)
+        yield(http_conf)
+        @configurations.push(http_conf)
+      end
+
+      def amqp
+        amqp_conf = Configuration.new(:amqp)
+        yield(amqp_conf)
+        @configurations.push(amqp_conf)
+      end
+    end
+
     # This class contains all the configuration for a running queue bus application.
     class Config
       include EventSource::Logging
 
       # TODO: add default for pub_sub_root
-      attr_writer :async_api_schemas, :pub_sub_root, :protocols
+      attr_writer :async_api_schemas, :pub_sub_root, :protocols, :server_configurations
 
       def load_protocols
         @protocols.each do |protocol|
@@ -17,15 +41,35 @@ module EventSource
         end
       end
 
-      def load_configurations
+      def servers
+        @server_configurations = Servers.new
+        yield(@server_configurations)
+      end
+
+      def create_connections
+        return unless @server_configurations
+        connection_manager = EventSource::ConnectionManager.instance
+        @server_configurations.configurations.each do |server_conf|
+          connection_manager.add_connection(server_conf.to_h)
+        end
+      end
+
+      def load_async_api_resources
         return unless @async_api_schemas
 
         connection_manager = EventSource::ConnectionManager.instance
         @async_api_schemas.each do |resource|
           resource.deep_symbolize_keys!
           next unless resource[:servers]
+
           connection =
-            connection_manager.add_connection(resource[:servers][:production])
+            connection_manager.fetch_connection(resource[:servers][:production])
+
+          unless connection
+            logger.error { "Unable to find connection for #{resource[:servers][:production]}" }
+            next
+          end
+
           logger.info { "Connecting #{connection.connection_uri}" }
           connection.start
           logger.info { "Connected to #{connection.connection_uri}" }

@@ -62,9 +62,12 @@ module EventSource
         EventSource::Subscriber.subscriber_container[self][:protocol]
       end
 
+      def channel_name
+        exchange_name.to_sym
+      end
+
       def subscribe(queue_name, &block)
-        channel_name = exchange_name # .match(/^(.*).exchange$/)[1]
-        channel = connection.channels[channel_name.to_sym]
+        channel = connection.channels[channel_name]
         subscribe_operation = channel.subscribe_operations[queue_name.to_s]
 
         unless subscribe_operation
@@ -82,7 +85,7 @@ module EventSource
 
       def connection
         connection_manager = EventSource::ConnectionManager.instance
-        connection_manager.connections_for(protocol).first
+        connection_manager.connection_by_protocol_and_channel(protocol, channel_name)
       end
     end
   end

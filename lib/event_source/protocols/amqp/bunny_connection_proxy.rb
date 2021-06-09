@@ -50,9 +50,9 @@ module EventSource
           host: 'localhost',
           port: 5672, # (Integer) - default: 5672 - Port RabbitMQ listens on
           tls: false,
-          username: 'guest',
+          username: ENV['bunny_user_name'] || 'guest',
           password: 'guest',
-          vhost: '/' # (String) - default: "/" - Virtual host to use
+          vhost: ENV['vhost'] || "/" # '/event_source' # (String) - default: "/" - Virtual host to use
         }.freeze
 
         # @param [Hash] server {EventSource::AsyncApi::Server} configuration
@@ -75,7 +75,6 @@ module EventSource
         # Initiate network connection to RabbitMQ broker
         def start
           return if active?
-
           begin
             @subject.start
           rescue Errno::ECONNRESET

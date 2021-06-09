@@ -51,7 +51,7 @@ module EventSource
           @subject = faraday_request_for(request_bindings)
         end
 
-        # TODO - update the payload arg to parse following components:
+        # TODO: - update the payload arg to parse following components:
         # Faraday::Request.body
         # Faraday::Request.headers
         # Faraday::Request.options
@@ -65,9 +65,7 @@ module EventSource
         def publish(payload: nil, publish_bindings: {})
           faraday_publish_bindings = sanitize_bindings(publish_bindings)
           @subject.body = payload if payload
-          if faraday_publish_bindings[:headers]
-            @subject.headers.update(faraday_publish_bindings[:headers])
-          end
+          @subject.headers.update(faraday_publish_bindings[:headers]) if faraday_publish_bindings[:headers]
 
           # @subject.call(payload, faraday_publish_bindings)
           response = connection.builder.build_response(connection, @subject)

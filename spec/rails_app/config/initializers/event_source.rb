@@ -3,6 +3,54 @@
 EventSource.configure do |config|
   config.protocols = %w[amqp http]
   config.pub_sub_root = Pathname.pwd.join('spec', 'rails_app', 'app', 'event_source')
+  # config.environment = Rails.env
+
+  config.servers do |server|
+    # mitc
+    # server.http do |http|
+    #   http.environment = :production
+    #   http.host = ENV['RABBITMQ_HOST']
+    #   # http.port =
+    #   # http.user_name =
+    # end
+
+    # # fdsh
+    # server.http do |http|
+    #   http.environment = :test
+    #   http.host = ENV['RABBITMQ_HOST']
+    #   # http.port =
+    #   # http.user_name =
+    # end
+
+    # server.amqp do |amqp|
+    #   amqp.environment = :production
+    #   amqp.host = 'localhost' # ENV['RABBITMQ_HOST']
+    #   amqp.vhost = '/event_source' # ENV['RABBITMQ_HOST']
+    #   # amqp.port =
+    #   # amqp.user_name =
+    # end
+
+    server.http do |http|
+      http.url = "https://api.github.com"
+    end
+
+    server.http do |http|
+      http.url = "http://localhost:3000"
+    end
+
+    server.amqp do |amqp|
+      amqp.url = "amqp://localhost:5672/"
+    end
+  end
+
+  # config.servers = [
+  #   amqp: {
+
+  #   },
+  #   http: {
+
+  #   }
+  # ]
 
   # Server Options will be coming from ENV which will be set by Docker
   # config.servers = [

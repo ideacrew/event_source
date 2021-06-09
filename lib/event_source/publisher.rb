@@ -74,7 +74,7 @@ module EventSource
 
       def connection
         connection_manager = EventSource::ConnectionManager.instance
-        connection_manager.connections_for(protocol).first
+        connection_manager.connection_by_protocol_and_channel(protocol, channel_name)
       end
 
       def register_event(event_key, options = {})
@@ -84,8 +84,7 @@ module EventSource
       end
 
       def validate
-        channel_name = exchange_name # .match(/^(.*).exchange$/)[1]
-        channel = connection.find_channel_by_name(channel_name.to_sym)
+        channel = connection.find_channel_by_name(channel_name)
         exchange = channel.publish_operations[exchange_name]
 
         return if exchange

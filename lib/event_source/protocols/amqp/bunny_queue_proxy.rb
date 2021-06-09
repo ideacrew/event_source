@@ -79,9 +79,7 @@ module EventSource
               )
             end
             subscriber_instance = subscriber_klass.new
-            if subscriber_instance.respond_to?(queue_name)
-              subscriber_instance.send(queue_name, payload)
-            end
+            subscriber_instance.send(queue_name, payload) if subscriber_instance.respond_to?(queue_name)
           end
 
           @subject.subscribe_with(consumer_proxy)
@@ -108,8 +106,10 @@ module EventSource
 
         def convert_to_bunny_options(options)
           operation_bindings = {}
-          operation_bindings[:consumer_type] =
-            options[:consumer_type] if options.key?(:consumer_type)
+          if options.key?(:consumer_type)
+            operation_bindings[:consumer_type] =
+              options[:consumer_type]
+          end
           operation_bindings[:no_ack] = !options[:ack] if options.key?(:ack)
           operation_bindings[:exclusive] = options[:exclusive] if options.key?(
             :exclusive
@@ -117,13 +117,17 @@ module EventSource
           operation_bindings[:exclusive] = options[:exclusive] if options.key?(
             :exclusive
           )
-          operation_bindings[:on_cancellation] =
-            options[:on_cancellation] if options.key?(:on_cancellation)
+          if options.key?(:on_cancellation)
+            operation_bindings[:on_cancellation] =
+              options[:on_cancellation]
+          end
           operation_bindings[:arguments] = options[:arguments] if options.key?(
             :arguments
           )
-          operation_bindings[:binding_version] =
-            options[:bindingVersion] if options.key?(:bindingVersion)
+          if options.key?(:bindingVersion)
+            operation_bindings[:binding_version] =
+              options[:bindingVersion]
+          end
           operation_bindings
         end
 
@@ -139,7 +143,7 @@ module EventSource
         def async_api_channel_item_bindings_valid?(bindings)
           result =
             EventSource::Protocols::Amqp::Contracts::ChannelBindingContract.new
-              .call(bindings)
+                                                                           .call(bindings)
           if result.success?
             true
           else
