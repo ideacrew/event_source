@@ -49,6 +49,12 @@ module EventSource
       connections[connection_uri] = EventSource::Connection.new(client)
     end
 
+    def fetch_connection(async_api_server)
+      client_klass = protocol_klass_for(async_api_server[:protocol])
+      connection_uri = client_klass.connection_uri_for(async_api_server)
+      connections[connection_uri]
+    end
+
     # Remove a network resource from the connection registry
     # @param connection_uri [String] the unique key for the connection to
     #   remove
@@ -74,6 +80,11 @@ module EventSource
         end
         protocol_connections
       end
+    end
+
+    def connection_by_protocol_and_channel(protocol, channel_key)
+      connections_for(protocol)
+        .detect{|connection| connection.channels.key?(channel_key.to_sym)}
     end
 
     # Drop all registered connections for the given protocol

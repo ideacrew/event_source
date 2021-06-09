@@ -53,7 +53,8 @@ module EventSource
     def_delegators :config,
                    :pub_sub_root,
                    :load_protocols,
-                   :load_configurations,
+                   :create_connections,
+                   :load_async_api_resources,
                    :load_components,
                    :async_api_schemas=
 
@@ -63,7 +64,8 @@ module EventSource
 
     def initialize!
       load_protocols
-      load_configurations
+      create_connections
+      load_async_api_resources
       load_components
     end
 
