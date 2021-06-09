@@ -19,7 +19,7 @@ RSpec.describe EventSource::Protocols::Http::Soap::Operations::GenerateUsernameT
 
   before :each do
     allow(SecureRandom).to receive(:random_bytes).with(16).and_return("1234567890123456")
-    allow(Time).to receive(:now).and_return(Time.mktime(2021, 1, 13, 20, 4, 0, "+00:00"))
+    allow(Time).to receive(:now).and_return(Time.new(2021, 1, 13, 20, 4, 0, "+00:00"))
   end
 
   subject do
@@ -31,7 +31,7 @@ RSpec.describe EventSource::Protocols::Http::Soap::Operations::GenerateUsernameT
   end
 
   it "encodes a digest" do
-    expect(subject.value!.password_digest).to eq "JTnmxBcQzOQ5LxGIWV08nXhDjw0="
+    expect(subject.value!.password_digest).to eq "HdtE2kYDcvKA6ZWqTW2nUdib1yA="
   end
 
   it "encodes a nonce" do
@@ -39,7 +39,7 @@ RSpec.describe EventSource::Protocols::Http::Soap::Operations::GenerateUsernameT
   end
 
   it "encodes a token created value" do
-    expect(subject.value!.created_value).to eq "2021-01-14T01:04:00.000UTC"
+    expect(subject.value!.created_value).to eq "2021-01-13T20:04:00.000UTC"
   end
 
   it "generates token values without a timestamp" do
@@ -70,7 +70,7 @@ RSpec.describe EventSource::Protocols::Http::Soap::Operations::GenerateUsernameT
 
   before :each do
     allow(SecureRandom).to receive(:random_bytes).with(16).and_return("1234567890123456")
-    allow(Time).to receive(:now).and_return(Time.mktime(2021, 1, 13, 20, 4, 0, "+00:00"))
+    allow(Time).to receive(:now).and_return(Time.new(2021, 1, 13, 20, 4, 0, "+00:00"))
   end
 
   subject do
@@ -90,14 +90,14 @@ RSpec.describe EventSource::Protocols::Http::Soap::Operations::GenerateUsernameT
   end
 
   it "encodes a token created value" do
-    expect(subject.value!.created_value).to eq "2021-01-14T01:04:00.000UTC"
+    expect(subject.value!.created_value).to eq "2021-01-13T20:04:00.000UTC"
   end
 
   it "generates token values without a timestamp" do
     timestamp_value = subject.value!.security_timestamp_value
     expect(timestamp_value).not_to eq nil
-    expect(timestamp_value.created).to eq "2021-01-14T01:04:00.000UTC"
-    expect(timestamp_value.expires).to eq "2021-01-14T01:05:00.000UTC"
+    expect(timestamp_value.created).to eq "2021-01-13T20:04:00.000UTC"
+    expect(timestamp_value.expires).to eq "2021-01-13T20:05:00.000UTC"
   end
 
   it "encodes using plain" do
