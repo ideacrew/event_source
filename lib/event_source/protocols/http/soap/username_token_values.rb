@@ -11,6 +11,8 @@ module EventSource
           attribute :encoded_nonce, Types::String.meta(omittable: false)
           attribute :password_digest, Types::String.meta(omittable: false)
           attribute :created_value, Types::String.meta(omittable: false)
+
+          attribute :security_timestamp_value, SecurityTimestampValue.meta(omittable: true)
         end
       end
     end
