@@ -4,6 +4,7 @@ require_relative "soap/types"
 require_relative "soap/security_timestamp_value"
 require_relative "soap/username_token_values"
 require_relative "soap/security_header_configuration"
+require_relative "soap/contracts"
 require_relative "soap/operations"
 
 module EventSource

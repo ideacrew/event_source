@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "operations/generate_username_token_components"
+require_relative "operations/encode_soap_payload"
 
 module EventSource
   module Protocols
