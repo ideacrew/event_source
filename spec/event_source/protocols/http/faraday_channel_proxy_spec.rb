@@ -92,7 +92,7 @@ RSpec.describe EventSource::Protocols::Http::FaradayChannelProxy do
       it 'should create request and add it to publish operations' do
         publish_op = channel_proxy.add_publish_operation(channel_item)
         channel_proxy.add_subscribe_operation(channel_item)
-        publish_op.publish(payload: 'Hello world!!!')
+        publish_op.publish(payload: {test: 'Hello world!!!'}.to_json)
         expect(channel_proxy.publish_operations).to be_present
       end
     end
