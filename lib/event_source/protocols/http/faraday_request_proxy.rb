@@ -71,7 +71,7 @@ module EventSource
           response = connection.builder.build_response(connection, @subject)
           logger.info "Executed Faraday request #{@subject.inspect}"
 
-          correlation_id = payload['CorrelationID'] if payload
+          correlation_id = JSON.parse(payload)['CorrelationID'] if payload
           response.headers.merge!('CorrelationID' => (correlation_id || generate_correlation_id))
           @channel_proxy.enqueue(response)
           response
