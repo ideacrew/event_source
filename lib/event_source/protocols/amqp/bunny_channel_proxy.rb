@@ -7,28 +7,7 @@ module EventSource
     module Amqp
       # Create and manage a RabbitMQ Channel instance using Bunny client.  Provide an interface that support
       # the {EventSource::Channel} DSL
-      # @example AsyncApi ChannelItems
-      # crm_contacts_contact_created:
-      #   subscribe:
-      #     operationId: on_crm_contacts_contact_created
-      #     summary: CRM Contact Created
-      #     message:
-      #       $ref: "#/components/messages/crm_contacts_contact_created_event"
-      # crm_sugar_crm_contacts_contact_created:
-      #   publish:
-      #     operationId: crm_sugar_crm_contacts_contact_created
-      #     summary: SugarCRM Contact Created
-      #     message:
-      #       $ref: "#/components/messages/crm_sugar_crm_contacts_contact_created_event"
-      #       payload:
-      #         type: object
-      #   subscribe:
-      #     operationId: on_crm_sugar_crm_contacts_contact_created
-      #     summary: SugarCRM Contact Created
-      #     message:
-      #       $ref: "#/components/messages/crm_sugar_crm_contacts_contact_created_event"
-      #       payload:
-      #         type: object
+
       class BunnyChannelProxy
         include EventSource::Logging
         extend Forwardable
