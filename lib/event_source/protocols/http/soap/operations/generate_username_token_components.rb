@@ -48,13 +48,15 @@ module EventSource
           end
 
           def build_token_values(header_configuration, nonce_b64, created_value, digest)
-            UsernameTokenValues.new({
-              username: header_configuration.username,
-              digest_encoding: USERTOKEN_DIGEST_VALUES[header_configuration.password_encoding],
-              encoded_nonce: nonce_b64,
-              password_digest: digest,
-              created_value: created_value
-            })
+            UsernameTokenValues.new(
+              {
+                username: header_configuration.username,
+                digest_encoding: USERTOKEN_DIGEST_VALUES[header_configuration.password_encoding],
+                encoded_nonce: nonce_b64,
+                password_digest: digest,
+                created_value: created_value
+              }
+            )
           end
         end
       end
