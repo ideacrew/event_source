@@ -7,7 +7,10 @@ module EventSource
     module Http
       module Soap
         module Operations
-          # Encode Security Values and a Body into a single SOAP payload
+          # Encode Security Values and a Body into a single SOAP payload.
+          #
+          # This operation simply encodes already generated security
+          # information, and probably isn't what you want to call directly.
           class EncodeSoapPayload
             send(:include, Dry::Monads[:result, :do])
 

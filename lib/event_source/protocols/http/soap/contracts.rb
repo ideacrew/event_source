@@ -2,6 +2,7 @@
 
 require_relative "contracts/contract"
 require_relative "contracts/encode_soap_payload_operation_contract"
+require_relative "contracts/decorate_payload_using_configuration_operation_contract"
 
 module EventSource
   module Protocols

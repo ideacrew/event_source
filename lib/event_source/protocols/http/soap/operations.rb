@@ -2,6 +2,7 @@
 
 require_relative "operations/generate_username_token_components"
 require_relative "operations/encode_soap_payload"
+require_relative "operations/decorate_payload_using_configuration"
 
 module EventSource
   module Protocols
