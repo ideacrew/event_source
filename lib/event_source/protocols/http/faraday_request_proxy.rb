@@ -70,8 +70,14 @@ module EventSource
           # @subject.call(payload, faraday_publish_bindings)
           response = connection.builder.build_response(connection, @subject)
           logger.info "Executed Faraday request #{@subject.inspect}"
+
+          response.headers.merge!('CorrelationID' => (payload['CorrelationID'] || generate_correlation_id))
           @channel_proxy.enqueue(response)
           response
+        end
+
+        def generate_correlation_id
+          "#{Kernel.rand}-#{Time.now.to_i * 1000}-#{Kernel.rand(999_999_999_999)}"
         end
 
         def respond_to_missing?(name, include_private); end
