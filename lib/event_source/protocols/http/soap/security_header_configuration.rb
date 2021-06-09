@@ -14,6 +14,10 @@ module EventSource
 
           attribute :generate_timestamp, Types::HeaderTimestampRequired.meta(omittable: true)
           attribute :timestamp_ttl, Types::HeaderTimestampTtl.meta(omittable: true)
+
+          def plain_encoding?
+            password_encoding == "plain"
+          end
         end
       end
     end
