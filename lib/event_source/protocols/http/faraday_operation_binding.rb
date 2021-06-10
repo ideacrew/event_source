@@ -28,7 +28,7 @@ module EventSource
         # Required. Type of operation. Its value MUST be either :request or :response
         # @return [Types::HttpOperationBindingTypeKind]
         attribute :type,
-                  Types::HttpOperationBindingTypeKind.meta(omittable: false)
+                  Types::OperationBindingTypeKind.meta(omittable: false)
 
         # @!attribute [r] method
         # When type is request, this is the HTTP method, otherwise it MUST be ignored.
@@ -46,6 +46,11 @@ module EventSource
         # The version of this binding. If omitted, "latest" MUST be assumed.
         # @return [String]
         attribute :binding_version, Types::String.meta(omittable: true)
+
+        # @!attribute [r] extensions
+        # Extensions provided with the "x-" syntax.
+        # @return [Hash]
+        attribute :extensions, Types::Hash.meta(omittable: true)
       end
     end
   end
