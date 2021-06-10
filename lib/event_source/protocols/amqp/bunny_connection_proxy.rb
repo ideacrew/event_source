@@ -169,7 +169,11 @@ module EventSource
             host = params[:host]
             port = params[:port]
             path = params[:vhost]
-            "#{scheme}://#{host}:#{port}/#{path}"
+            if path == "/"
+              "#{scheme}://#{host}:#{port}#{path}"
+            else
+              "#{scheme}://#{host}:#{port}/#{path}"
+            end
           end
 
           def parse_url(server)
@@ -182,10 +186,27 @@ module EventSource
               host = url || ConnectDefaults[:host]
               port = server[:port] || ConnectDefaults[:port]
             end
+            vhost = vhost_for(server)
 
-            vhost = server[:vhost] || ConnectDefaults[:vhost]
+            { host: host, port: port, vhost: vhost}
+          end
 
-            { host: host, port: port, vhost: vhost }
+          def vhost_for(server)
+            url = server[:url]
+            if server[:vhost]
+              vhost = server[:vhost]
+            elsif URI(url)
+              amqp_url = URI.parse(url)
+              host = amqp_url.host || amqp_url.path # url w/single string parses into path
+
+              if amqp_url.path.present? && amqp_url.path != host
+                vhost = amqp_url.path
+              end
+            else
+              vhost = ConnectDefaults[:vhost]
+            end
+            vhost = vhost.match(/^\/(.+)$/)[1] if vhost && vhost.match(/^\/.+$/)
+            vhost || ConnectDefaults[:vhost]
           end
         end
 

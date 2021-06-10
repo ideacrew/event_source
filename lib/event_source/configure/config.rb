@@ -33,12 +33,16 @@ module EventSource
       include EventSource::Logging
 
       # TODO: add default for pub_sub_root
-      attr_writer :async_api_schemas, :pub_sub_root, :protocols, :server_configurations, :server_key
+      attr_writer :async_api_schemas, :pub_sub_root, :protocols, :server_configurations
 
       def load_protocols
         @protocols.each do |protocol|
           require "event_source/protocols/#{protocol}_protocol"
         end
+      end
+
+      def server_key=(value)
+        @server_key = value&.to_sym
       end
 
       def servers
@@ -76,7 +80,6 @@ module EventSource
           logger.info { "Connected to #{connection.connection_uri}" }
           connection.add_channels(channels: resource[:channels])
         end
-        binding.pry
       end
 
       def load_components
