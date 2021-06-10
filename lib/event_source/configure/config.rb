@@ -9,7 +9,7 @@ module EventSource
 
       attr_reader :configurations
 
-      Configuration = Struct.new(:protocol, :environment, :host, :vhost, :port, :url, :user_name, :password)
+      Configuration = Struct.new(:protocol, :host, :vhost, :port, :url, :user_name, :password)
 
       def initialize
         @configurations = []
@@ -41,6 +41,10 @@ module EventSource
         end
       end
 
+      def server_key=(value)
+        @server_key = value&.to_sym
+      end
+
       def servers
         @server_configurations = Servers.new
         yield(@server_configurations)
@@ -63,13 +67,12 @@ module EventSource
         @async_api_schemas.each do |resource|
           resource.deep_symbolize_keys!
           next unless resource[:servers]
-
           connection =
-            connection_manager.fetch_connection(resource[:servers][:production])
+            connection_manager.fetch_connection(resource[:servers][@server_key])
 
           unless connection
-            logger.error { "Unable to find connection for #{resource[:servers][:production]}" }
-            next
+            logger.error { "Unable to find connection for #{@server_key} with #{resource[:servers][@server_key]}" }
+            raise EventSource::Error::ConnectionNotFound, "unable to find connection for #{@server_key} with #{resource[:servers][@server_key]}}"
           end
 
           logger.info { "Connecting #{connection.connection_uri}" }

@@ -3,7 +3,7 @@
 EventSource.configure do |config|
   config.protocols = %w[amqp http]
   config.pub_sub_root = Pathname.pwd.join('spec', 'rails_app', 'app', 'event_source')
-  # config.environment = Rails.env
+  config.server_key = Rails.env.to_sym
 
   config.servers do |server|
     # mitc
@@ -36,9 +36,8 @@ EventSource.configure do |config|
     # - RABBITMQ_USERNAME=${RABBITMQ_USERNAME:-guest}
     # - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-guest}
     server.amqp do |rabbitmq|
-      rabbitmq.environment = :production
       rabbitmq.host = "amqp://localhost" # ENV['RABBITMQ_HOST']
-      rabbitmq.vhost =  "/event_source" # ENV['RABBITMQ_VHOST']
+      rabbitmq.vhost =  "event_source" # ENV['RABBITMQ_VHOST']
       rabbitmq.port = "5672" # ENV['RABBITMQ_PORT']
       rabbitmq.url = "" # ENV['RABBITMQ_URL']
       rabbitmq.user_name = "" # ENV['RABBITMQ_USERNAME']

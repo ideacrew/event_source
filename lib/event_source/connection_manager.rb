@@ -103,7 +103,7 @@ module EventSource
     # @param [Symbol] protocol the protocol name, `:http` or `:amqp`
     # @return [Class] Protocol Specific Connection Proxy Class
     def protocol_klass_for(protocol)
-      case protocol
+      case protocol.to_sym
       when :amqp, :amqps
         EventSource::Protocols::Amqp::BunnyConnectionProxy
       when :http, :https
