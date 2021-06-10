@@ -50,9 +50,9 @@ module EventSource
           host: 'localhost',
           port: 5672, # (Integer) - default: 5672 - Port RabbitMQ listens on
           tls: false,
-          username: ENV['bunny_user_name'] || 'guest',
+          username: 'guest',
           password: 'guest',
-          vhost: ENV['vhost'] || "/" # '/event_source' # (String) - default: "/" - Virtual host to use
+          vhost: "/" # '/event_source' # (String) - default: "/" - Virtual host to use
         }.freeze
 
         # @param [Hash] server {EventSource::AsyncApi::Server} configuration
@@ -150,7 +150,7 @@ module EventSource
           # param [Hash] Build URL for AMQP connection
           # Build protocol-appropriate URL for the specified server
           def connection_params_for(server)
-            params = parse_url(server[:url])
+            params = parse_url(server)
 
             params.merge(
               ssl: false,
@@ -163,30 +163,28 @@ module EventSource
           end
 
           def connection_uri_for(server)
-            params = parse_url(server[:url])
+            params = parse_url(server)
             scheme = 'amqp'
+
             host = params[:host]
             port = params[:port]
             path = params[:vhost]
             "#{scheme}://#{host}:#{port}#{path}"
           end
 
-          def parse_url(url)
+          def parse_url(server)
+            url = server[:url]
             if URI(url)
               amqp_url = URI.parse(url)
               host = amqp_url.host || amqp_url.path # url w/single string parses into path
               port = amqp_url.port || ConnectDefaults[:port]
-              vhost =
-                if amqp_url.path.present? && amqp_url.path != host
-                  amqp_url.path
-                else
-                  ConnectDefaults[:vhost]
-                end
             else
               host = url || ConnectDefaults[:host]
               port = server[:port] || ConnectDefaults[:port]
-              vhost = ConnectDefaults[:vhost]
             end
+
+            vhost = server[:vhost] || ConnectDefaults[:vhost]
+            vhost = "/#{vhost}" unless vhost.match(/^\/.*$/)
 
             { host: host, port: port, vhost: vhost }
           end
