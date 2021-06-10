@@ -9,7 +9,7 @@ module EventSource
 
       attr_reader :configurations
 
-      Configuration = Struct.new(:protocol, :environment, :url, :vhost)
+      Configuration = Struct.new(:protocol, :environment, :host, :vhost, :port, :url, :user_name, :password)
 
       def initialize
         @configurations = []
@@ -50,7 +50,9 @@ module EventSource
         return unless @server_configurations
         connection_manager = EventSource::ConnectionManager.instance
         @server_configurations.configurations.each do |server_conf|
-          connection_manager.add_connection(server_conf.to_h)
+          settings = server_conf.to_h
+          settings[:url] = (settings[:host] + ":"+ settings[:port])
+          connection_manager.add_connection(settings)
         end
       end
 

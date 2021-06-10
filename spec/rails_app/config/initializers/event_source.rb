@@ -10,10 +10,17 @@ EventSource.configure do |config|
     # server.http do |http|
     #   http.environment = :production
     #   http.host = ENV['RABBITMQ_HOST']
-    #   # http.port =
+    #   http.port =
     #   # http.user_name =
     # end
 
+    # FDSH_HOST="dev.hub.cms.gov"
+    # FDSH_PORT=5443
+    # FDSH_URL="http://dev.hub.cms.gov:5443"
+    # FDSH_USERNAME="my_id"
+    # FDSH_PASSWORD="my_pwd"
+    # FDSH_CERT_FILE="/path/to/cert.pem"
+    # FDSH_KEY_FILE="/path/to/key.pem" 
     # # fdsh
     # server.http do |http|
     #   http.environment = :test
@@ -22,25 +29,35 @@ EventSource.configure do |config|
     #   # http.user_name =
     # end
 
+    # - RABBITMQ_HOST=""
+    # - RABBITMQ_PORT=""
+    # - RABBITMQ_URL=${RABBITMQ_URL:-amqp://guest:guest@amqp:5672}
+    # - RABBITMQ_VERSION=""
+    # - RABBITMQ_USERNAME=${RABBITMQ_USERNAME:-guest}
+    # - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-guest}
+    server.amqp do |rabbitmq|
+      rabbitmq.environment = :production
+      rabbitmq.host = "amqp://localhost" # ENV['RABBITMQ_HOST']
+      rabbitmq.vhost =  "/event_source" # ENV['RABBITMQ_VHOST']
+      rabbitmq.port = "5672" # ENV['RABBITMQ_PORT']
+      rabbitmq.url = "" # ENV['RABBITMQ_URL']
+      rabbitmq.user_name = "" # ENV['RABBITMQ_USERNAME']
+      rabbitmq.password = "" # ENV['RABBITMQ_PASSWORD']
+    end
+
+    server.http do |http|
+      http.host = "https://api.github.com"
+      http.port = ""
+    end
+
+    server.http do |http|
+      http.host = "http://localhost"
+      http.port = "3000"
+    end
+
     # server.amqp do |amqp|
-    #   amqp.environment = :production
-    #   amqp.host = 'localhost' # ENV['RABBITMQ_HOST']
-    #   amqp.vhost = '/event_source' # ENV['RABBITMQ_HOST']
-    #   # amqp.port =
-    #   # amqp.user_name =
+    #   amqp.url = "amqp://localhost:5672/"
     # end
-
-    server.http do |http|
-      http.url = "https://api.github.com"
-    end
-
-    server.http do |http|
-      http.url = "http://localhost:3000"
-    end
-
-    server.amqp do |amqp|
-      amqp.url = "amqp://localhost:5672/"
-    end
   end
 
   # config.servers = [
