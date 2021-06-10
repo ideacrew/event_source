@@ -169,7 +169,7 @@ module EventSource
             host = params[:host]
             port = params[:port]
             path = params[:vhost]
-            "#{scheme}://#{host}:#{port}#{path}"
+            "#{scheme}://#{host}:#{port}/#{path}"
           end
 
           def parse_url(server)
@@ -184,7 +184,6 @@ module EventSource
             end
 
             vhost = server[:vhost] || ConnectDefaults[:vhost]
-            vhost = "/#{vhost}" unless vhost.match(/^\/.*$/)
 
             { host: host, port: port, vhost: vhost }
           end
