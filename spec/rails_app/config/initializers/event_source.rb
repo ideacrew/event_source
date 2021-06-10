@@ -3,7 +3,7 @@
 EventSource.configure do |config|
   config.protocols = %w[amqp http]
   config.pub_sub_root = Pathname.pwd.join('spec', 'rails_app', 'app', 'event_source')
-  # config.environment = Rails.env
+  config.server_key = Rails.env.to_sym
 
   config.servers do |server|
     # mitc

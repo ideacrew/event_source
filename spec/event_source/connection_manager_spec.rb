@@ -29,7 +29,7 @@ RSpec.describe EventSource::ConnectionManager do
         expect(connection_manager.connections).to be_empty
       end
       context 'and an unknown protocol connection is added' do
-        let(:invalid_protocol) { { protocol: ':xxxx' } }
+        let(:invalid_protocol) { ':xxxx'  }
         let(:url) { 'amqp://localhost:5672/' }
         let(:protocol_version) { '0.9.1' }
         let(:description) { 'Development RabbitMQ Server' }

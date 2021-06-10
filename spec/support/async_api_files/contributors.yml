@@ -20,6 +20,13 @@ servers:
     description: "Development HTTP Server"
     security:
       - apiKey: []
+  test:
+    url: "https://api.github.com"
+    protocol: :http
+    protocolVersion: "0.1.0"
+    description: "Development HTTP Server"
+    security:
+      - apiKey: []
 channels:
   /repos/thoughtbot/factory_girl/contributors:
     publish:

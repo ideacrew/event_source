@@ -65,6 +65,7 @@ module EventSource
     #   an {EventSource::AsyncApi::ChannelItem}
     # @return [EventSource::PublishOperation]
     def add_publish_operation(async_api_channel_item)
+      return false unless async_api_channel_item[:publish]
       publish_proxy =
         @channel_proxy.add_publish_operation(async_api_channel_item)
       return false unless publish_proxy
@@ -83,6 +84,8 @@ module EventSource
     #   an {EventSource::AsyncApi::ChannelItem}
     # @return [EventSource::SubscribeOperation]
     def add_subscribe_operation(async_api_channel_item)
+      return false unless async_api_channel_item[:subscribe]
+
       subscribe_proxy =
         @channel_proxy.add_subscribe_operation(async_api_channel_item)
 

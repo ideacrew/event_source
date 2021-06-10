@@ -28,5 +28,6 @@ module EventSource
     PublisherNotFound = Class.new(Error)
     RegisteredEventNotFound = Class.new(Error)
     SubscriberNotFound = Class.new(Error)
+    ConnectionNotFound = Class.new(Error)
   end
 end
