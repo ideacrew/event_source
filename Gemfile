@@ -8,7 +8,7 @@ gemspec
 group :development, :test do
   gem "rails", '~> 6.1.3.2'
   gem "rspec-rails"
-  gem "pry",        platform: :mri
-  gem "pry-byebug", platform: :mri
+  gem "pry",        platform: :mri, require: false
+  gem "pry-byebug", platform: :mri, require: false
   gem 'rubocop', '1.10.0'
 end
