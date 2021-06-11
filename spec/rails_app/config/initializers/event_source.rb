@@ -1,11 +1,72 @@
 # frozen_string_literal: true
 
 EventSource.configure do |config|
-  config.protocols = %w[amqp]
+  config.protocols = %w[amqp http]
   config.pub_sub_root = Pathname.pwd.join('spec', 'rails_app', 'app', 'event_source')
+  config.server_key = Rails.env.to_sym
 
-  folder = Pathname.pwd.join('spec', 'support', 'async_api_files')
-  config.asyncapi_resources = EventSource::AsyncApi::Operations::Channels::Load.new.call(dir: folder).value!
+  config.servers do |server|
+    # mitc
+    # server.http do |http|
+    #   http.environment = :production
+    #   http.host = ENV['RABBITMQ_HOST']
+    #   http.port =
+    #   # http.user_name =
+    # end
+
+    # FDSH_HOST="dev.hub.cms.gov"
+    # FDSH_PORT=5443
+    # FDSH_URL="http://dev.hub.cms.gov:5443"
+    # FDSH_USERNAME="my_id"
+    # FDSH_PASSWORD="my_pwd"
+    # FDSH_CERT_FILE="/path/to/cert.pem"
+    # FDSH_KEY_FILE="/path/to/key.pem" 
+    # # fdsh
+    # server.http do |http|
+    #   http.environment = :test
+    #   http.host = ENV['RABBITMQ_HOST']
+    #   # http.port =
+    #   # http.user_name =
+    # end
+
+    # - RABBITMQ_HOST=""
+    # - RABBITMQ_PORT=""
+    # - RABBITMQ_URL=${RABBITMQ_URL:-amqp://guest:guest@amqp:5672}
+    # - RABBITMQ_VERSION=""
+    # - RABBITMQ_USERNAME=${RABBITMQ_USERNAME:-guest}
+    # - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-guest}
+    server.amqp do |rabbitmq|
+      rabbitmq.host = "amqp://localhost" # ENV['RABBITMQ_HOST']
+      rabbitmq.vhost =  "event_source" # ENV['RABBITMQ_VHOST']
+      rabbitmq.port = "5672" # ENV['RABBITMQ_PORT']
+      rabbitmq.url = "" # ENV['RABBITMQ_URL']
+      rabbitmq.user_name = "" # ENV['RABBITMQ_USERNAME']
+      rabbitmq.password = "" # ENV['RABBITMQ_PASSWORD']
+    end
+
+    server.http do |http|
+      http.host = "https://api.github.com"
+      http.port = ""
+    end
+
+    server.http do |http|
+      http.host = "http://localhost"
+      http.port = "3000"
+    end
+
+    # server.amqp do |amqp|
+    #   amqp.url = "amqp://localhost:5672/"
+    # end
+  end
+
+  # config.servers = [
+  #   amqp: {
+
+  #   },
+  #   http: {
+
+  #   }
+  # ]
 
   # Server Options will be coming from ENV which will be set by Docker
   # config.servers = [
@@ -20,9 +81,17 @@ EventSource.configure do |config|
   #   }
   # ]
 
-  # TODO: define constant in Aca Entities
-  # config.asyncapi_resources = Pathname.pwd.join('spec', 'support', 'async_api_files')
   # config.asyncapi_resources = AcaEntities::AsyncApi::Mitc
   # config.asyncapi_resources = AcaEntities.find_resources_for(:enroll, %w[amqp resque_bus]) # will give you resouces in array of hashes form
   # AcaEntities::Operations::AsyncApi::FindResource.new.call(self)
 end
+
+dir = Pathname.pwd.join('spec', 'support', 'async_api_files')
+EventSource.async_api_schemas = ::Dir[::File.join(dir, '**', '*')].reject { |p| ::File.directory? p }.reduce([]) do |memo, file|
+  # read
+  # serialize yaml to hash
+  # Add to memo
+  memo << EventSource::AsyncApi::Operations::AsyncApiConf::LoadPath.new.call(path: file).success.to_h
+end
+
+EventSource.initialize!

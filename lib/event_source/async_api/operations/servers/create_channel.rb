@@ -8,8 +8,8 @@ module EventSource
         class CreateChannel
           send(:include, Dry::Monads[:result, :do])
 
-          # @param [EventSource::AsyncApi::Connect] params The Connection instane on which to create the channel
-          # @param [EventSource::AsyncApi::Channel] params The Channel
+          # @param [Hash] params
+          # @option params [EventSource::AsyncApi::Connection] :connection The Connection instane on which to create the channel
           # @return [Dry::Monads::Result] Operation Success or Failure
           def call(params)
             yield validate(params)

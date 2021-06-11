@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# AsyncAPI specification
+# AsyncAPI Configuration
 # See: https://www.asyncapi.com/docs/specifications/2.0.0/
 
 module EventSource
@@ -9,7 +9,7 @@ module EventSource
     # may be a microservice, IoT device (sensor), mainframe process, etc. An application may be written in any number
     # of different programming languages as long as they support the selected protocol. An application must also use
     # a protocol supported by the {Server} in order to connect and exchange {Message Messages}.
-    class Service < Dry::Struct
+    class AsyncApiConf < Dry::Struct
       # @!attribute [r] asyncapi
       # AsyncAPI spec version being used (required)
       # @return [String]
@@ -28,12 +28,13 @@ module EventSource
       # @!attribute [r] servers
       # connection details of servers
       # @return [Array<Server>]
-      attribute :servers, Types::Array.of(Server).meta(omittable: true)
+      # attribute :servers, Types::Array.of(Server).meta(omittable: true)
+      attribute :servers, Types::Hash.meta(omittable: false)
 
       # @!attribute [r] channels
       # available channels and messages for API (required)
       # @return [Array<Channel>]
-      attribute :channels, Channels.meta(omittable: false)
+      attribute :channels, Types::Hash.meta(omittable: false) # Channels.meta(omittable: false)
 
       # @!attribute [r] components
       # container for schemas for the specification

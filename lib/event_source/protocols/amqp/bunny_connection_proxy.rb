@@ -4,16 +4,20 @@ module EventSource
   module Protocols
     module Amqp
       # Connect to RabbitMQ server instance using Bunny client
-      # @attr_reader [String] connection_uri connection string used to establish connection with RabbitMQ server
-      # @attr_reader [String] connection_params configuration settings to establish connection with RabbitMQ server
-      # @attr_reader [String] protocol_version AMQP protocol release supported by this broker client
-      # @attr_reader [Hash] server_options RabbitMQ specific connection binding options
-      # @attr_reader [Bunny::Session] connection the server Connection object
+      # @raise EventSource::Protocols::Amqp::Error::ConnectionError
+      # @raise EventSource::Protocols::Amqp::Error::AuthenticationError
       class BunnyConnectionProxy
-        attr_reader :connection_params,
+        include EventSource::Logging
+
+        # @attr_reader [String] connection_uri String used to connect with RabbitMQ server
+        # @attr_reader [String] connection_params Configuration settings used when connecting with RabbitMQ server
+        # @attr_reader [String] protocol_version AMQP protocol release supported by this broker client
+        # @attr_reader [Hash] server_options RabbitMQ-specific connection binding options
+        # @attr_reader [Bunny::Session] connection Server Connection object
+        attr_reader :connection_uri,
+                    :connection_params,
                     :protocol_version,
-                    :server_options,
-                    :connection_uri
+                    :server_options
 
         ProtocolVersion = '0.9.1'
         ClientVersion = Bunny.version
@@ -26,6 +30,7 @@ module EventSource
           # successful reconnection? When set to false, the attempt counter will last through the entire lifetime of the connection object.
           recover_from_connection_close: true, # Bunny will try to recover from Server-initiated connection.close
           continuation_timeout: 4_000, # timeout in milliseconds for client operations that expect a response
+          # logger: EventSource::Logging,
           frame_max: 131_072 # max permissible size in bytes of a frame. Larger value may improve throughput; smaller value may improve latency
         }.freeze
 
@@ -47,11 +52,11 @@ module EventSource
           tls: false,
           username: 'guest',
           password: 'guest',
-          vhost: '/' # (String) - default: "/" - Virtual host to use
+          vhost: "/" # '/event_source' # (String) - default: "/" - Virtual host to use
         }.freeze
 
-        # @param [Hash] opts AMQP Server in hash form
-        # @param [Hash] opts binding options for RabbitMQ server
+        # @param [Hash] server {EventSource::AsyncApi::Server} configuration
+        # @param [Hash] options binding options for RabbitMQ server
         # @return Bunny::Session
         def initialize(server, options = {})
           @protocol_version = ProtocolVersion
@@ -59,20 +64,19 @@ module EventSource
           @server_options = options.merge(RabbitMqOptionDefaults)
           @connection_params = self.class.connection_params_for(server)
           @connection_uri = self.class.connection_uri_for(server)
-          @bunny_session = Bunny.new(@connection_params, @server_options)
+          @subject = Bunny.new(@connection_params, @server_options)
         end
 
         # The Connection object
         def connection
-          @bunny_session
+          @subject
         end
 
         # Initiate network connection to RabbitMQ broker
         def start
           return if active?
-
           begin
-            @bunny_session.start
+            @subject.start
           rescue Errno::ECONNRESET
             raise EventSource::Protocols::Amqp::Error::ConnectionError,
                   "Connection failed. network error to: #{connection_params}"
@@ -81,48 +85,58 @@ module EventSource
                   "Connection failed to: #{connection_params}"
           rescue Bunny::PossibleAuthenticationFailureError
             raise EventSource::Protocols::Amqp::Error::AuthenticationError,
-                  "Likely athentication failure for account: #{@bunny_session.user}"
+                  "Likely athentication failure for account: #{@subject.user}"
           rescue StandardError
             raise EventSource::Protocols::Amqp::Error::ConnectionError,
                   "Unable to connect to: #{connection_params}"
           else
             sleep 1.0
-
-            # logger "#{name} connection active "
+            logger.info "Connection #{connection_uri} started." if active?
             active?
-
-            # logger "#{name} connection failed"
           end
         end
 
-        def add_channel(async_api_channel_item)
-          BunnyChannelProxy.new(@bunny_session, async_api_channel_item)
+        # Adds a channel to this connection
+        # @param [String] channel_item_key a unique name for the channel
+        # @param [Hash] async_api_channel_item configuration values for the new channel
+        # @return [BunnyChannelProxy]
+        def add_channel(channel_item_key, async_api_channel_item)
+          BunnyChannelProxy.new(self, channel_item_key, async_api_channel_item)
         end
-
-        # channel_by(:channel_name, 'enroll.organizations')
-        # channel_by(:exchange_name, 'enroll.organizations.exchange')
-        # def channel_by(type, value)
-        # end
 
         # Is the server connection started?
         # return [Boolean]
         def active?
-          @bunny_session&.open?
+          @subject&.open?
         end
 
-        # Close the server connection
-        def close
-          @bunny_session.close if active?
+        # Close the server connection and all of its channels
+        def close(await_response = true)
+          return unless active?
+
+          @subject.close(await_response)
+          logger.info "Connection #{connection_uri} closed."
         end
 
-        # Attampt to reastablish connection to a disconnected server
+        # Returns true if this connection is closed
+        # @return [Boolean]
+        def closed?
+          @subject.closed?
+        end
+
+        # Attempt to reastablish connection to a disconnected server
         def reconnect
-          @bunny_session.reconnect!
+          @subject.reconnect!
+          logger.info "Connection #{connection_uri} reconnected."
         end
 
-        # The version of Bunny client
+        # The version of Bunny client in use
         def client_version
           ClientVersion
+        end
+
+        def protocol
+          :amqp
         end
 
         class << self
@@ -136,7 +150,7 @@ module EventSource
           # param [Hash] Build URL for AMQP connection
           # Build protocol-appropriate URL for the specified server
           def connection_params_for(server)
-            params = parse_url(server[:url])
+            params = parse_url(server)
 
             params.merge(
               ssl: false,
@@ -149,32 +163,58 @@ module EventSource
           end
 
           def connection_uri_for(server)
-            params = parse_url(server[:url])
+            params = parse_url(server)
             scheme = 'amqp'
+
             host = params[:host]
             port = params[:port]
             path = params[:vhost]
-            "#{scheme}://#{host}:#{port}#{path}"
+            if path == "/"
+              "#{scheme}://#{host}:#{port}#{path}"
+            else
+              "#{scheme}://#{host}:#{port}/#{path}"
+            end
           end
 
-          def parse_url(url)
+          def parse_url(server)
+            url = server[:url]
             if URI(url)
               amqp_url = URI.parse(url)
               host = amqp_url.host || amqp_url.path # url w/single string parses into path
               port = amqp_url.port || ConnectDefaults[:port]
-              vhost = if amqp_url.path.present? && amqp_url.path != host
-                        amqp_url.path
-                      else
-                        ConnectDefaults[:vhost]
-                      end
             else
               host = url || ConnectDefaults[:host]
               port = server[:port] || ConnectDefaults[:port]
+            end
+            vhost = vhost_for(server)
+
+            { host: host, port: port, vhost: vhost}
+          end
+
+          def vhost_for(server)
+            url = server[:url]
+            if server[:vhost]
+              vhost = server[:vhost]
+            elsif URI(url)
+              amqp_url = URI.parse(url)
+              host = amqp_url.host || amqp_url.path # url w/single string parses into path
+
+              if amqp_url.path.present? && amqp_url.path != host
+                vhost = amqp_url.path
+              end
+            else
               vhost = ConnectDefaults[:vhost]
             end
-
-            { host: host, port: port, vhost: vhost }
+            vhost = vhost.match(/^\/(.+)$/)[1] if vhost && vhost.match(/^\/.+$/)
+            vhost || ConnectDefaults[:vhost]
           end
+        end
+
+        def respond_to_missing?(name, include_private); end
+
+        # Forwards all missing method calls to the Bunny::Queue instance
+        def method_missing(name, *args)
+          @subject.send(name, *args)
         end
 
         private

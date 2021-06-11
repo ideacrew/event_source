@@ -4,12 +4,16 @@ require 'dry/inflector'
 require 'concurrent/map'
 
 module EventSource
-  # Mixin to register and publish Events
+  # Mixin that provides a DSL to register and forward {EventSource::Event} messages
   class Publisher < Module
-    include Dry.Equalizer(:protocol, :exchange)
+    send(:include, Dry.Equalizer(:protocol, :exchange))
 
-    # @attr_reader [String] protocol communication protocol used by this publisher (for example: amqp)
-    # @attr_reader [String] exchange name of the Exchange where event messages are published
+    # include Dry.Equalizer(:protocol, :exchange)
+
+    # @attr_reader [Symbol] protocol communication protocol used by this
+    #   publisher (for example: amqp)
+    # @attr_reader [String] exchange name of the Exchange where event
+    #   messages are published
     attr_reader :protocol, :exchange
 
     # Internal publisher registry, which is used to identify them globally
@@ -54,6 +58,25 @@ module EventSource
     module ClassMethods
       attr_reader :events
 
+      # TODO: coordinate server connection name with dev ops
+      def publish(event)
+        event_name =
+          EventSource::Inflector.underscore(event.class.name.split('::').last)
+
+        publisher_operation_id = exchange_name # [exchange_name, event_name].join('.')
+        connection.publish_operation_by_id(publisher_operation_id).call(event.to_h)
+        # connection.publish_operations[exchange_name].call(event_payload)
+      end
+
+      def channel_name
+        exchange_name.to_sym
+      end
+
+      def connection
+        connection_manager = EventSource::ConnectionManager.instance
+        connection_manager.connection_by_protocol_and_channel(protocol, channel_name)
+      end
+
       def register_event(event_key, options = {})
         @events = {} unless defined?(@events)
         @events[event_key] = options
@@ -61,18 +84,12 @@ module EventSource
       end
 
       def validate
-        channel_name = exchange_name # .match(/^(.*).exchange$/)[1]
-        channel = connection.channel_by_name(channel_name.to_sym)
-        exchange = channel.exchanges[exchange_name]
+        channel = connection.find_channel_by_name(channel_name)
+        exchange = channel.publish_operations[exchange_name]
 
         return if exchange
         raise EventSource::AsyncApi::Error::ExchangeNotFoundError,
               "exchange #{exchange_name} not found"
-      end
-
-      def connection
-        connection_manager = EventSource::ConnectionManager.instance
-        connection_manager.connections_for(protocol).first
       end
 
       def exchange_name

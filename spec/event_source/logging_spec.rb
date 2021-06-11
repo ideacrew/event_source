@@ -10,7 +10,13 @@ RSpec.describe EventSource::Logging do
   # let(:logger) { described_class.logger['EventSource::Logging'] }
   let(:logger) { LogService.new.logger }
 
+  let(:executable) { proc { logger.info "Hello world!!"} }
+
   it 'should be able to read a log message' do
+
+    #  service = ::LogService.new
+    #  service.instance_exec(&executable)
+
     logger.debug 'foo bar'
     logger.warn 'just a little warning'
 

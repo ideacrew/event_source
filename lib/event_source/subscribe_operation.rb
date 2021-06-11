@@ -1,26 +1,26 @@
 # frozen_string_literal: true
 
 module EventSource
-  # Subscribe operation
+  # Provides a DSL to register and receive messages for a published
+  #   {EventSource::Event}
   class SubscribeOperation
+    attr_reader :subject
 
-    attr_reader :operation_key, :bindings, :traits, :event
-    attr_accessor :summary, :description, :tags
-
-    def initialize(key)
-      @operation_key = key
+    def initialize(subscribe_proxy, async_api_subscribe_operation)
+      @subject = subscribe_proxy
+      @async_api_subscribe_operation = async_api_subscribe_operation
     end
 
-    # subscribe operation bindings:
-    #   amqp:
-    #     expiration: 100000
-    #     userId: guest
-    #     cc: ['user.logs']
-    #     priority: 10
-    #     deliveryMode: 2
-    #     replyTo: user.signedup
-    #     timestamp: true
-    #     ack: true
-    #     bindingVersion: 0.1.0
+    def call(args)
+      subject.call(*args)
+    end
+
+    def subscribe(subscriber_klass, &block)
+      subject.subscribe(
+        subscriber_klass,
+        @async_api_subscribe_operation[:bindings],
+        &block
+      )
+    end
   end
 end

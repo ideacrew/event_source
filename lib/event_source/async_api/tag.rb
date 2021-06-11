@@ -7,7 +7,7 @@ module EventSource
       # @!attribute [r] name
       # Tag name (required)
       # @return [Symbol]
-      attribute :name, Types::Symbol.meta(omittable: false)
+      attribute :name, Types::String.meta(omittable: false)
 
       # @!attribute [r] description
       # Short description for the tag. CommonMark syntax can be used for

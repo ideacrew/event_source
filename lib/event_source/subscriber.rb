@@ -1,15 +1,21 @@
 # frozen_string_literal: true
 
 require 'dry/inflector'
-# require 'forwardable'
 require 'concurrent/map'
 
 module EventSource
-  # Subscribes to the events
+  # Mixin that provides a DSL to register and receive published {EventSource::Event}
+  #   messages
   class Subscriber < Module
-    # module Subscriber
-    include Dry::Equalizer(:protocol, :exchange)
+    send(:include, Dry.Equalizer(:protocol, :exchange))
 
+    # include Dry.Equalizer(:protocol, :exchange)
+
+    # @attr_reader [Symbol] protocol communication protocol used by this
+    #   subscriber (for example: :amqp)
+    # @attr_reader [String] exchange the unique key for publisher broadcasting event
+    #   messsages that this subsciber will receive
+    # TODO: Ram update the references to :exchange to reflect publisher or publish_operation
     attr_reader :protocol, :exchange
 
     # @api private
@@ -32,7 +38,10 @@ module EventSource
     end
 
     def included(base)
-      self.class.subscriber_container[base] = { exchange: exchange, protocol: protocol }
+      self.class.subscriber_container[base] = {
+        exchange: exchange,
+        protocol: protocol
+      }
       base.extend ClassMethods
 
       TracePoint.trace(:end) do |t|
@@ -45,7 +54,6 @@ module EventSource
 
     # methods to register subscriptions
     module ClassMethods
-
       def exchange_name
         EventSource::Subscriber.subscriber_container[self][:exchange]
       end
@@ -54,13 +62,19 @@ module EventSource
         EventSource::Subscriber.subscriber_container[self][:protocol]
       end
 
-      def subscribe(queue_name, &block)
-        channel_name = exchange_name # .match(/^(.*).exchange$/)[1]
-        channel = connection.channels[channel_name.to_sym]
-        queue = channel.queues[queue_name.to_s]
+      def channel_name
+        exchange_name.to_sym
+      end
 
-        raise EventSource::Error::SubscriberNotFound, 'unable to find queue' unless queue
-        queue.subscribe(self, &block)
+      def subscribe(queue_name, &block)
+        channel = connection.channels[channel_name]
+        subscribe_operation = channel.subscribe_operations[queue_name.to_s]
+
+        unless subscribe_operation
+          raise EventSource::Error::SubscriberNotFound,
+                "Unable to find queue #{queue_name}"
+        end
+        subscribe_operation.subscribe(self, &block)
       end
 
       def register_subscription_methods
@@ -71,7 +85,7 @@ module EventSource
 
       def connection
         connection_manager = EventSource::ConnectionManager.instance
-        connection_manager.connections_for(protocol).first
+        connection_manager.connection_by_protocol_and_channel(protocol, channel_name)
       end
     end
   end

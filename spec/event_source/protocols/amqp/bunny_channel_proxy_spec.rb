@@ -1,22 +1,9 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
+require 'spec_helper'
+require 'config_helper'
 
 RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
-  # let(:protocol) { :amqp }
-  # let(:url) { 'amqp://localhost:5672/' }
-  # let(:protocol_version) { '0.9.1' }
-  # let(:description) { 'Development RabbitMQ Server' }
-
-  # let(:my_server) do
-  #   {
-  #     url: url,
-  #     protocol: protocol,
-  #     protocol_version: protocol_version,
-  #     description: description
-  #   }
-  # end
-
   let(:protocol) { :amqp }
   let(:url) { 'amqp://localhost:5672/' }
   let(:protocol_version) { '0.9.1' }
@@ -31,18 +18,23 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
     }
   end
 
-  let(:client) { EventSource::Protocols::Amqp::BunnyConnectionProxy.new(my_server) }
+  let(:client) do
+    EventSource::Protocols::Amqp::BunnyConnectionProxy.new(my_server)
+  end
   let(:connection) { EventSource::Connection.new(client) }
 
   let(:channel_id) { 'crm.contact_created' }
 
   let(:publish_operation) do
     {
-      operation_id: "on_crm_sugarcrm_contacts_contact_created",
-      summary: "SugarCRM Contact Created",
+      operation_id: 'on_crm_sugarcrm_contacts_contact_created',
+      summary: 'SugarCRM Contact Created',
       message: {
-        "$ref": "#/components/messages/crm_sugar_crm_contacts_contact_created_event",
-        payload: { "hello" => "world!!" }
+        "$ref":
+          '#/components/messages/crm_sugar_crm_contacts_contact_created_event',
+        payload: {
+          'hello' => 'world!!'
+        }
       },
       bindings: {
         binding_version: '0.2.0',
@@ -61,11 +53,14 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
 
   let(:publish_operation2) do
     {
-      operation_id: "on_crm_sugarcrm_contacts_contact_created",
-      summary: "SugarCRM Contact Created",
+      operation_id: 'on_crm_sugarcrm_contacts_contact_created',
+      summary: 'SugarCRM Contact Created',
       message: {
-        "$ref": "#/components/messages/crm_sugar_crm_contacts_contact_created_event",
-        payload: { "hurray" => "world!!" }
+        "$ref":
+          '#/components/messages/crm_sugar_crm_contacts_contact_created_event',
+        payload: {
+          'hurray' => 'world!!'
+        }
       },
       bindings: {
         binding_version: '0.2.0',
@@ -84,8 +79,8 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
 
   let(:subscribe_operation) do
     {
-      operation_id: "crm_sugarcrm_contacts_contact_created",
-      summary: "SugarCRM Contact Created",
+      operation_id: 'crm_sugarcrm_contacts_contact_created',
+      summary: 'SugarCRM Contact Created',
       bindings: {
         binding_version: '0.2.0',
         timestamp: true,
@@ -102,8 +97,8 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
 
   let(:subscribe_operation2) do
     {
-      operation_id: "crm_sugarcrm_logger",
-      summary: "SugarCRM Logger",
+      operation_id: 'crm_sugarcrm_logger',
+      summary: 'SugarCRM Logger',
       bindings: {
         binding_version: '0.2.0',
         timestamp: true,
@@ -161,17 +156,19 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
   # after { connection.disconnect if connection.active? }
 
   let(:channel_proxy) do
-    described_class.new(client.connection, channel_item)
-    described_class.new(client.connection, channel_item2)
+    described_class.new(client, channel_id, channel_item)
+    described_class.new(client, channel_id, channel_item2)
   end
 
   context 'Adapter pattern methods are present' do
     let(:adapter_methods) { EventSource::Channel::ADAPTER_METHODS }
 
-    it 'should have all the required methods' do
+    it 'should respond to all the DSL methods' do
       expect(channel_proxy).to respond_to(*adapter_methods)
     end
   end
+
+  it 'should automatically recover from an unexpected closed channel'
 
   # context 'When a connection and channel item passted' do
   #   it 'should create queues and exchanges' do

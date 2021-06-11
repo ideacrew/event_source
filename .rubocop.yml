@@ -100,6 +100,9 @@ Style/TernaryParentheses:
 Style/WordArray:
   Enabled: false
 
+Style/OptionalBooleanParameter:
+  Enabled: false
+
 Bundler/OrderedGems:
   Enabled: false
 

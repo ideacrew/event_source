@@ -47,15 +47,15 @@ module EventSource
       base.include InstanceMethods
     end
 
-    # Instance methods for constructing events
+    # Instance methods for constructing and publishing an {EventSource::Event}
     module InstanceMethods
       # @param event_key [String] The event to publish.  The value is a
       #   dot-notation namespaced reference to the event class that
       #   subclasses EventSource::Event
       # @param [Hash] options the options to create an event
-      # @option options [Array<Symbol>] :attributes a list of required attributes
+      # @option options [Array] :attributes a list of required attributes
       #   that must be included in the payload.
-      # @raise EventSource::Errors::EventNameUndefined if corresponding class
+      # @raise EventSource::Error::EventNameUndefined if corresponding class
       #   isn't found for the event_key
       def event(event_key, options = {})
         Try() { build_command_event(event_key, options) }.to_result
@@ -63,13 +63,11 @@ module EventSource
 
       private
 
-      # @private
       def build_command_event(event_key, options = {})
         event_class = event_klass_for(event_key)
         event_class.new(options)
       end
 
-      # @private
       def event_klass_for(event_key)
         klass_name = event_key.split('.').map(&:camelcase).join('::')
         klass_name.constantize

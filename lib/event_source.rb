@@ -6,6 +6,7 @@ require 'dry/types/type'
 require 'dry/monads'
 require 'dry/monads/do'
 require 'dry/monads/result'
+require 'dry/inflector'
 require 'dry/validation'
 require 'dry-struct'
 require 'oj'
@@ -24,8 +25,8 @@ require 'event_source/configure/config'
 require 'event_source/connection'
 require 'event_source/connection_manager'
 require 'event_source/channel'
-require 'event_source/exchange'
 require 'event_source/queue'
+require 'event_source/worker'
 require 'event_source/publish_operation'
 require 'event_source/subscribe_operation'
 require 'event_source/command'
@@ -36,6 +37,15 @@ require 'event_source/operations/codec64'
 
 # Event source provides ability to compose, publish and subscribe to events
 module EventSource
+  # Noop Event class
+  class Noop
+    def to_s
+      'no operation'
+    end
+  end
+
+  Inflector = Dry::Inflector.new
+
   class << self
 
     extend Forwardable
@@ -43,13 +53,19 @@ module EventSource
     def_delegators :config,
                    :pub_sub_root,
                    :load_protocols,
-                   :load_configurations,
-                   :load_components
+                   :create_connections,
+                   :load_async_api_resources,
+                   :load_components,
+                   :async_api_schemas=
 
     def configure
       yield(config)
+    end
+
+    def initialize!
       load_protocols
-      load_configurations
+      create_connections
+      load_async_api_resources
       load_components
     end
 

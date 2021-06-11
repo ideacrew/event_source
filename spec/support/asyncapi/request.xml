@@ -1,0 +1,29 @@
+<soap:Envelope xmlns:hubc="http://hubc.ee.sim.dsh.cms.hhs.gov" xmlns:soap="http://www.w3.org/2003/05/soap-envelope">
+   <soap:Header>
+      <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
+         <wsu:Timestamp wsu:Id="TS-A09EE41A69E2D55AA616219830033232">
+            <wsu:Created>2021-05-25T22:50:03Z</wsu:Created>
+            <wsu:Expires>2021-05-25T22:51:03Z</wsu:Expires>
+         </wsu:Timestamp>
+         <wsse:UsernameToken wsu:Id="UsernameToken-A09EE41A69E2D55AA616219830033211">
+            <wsse:Username>02.ME*.SBE.001.001</wsse:Username>
+            <wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordDigest">/626D/uPSdgE5UHP2TUOea675u8=</wsse:Password>
+            <wsse:Nonce EncodingType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary">s3orv0bFUH58G0nTSVeudA==</wsse:Nonce>
+            <wsu:Created>2021-05-25T22:50:03.293Z</wsu:Created>
+         </wsse:UsernameToken>
+      </wsse:Security>
+   </soap:Header>
+   <soap:Body>
+      <hubc:HubConnectivityRequest>ME</hubc:HubConnectivityRequest>
+   </soap:Body>
+</soap:Envelope>
+
+<!-- 
+curl -X POST -H "Content-Type: text/xml" \
+    -H 'SOAPAction: "http://api.eyeblaster.com/IAuthenticationService/ClientLogin"' --data-binary @request.xml \
+    https://sandbox.mediamind.com/Eyeblaster.MediaMind.API/V2/AuthenticationService.svc
+
+
+curl -X POST -H "Content-Type: text/xml" \
+    -H 'SOAPAction: "WL5G3N1:VerifyAnnualHouseholdIncomeRequest"' --data-binary @spec/support/asyncapi/request.xml \
+    http://hubc.ee.sim.dsh.cms.hhs.gov -->

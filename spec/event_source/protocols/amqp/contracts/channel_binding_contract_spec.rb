@@ -1,12 +1,11 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'config_helper'
 
 RSpec.describe EventSource::Protocols::Amqp::Contracts::ChannelBindingContract do
-
   describe 'Queue binding' do
     context 'with valid parameters' do
-
       let(:required_params) do
         {
           amqp: {
@@ -32,7 +31,6 @@ RSpec.describe EventSource::Protocols::Amqp::Contracts::ChannelBindingContract d
 
   describe 'Exchange binding' do
     context 'with valid parameters' do
-
       let(:required_params) do
         {
           amqp: {
