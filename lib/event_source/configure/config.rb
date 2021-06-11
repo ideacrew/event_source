@@ -55,7 +55,7 @@ module EventSource
         connection_manager = EventSource::ConnectionManager.instance
         @server_configurations.configurations.each do |server_conf|
           settings = server_conf.to_h
-          settings[:url] = (settings[:host] + ":"+ settings[:port])
+          settings[:url] = ("#{settings[:protocol]}://" + settings[:host] + ":"+ settings[:port])
           connection_manager.add_connection(settings)
         end
       end
