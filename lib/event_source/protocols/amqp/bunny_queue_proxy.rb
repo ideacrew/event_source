@@ -25,18 +25,16 @@ module EventSource
         # @return [Bunny::Queue]
         def initialize(channel_proxy, async_api_channel_item)
           @channel_proxy = channel_proxy
-          @exchange_name = channel_proxy.name
           bindings = async_api_channel_item[:bindings]
-
-          @subject = bunny_queue_for(bindings)
+          queue_bindings = channel_item_queue_bindings_for(bindings)
+          @exchange_name = exchange_name_from_queue(queue_bindings[:name])
+          @subject = bunny_queue_for(queue_bindings)
           bind_exchange(@exchange_name)
           subject
         end
 
         # Find a Bunny queue that matches the configuration of an {EventSource::AsyncApi::ChannelItem}
-        def bunny_queue_for(bindings)
-          queue_bindings = channel_item_queue_bindings_for(bindings)
-
+        def bunny_queue_for(queue_bindings)
           queue =
             Bunny::Queue.new(
               channel_proxy,
@@ -50,13 +48,11 @@ module EventSource
 
         # Bind this Queue to the Exchange
         def bind_exchange(exchange_name)
-          if channel_proxy.publish_operation_exists?(exchange_name)
-            channel_proxy.bind_queue(@subject.name, exchange_name)
-            logger.info "Queue #{@subject.name} bound to exchange #{exchange_name}"
-          else
+          channel_proxy.bind_queue(@subject.name, exchange_name)
+          logger.info "Queue #{@subject.name} bound to exchange #{exchange_name}"
+        rescue Bunny::NotFound => e
             raise EventSource::AsyncApi::Error::ExchangeNotFoundError,
-                  "exchange #{name} not found"
-          end
+                  "exchange #{name} not found. got exception #{e.to_s}"
         end
 
         # Construct and subscribe a consumer_proxy with the queue
@@ -150,6 +146,10 @@ module EventSource
             raise EventSource::Protocols::Amqp::Error::ChannelBindingContractError,
                   "Error(s) #{result.errors.to_h} validating: #{bindings}"
           end
+        end
+
+        def exchange_name_from_queue(queue_name)
+          queue_name.match(/^\w+\.(.+)/)[1]
         end
       end
     end

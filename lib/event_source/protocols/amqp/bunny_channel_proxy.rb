@@ -56,10 +56,6 @@ module EventSource
           @subject.queues
         end
 
-        def publish_operation_exists?(publish_operation_name)
-          exchange_exists?(publish_operation_name)
-        end
-
         def find_publish_operation_by_name(publish_operation_name)
           exchange_by_name(publish_operation_name)
         end
@@ -121,10 +117,6 @@ module EventSource
           exchanges[name.to_s]
         end
 
-        def exchange_exists?(exchange_name)
-          !exchange_by_name(exchange_name).nil?
-        end
-
         # Returns the queues collection
         def queues
           create_channel if closed?
@@ -139,12 +131,9 @@ module EventSource
         end
 
         def delete_exchange(exchange)
-          return unless exchange_exists?(exchange)
-          begin
-            @subject.exchange_delete(exchange)
+          @subject.exchange_delete(exchange)
           rescue Bunny::NotFound => e
             puts "Channel-level exception! Code: #{e.channel_close.reply_code}, message: #{e.channel_close.reply_text}"
-          end
         end
 
         # Remove all messages from a queue
