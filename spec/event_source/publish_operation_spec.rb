@@ -1,37 +1,54 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require "event_source/protocols/amqp_protocol"
-require 'pry'
+require 'event_source/protocols/amqp_protocol'
 
 RSpec.describe EventSource::PublishOperation do
   let(:connection_manager) { EventSource::ConnectionManager.instance }
   let(:server_settings) do
     {
-      :protocol=>:amqp,
-      :host=>"amqp://localhost",
-      :vhost=>"/",
-      :port=>"5672",
-      :url=>"amqp://localhost:5672",
-      :user_name=>"guest",
-      :password=>"guest"
+      protocol: :amqp,
+      host: 'amqp://localhost',
+      vhost: '/',
+      port: '5672',
+      url: 'amqp://localhost:5672',
+      user_name: 'guest',
+      password: 'guest'
     }
   end
 
   let(:connection) { connection_manager.add_connection(server_settings) }
 
-  let(:publish_resource_path) { Pathname.pwd.join('spec', 'support', 'asyncapi', 'medicaid_amqp.yml') }
-  let(:subscribe_resource_path) { Pathname.pwd.join('spec', 'support', 'asyncapi', 'polypress_amqp.yml') }
-  
-  let(:load_publish_resource) {
-    publish_resource = EventSource::AsyncApi::Operations::AsyncApiConf::LoadPath.new.call(path: publish_resource_path).success.to_h
-    connection.add_channels(channels: publish_resource['channels'].deep_symbolize_keys)
-  }
+  let(:publish_resource_path) do
+    Pathname.pwd.join('spec', 'support', 'asyncapi', 'medicaid_amqp.yml')
+  end
+  let(:subscribe_resource_path) do
+    Pathname.pwd.join('spec', 'support', 'asyncapi', 'polypress_amqp.yml')
+  end
 
-  let(:load_subscribe_resource) {
-    subscribe_resource = EventSource::AsyncApi::Operations::AsyncApiConf::LoadPath.new.call(path: subscribe_resource_path).success.to_h
-    connection.add_channels(channels: subscribe_resource['channels'].deep_symbolize_keys)
-  }
+  let(:load_publish_resource) do
+    publish_resource =
+      EventSource::AsyncApi::Operations::AsyncApiConf::LoadPath
+        .new
+        .call(path: publish_resource_path)
+        .success
+        .to_h
+    connection.add_channels(
+      channels: publish_resource['channels'].deep_symbolize_keys
+    )
+  end
+
+  let(:load_subscribe_resource) do
+    subscribe_resource =
+      EventSource::AsyncApi::Operations::AsyncApiConf::LoadPath
+        .new
+        .call(path: subscribe_resource_path)
+        .success
+        .to_h
+    connection.add_channels(
+      channels: subscribe_resource['channels'].deep_symbolize_keys
+    )
+  end
 
   let(:setup) do
     load_publish_resource
@@ -40,20 +57,35 @@ RSpec.describe EventSource::PublishOperation do
 
   before do
     connection.start
+    setup
   end
+  after { connection.stop }
 
-  after do 
-    connection.stop
-  end
+  context 'when valid asyncapi configurations passed' do
+    let(:subscriber_channel) do
+      connection.channels[:'on_polypress.magi_medicaid.mitc.eligibilities']
+    end
+    let(:publisher_name) do
+      connection.channels.first.last.publish_operations.values.first.name
+    end
+    let(:publish_operation) do
+      connection.channels.first.last.find_publish_operation_by_name(
+        publisher_name
+      )
+    end
+    let(:greeting) { 'hello world!' }
 
-  context "when valid asyncapi configurations passed" do
-
-    before do 
-      setup
+    it 'should set exchanges and queues' do
+      expect(connection.channels).to be_present
+      expect(connection.channels.first.last.publish_operations).to be_present
+      expect(subscriber_channel).to be_present
     end
 
-    it "should set exchanges and queues" do 
-      expect(connection.channels).to be_present
+    it 'should publish a message to an exchange' do
+      expect(publish_operation.call(message: greeting)).to be_nil
+    end
+
+    it 'should forward the message to a queue bound to the exchange' do
     end
   end
 end

@@ -51,8 +51,8 @@ module EventSource
           channel_proxy.bind_queue(@subject.name, exchange_name)
           logger.info "Queue #{@subject.name} bound to exchange #{exchange_name}"
         rescue Bunny::NotFound => e
-            raise EventSource::AsyncApi::Error::ExchangeNotFoundError,
-                  "exchange #{name} not found. got exception #{e.to_s}"
+          raise EventSource::AsyncApi::Error::ExchangeNotFoundError,
+                "exchange #{name} not found. got exception #{e.to_s}"
         end
 
         # Construct and subscribe a consumer_proxy with the queue
@@ -75,7 +75,9 @@ module EventSource
               )
             end
             subscriber_instance = subscriber_klass.new
-            subscriber_instance.send(queue_name, payload) if subscriber_instance.respond_to?(queue_name)
+            if subscriber_instance.respond_to?(queue_name)
+              subscriber_instance.send(queue_name, payload)
+            end
           end
 
           @subject.subscribe_with(consumer_proxy)
@@ -103,8 +105,7 @@ module EventSource
         def convert_to_bunny_options(options)
           operation_bindings = {}
           if options.key?(:consumer_type)
-            operation_bindings[:consumer_type] =
-              options[:consumer_type]
+            operation_bindings[:consumer_type] = options[:consumer_type]
           end
           operation_bindings[:no_ack] = !options[:ack] if options.key?(:ack)
           operation_bindings[:exclusive] = options[:exclusive] if options.key?(
@@ -114,15 +115,13 @@ module EventSource
             :exclusive
           )
           if options.key?(:on_cancellation)
-            operation_bindings[:on_cancellation] =
-              options[:on_cancellation]
+            operation_bindings[:on_cancellation] = options[:on_cancellation]
           end
           operation_bindings[:arguments] = options[:arguments] if options.key?(
             :arguments
           )
           if options.key?(:bindingVersion)
-            operation_bindings[:binding_version] =
-              options[:bindingVersion]
+            operation_bindings[:binding_version] = options[:bindingVersion]
           end
           operation_bindings
         end
@@ -139,7 +138,7 @@ module EventSource
         def async_api_channel_item_bindings_valid?(bindings)
           result =
             EventSource::Protocols::Amqp::Contracts::ChannelBindingContract.new
-                                                                           .call(bindings)
+              .call(bindings)
           if result.success?
             true
           else

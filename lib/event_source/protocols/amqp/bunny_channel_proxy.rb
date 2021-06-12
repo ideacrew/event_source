@@ -132,8 +132,8 @@ module EventSource
 
         def delete_exchange(exchange)
           @subject.exchange_delete(exchange)
-          rescue Bunny::NotFound => e
-            puts "Channel-level exception! Code: #{e.channel_close.reply_code}, message: #{e.channel_close.reply_text}"
+        rescue Bunny::NotFound => e
+          puts "Channel-level exception! Code: #{e.channel_close.reply_code}, message: #{e.channel_close.reply_text}"
         end
 
         # Remove all messages from a queue

@@ -9,29 +9,40 @@ module EventSource
       # @attr_reader [Bunny::Channel] channel AMQP Channel on which this Queue was created
       # @since 0.4.0
       class BunnyExchangeProxy
+        include EventSource::Logging
+
+        # @attr_reader [Bunny::Exchange] subject the exchange object
+        # @attr_reader [EventSource::Protcols::Amqp::BunnyChannelProxy] channel_proxy the channel_proxy used to create this exchange
+        attr_reader :subject, :channel_proxy
+
         # @param [EventSource::AsyncApi::Channel] channel_proxy instance on which to open this Exchange
         # @param [Hash<EventSource::AsyncApi::Exchange>] exchange_bindings instance with configuration for this Exchange
         def initialize(channel_proxy, exchange_bindings)
-          # exchange_bindings =
-          #   async_api_channel_item[:bindings][:amqp][:exchange]
-          @subject =
+          @channel_proxy = channel_proxy
+          @subject = bunny_exchange_for(exchange_bindings)
+        end
+
+        def bunny_exchange_for(bindings)
+          exchange =
             Bunny::Exchange.new(
               channel_proxy,
-              exchange_bindings[:type],
-              exchange_bindings[:name],
-              exchange_bindings.slice(:durable, :auto_delete, :vhost)
+              bindings[:type],
+              bindings[:name],
+              bindings.slice(:durable, :auto_delete, :vhost)
             )
+
+          logger.info "Found or created Bunny exchange #{exchange.name}"
+          exchange
         end
 
         # Publish a message to this Exchange
         # @param [Mixed] payload the message content
         # @param [Hash] publish_bindings
         def publish(payload:, publish_bindings:)
+          binding.pry
           bunny_publish_bindings = sanitize_bindings(publish_bindings || {})
           @subject.publish(payload, bunny_publish_bindings)
         end
-
-        alias call publish
 
         def respond_to_missing?(name, include_private); end
 
@@ -67,8 +78,7 @@ module EventSource
           operation_bindings[:persistent] = true if options[:deliveryMode] == 2
           operation_bindings = options.slice(:expiration, :priority, :mandatory)
           if options[:timestamp]
-            operation_bindings[:timestamp] =
-              DateTime.now.strftime('%Q').to_i
+            operation_bindings[:timestamp] = DateTime.now.strftime('%Q').to_i
           end
           operation_bindings[:type] = options[:messageType] if options[
             :messageType
@@ -78,12 +88,10 @@ module EventSource
             :content_type
           ]
           if options[:contentEncoding]
-            operation_bindings[:content_encoding] =
-              options[:contentEncoding]
+            operation_bindings[:content_encoding] = options[:contentEncoding]
           end
           if options[:correlation_id]
-            operation_bindings[:correlation_id] =
-              options[:correlation_id]
+            operation_bindings[:correlation_id] = options[:correlation_id]
           end
           operation_bindings[:priority] = options[:priority] if options[
             :priority

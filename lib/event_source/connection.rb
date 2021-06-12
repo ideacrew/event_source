@@ -45,6 +45,11 @@ module EventSource
       @connection_proxy.start
     end
 
+    # Stop the network connetion and associated resources
+    def stop
+      @connection_proxy.stop
+    end
+
     # Status flag indicating that this instance's network connection is open
     # @return [Boolean]
     def active?

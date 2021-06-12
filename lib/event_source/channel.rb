@@ -5,6 +5,8 @@ module EventSource
   #   over a {EventSource::Connection}. A Connection may have
   #   many Channels over which messages are transmitted
   class Channel
+    include EventSource::Logging
+
     # @attr_reader [Hash] subscribe_operations The collection of registered {EventSource::SubscribOperation} on this Connection
     # @attr_reader [Hash] publish_operations The collection of registered {EventSource::Publishperation} on this Connection
     # @attr_reader [Hash] consumers
@@ -71,11 +73,14 @@ module EventSource
       return false unless publish_proxy
 
       operation_id = async_api_channel_item[:publish][:operationId]
+
+      logger.info "Adding Publish Operation:  #{operation_id}"
       @publish_operations[operation_id] =
         EventSource::PublishOperation.new(
           publish_proxy,
           async_api_channel_item[:publish]
         )
+      logger.info "  Publish Operation Added: #{operation_id}"
     end
 
     # Create and register an operation to receive messages broadcast by a PublishOperation.
@@ -85,7 +90,6 @@ module EventSource
     # @return [EventSource::SubscribeOperation]
     def add_subscribe_operation(async_api_channel_item)
       return false unless async_api_channel_item[:subscribe]
-
       subscribe_proxy =
         @channel_proxy.add_subscribe_operation(async_api_channel_item)
 
@@ -96,6 +100,14 @@ module EventSource
           async_api_channel_item[:subscribe]
         )
     end
+
+    # def subscribe_operations
+    #   @channel_proxy.subscribe_operations
+    # end
+
+    # def publish_operations
+    #   @channel_proxy.publish_operations
+    # end
 
     # Find a PublishOperation in the registry.
     # PublishOperations are unique and accessible from any channel on a Connection
