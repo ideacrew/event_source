@@ -19,7 +19,7 @@ servers:
 channels:
   enroll.parties.organizations.fein_corrected:
     publish:
-      operationId: enroll.parties.organizations
+      operationId: enroll.parties.organizations.fein_corrected
       summary: Organization FEIN Corrected
       message:
         $ref: "#/components/messages/crm_sugar_crm_contacts_contact_created_event"
@@ -28,21 +28,18 @@ channels:
         bindings:
           contentEncoding: gzip
           messageType: "user.signup"
-          # bindingVersion: 0.1.0
       bindings:
         amqp:
           expiration: 100000
+          routing_key: enroll.parties.organizations.fein_corrected
           userId: guest
           priority: 10
           deliveryMode: 2
           mandatory: false
           replyTo: user.signedup
           timestamp: true
-          # cc: ['user.logs']
-          # bcc: ['external.audit']
-          # bindingVersion: 0.1.0
     subscribe:
-      operationId: on_enroll.parties.organizations.fein_corrected
+      operationId: on_faa.parties.organizations.fein_corrected
       summary: Organizaation FEIN Corrected
       message:
         $ref: "#/components/messages/crm_sugar_crm_contacts_contact_created_event"
@@ -50,10 +47,7 @@ channels:
           type: object
       bindings:
         amqp:
-          # expiration: 100000
-          # userId: guest
-          # cc: ['user.logs']
-          # replyTo: user.signedup
+          routing_key: enroll.parties.organizations.*
           priority: 10
           deliveryMode: 2
           timestamp: true

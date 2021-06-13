@@ -64,7 +64,7 @@ module EventSource
           EventSource::Inflector.underscore(event.class.name.split('::').last)
 
         publisher_operation_id = exchange_name # [exchange_name, event_name].join('.')
-        connection.publish_operation_by_id(publisher_operation_id).call(event.to_h)
+        connection.find_publish_operation_by_name(publisher_operation_id).call(event.to_h)
         # connection.publish_operations[exchange_name].call(event_payload)
       end
 
@@ -84,10 +84,12 @@ module EventSource
       end
 
       def validate
-        channel = connection.find_channel_by_name(channel_name)
-        exchange = channel.publish_operations[exchange_name]
+        # channel = connection.find_channel_by_name(channel_name)
+        # exchange = channel.publish_operations[exchange_name]
 
-        return if exchange
+        publish_operation = connection.find_publish_operation_by_name(exchange_name)
+
+        return if publish_operation
         raise EventSource::AsyncApi::Error::ExchangeNotFoundError,
               "exchange #{exchange_name} not found"
       end

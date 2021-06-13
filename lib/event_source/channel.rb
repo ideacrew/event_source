@@ -35,10 +35,11 @@ module EventSource
     # @param async_api_channel_item [Hash] configuration values in the form of
     #   a {EventSource::AsyncApi::ChannelItem}
     # @return [Object]
-    def initialize(channel_proxy, async_api_channel_item)
+    def initialize(channel_proxy, connection, async_api_channel_item)
       @channel_proxy = channel_proxy
       @publish_operations = {}
       @subscribe_operations = {}
+      @connection = connection
 
       add_publish_operation(async_api_channel_item)
       add_subscribe_operation(async_api_channel_item)
@@ -75,7 +76,7 @@ module EventSource
       operation_id = async_api_channel_item[:publish][:operationId]
 
       logger.info "Adding Publish Operation:  #{operation_id}"
-      @publish_operations[operation_id] =
+      @publish_operations[operation_id] = 
         EventSource::PublishOperation.new(
           publish_proxy,
           async_api_channel_item[:publish]
@@ -99,34 +100,6 @@ module EventSource
           subscribe_proxy,
           async_api_channel_item[:subscribe]
         )
-    end
-
-    # def subscribe_operations
-    #   @channel_proxy.subscribe_operations
-    # end
-
-    # def publish_operations
-    #   @channel_proxy.publish_operations
-    # end
-
-    # Find a PublishOperation in the registry.
-    # PublishOperations are unique and accessible from any channel on a Connection
-    # @param [String] name The unique key to match for the registered PublishOperation
-    # @return [EventSource::PublishOperation] a matching PublishOperation
-    def find_publish_operation_by_name(name)
-      publish_proxy = @channel_proxy.find_publish_operation_by_name(name)
-      EventSource::PublishOperation.new(
-        publish_proxy,
-        @async_api_publish_operation
-      )
-    end
-
-    # Find a SubscribeOperation in the registry
-    # SubscribeOperations are unique and accessible from any channel on a Connection
-    # @param [String] name The unique key to match for the registered SubScribeOperation
-    # @return [EventSource::SubscribeOperation] a matching SubScribeOperation
-    def find_subscribe_operation_by_name(name)
-      @channel_proxy.find_subscribe_operation_by_name(name)
     end
   end
 end

@@ -56,23 +56,27 @@ RSpec.describe EventSource::PublishOperation do
   end
 
   before do
-    connection.start
+    connection.start unless connection.active?
     setup
   end
-  after { connection.stop }
+  # after { connection.stop if connection.active?}
 
   context 'when valid asyncapi configurations passed' do
     let(:subscriber_channel) do
       connection.channels[:'on_polypress.magi_medicaid.mitc.eligibilities']
     end
     let(:publisher_name) do
-      connection.channels.first.last.publish_operations.values.first.name
+      channel.publish_operations.values.first.name
     end
+    
+    let(:channel) {
+      connection.channels.values.first
+    }
+
     let(:publish_operation) do
-      connection.channels.first.last.find_publish_operation_by_name(
-        publisher_name
-      )
+      connection.find_publish_operation_by_name(publisher_name)
     end
+
     let(:greeting) { 'hello world!' }
 
     it 'should set exchanges and queues' do
@@ -82,7 +86,8 @@ RSpec.describe EventSource::PublishOperation do
     end
 
     it 'should publish a message to an exchange' do
-      expect(publish_operation.call(message: greeting)).to be_nil
+      # expect(publish_operation.subject.subject).to receive(:on_return)
+      publish_operation.call(message: greeting)
     end
 
     it 'should forward the message to a queue bound to the exchange' do

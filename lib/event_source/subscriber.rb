@@ -67,8 +67,7 @@ module EventSource
       end
 
       def subscribe(queue_name, &block)
-        channel = connection.channels[channel_name]
-        subscribe_operation = channel.subscribe_operations[queue_name.to_s]
+        subscribe_operation = connection.find_subscribe_operation_by_name(queue_name.to_s)
 
         unless subscribe_operation
           raise EventSource::Error::SubscriberNotFound,

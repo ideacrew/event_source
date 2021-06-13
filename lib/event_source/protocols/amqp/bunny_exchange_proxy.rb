@@ -30,6 +30,9 @@ module EventSource
               bindings[:name],
               bindings.slice(:durable, :auto_delete, :vhost)
             )
+          exchange.on_return do |return_info, properties, content|
+            logger.info "Got a returned message: #{content} with return info: #{return_info}, properties: #{properties}"
+          end
 
           logger.info "Found or created Bunny exchange #{exchange.name}"
           exchange
@@ -39,7 +42,6 @@ module EventSource
         # @param [Mixed] payload the message content
         # @param [Hash] publish_bindings
         def publish(payload:, publish_bindings:)
-          binding.pry
           bunny_publish_bindings = sanitize_bindings(publish_bindings || {})
           @subject.publish(payload, bunny_publish_bindings)
         end
@@ -73,33 +75,17 @@ module EventSource
         # @return [Hash] sanitized Bunny/RabitMQ bindings
         def sanitize_bindings(bindings)
           options = bindings[:amqp]
-          operation_bindings = {}
-          operation_bindings[:routing_key] = options[:cc] if options[:cc]
-          operation_bindings[:persistent] = true if options[:deliveryMode] == 2
-          operation_bindings = options.slice(:expiration, :priority, :mandatory)
-          if options[:timestamp]
-            operation_bindings[:timestamp] = DateTime.now.strftime('%Q').to_i
-          end
-          operation_bindings[:type] = options[:messageType] if options[
-            :messageType
-          ]
-          operation_bindings[:reply_to] = options[:replyTo] if options[:replyTo]
-          operation_bindings[:content_type] = options[:content_type] if options[
-            :content_type
-          ]
-          if options[:contentEncoding]
-            operation_bindings[:content_encoding] = options[:contentEncoding]
-          end
-          if options[:correlation_id]
-            operation_bindings[:correlation_id] = options[:correlation_id]
-          end
-          operation_bindings[:priority] = options[:priority] if options[
-            :priority
-          ]
-          operation_bindings[:message_id] = message_id if options[:message_id]
-          operation_bindings[:app_id] = options[:app_id] if options[:app_id]
-          operation_bindings[:user_id] = options[:userId] if options[:userId]
+          operation_bindings = options.slice(
+            :type, :content_type, :correlation_id, :correlation_id,
+            :priority, :message_id, :app_id, :expiration, :mandatory, :routing_key
+          )
 
+          # operation_bindings[:routing_key] = options[:cc] if options[:cc]
+          operation_bindings[:persistent] = true if options[:deliveryMode] == 2
+          operation_bindings[:timestamp] = DateTime.now.strftime('%Q').to_i if options[:timestamp]
+          operation_bindings[:reply_to] = options[:replyTo] if options[:replyTo]
+          operation_bindings[:content_encoding] = options[:contentEncoding] if options[:contentEncoding]
+          operation_bindings[:user_id] = options[:userId] if options[:userId]
           operation_bindings
         end
       end

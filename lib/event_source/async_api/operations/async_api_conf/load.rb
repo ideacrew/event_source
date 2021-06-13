@@ -27,7 +27,10 @@ module EventSource
 
           def load(paths)
             Try do
-              paths.collect {|path| LoadPath.new.call(path: path).value! }
+              paths.collect do |path|
+                result = LoadPath.new.call(path: path)
+                result&.value!&.deep_symbolize_keys
+              end
             end.to_result
           end
         end

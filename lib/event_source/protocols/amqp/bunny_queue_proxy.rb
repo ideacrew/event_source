@@ -26,10 +26,11 @@ module EventSource
         def initialize(channel_proxy, async_api_channel_item)
           @channel_proxy = channel_proxy
           bindings = async_api_channel_item[:bindings]
+
           queue_bindings = channel_item_queue_bindings_for(bindings)
           @exchange_name = exchange_name_from_queue(queue_bindings[:name])
           @subject = bunny_queue_for(queue_bindings)
-          bind_exchange(@exchange_name)
+          bind_exchange(@exchange_name, async_api_channel_item[:subscribe])
           subject
         end
 
@@ -47,8 +48,9 @@ module EventSource
         end
 
         # Bind this Queue to the Exchange
-        def bind_exchange(exchange_name)
-          channel_proxy.bind_queue(@subject.name, exchange_name)
+        def bind_exchange(exchange_name, async_api_subscribe_operation)
+          operation_bindings = async_api_subscribe_operation[:bindings][:amqp]
+          channel_proxy.bind_queue(@subject.name, exchange_name, {routing_key: operation_bindings[:routing_key]})
           logger.info "Queue #{@subject.name} bound to exchange #{exchange_name}"
         rescue Bunny::NotFound => e
           raise EventSource::AsyncApi::Error::ExchangeNotFoundError,
@@ -89,7 +91,7 @@ module EventSource
             @subject,
             '',
             operation_bindings[:no_ack],
-            operation_bindings[:exclusive]
+            operation_bindings[:exclusive],
           )
         end
 
@@ -103,26 +105,8 @@ module EventSource
         private
 
         def convert_to_bunny_options(options)
-          operation_bindings = {}
-          if options.key?(:consumer_type)
-            operation_bindings[:consumer_type] = options[:consumer_type]
-          end
-          operation_bindings[:no_ack] = !options[:ack] if options.key?(:ack)
-          operation_bindings[:exclusive] = options[:exclusive] if options.key?(
-            :exclusive
-          )
-          operation_bindings[:exclusive] = options[:exclusive] if options.key?(
-            :exclusive
-          )
-          if options.key?(:on_cancellation)
-            operation_bindings[:on_cancellation] = options[:on_cancellation]
-          end
-          operation_bindings[:arguments] = options[:arguments] if options.key?(
-            :arguments
-          )
-          if options.key?(:bindingVersion)
-            operation_bindings[:binding_version] = options[:bindingVersion]
-          end
+          operation_bindings = options.slice(:exclusive, :on_cancellation, :arguments)
+          operation_bindings[:no_ack] = !options[:ack] if options[:ack]
           operation_bindings
         end
 

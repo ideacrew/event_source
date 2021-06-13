@@ -68,7 +68,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyQueueProxy do
         is: :routing_key,
         binding_version: '0.2.0',
         queue: {
-          name: 'on_contact_created',
+          name: 'on_polypress.crm_contact_created',
           durable: true,
           auto_delete: true,
           vhost: '/',
