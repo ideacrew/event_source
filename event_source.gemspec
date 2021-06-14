@@ -35,7 +35,7 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'bunny', '~> 2.17.0'
+  spec.add_dependency 'bunny', '>= 1.7.1'
   spec.add_dependency 'deep_merge', '~> 1.2.0'
   spec.add_dependency 'dry-events', '~> 0.3'
   spec.add_dependency 'dry-inflector', '~> 0.2'
@@ -48,7 +48,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'faraday', '~> 1.4.1'
   spec.add_dependency 'faraday_middleware', '~> 1.0'
   spec.add_dependency 'logging', '~> 2.3.0'
-  spec.add_dependency 'nokogiri', '~> 1.11.5'
+  spec.add_dependency 'nokogiri', '>= 1.10.8'
   spec.add_dependency 'mime-types'
   spec.add_dependency 'oj', '~> 3.11'
   spec.add_dependency 'ox', '~> 2.14'
