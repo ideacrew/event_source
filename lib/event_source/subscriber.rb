@@ -72,17 +72,18 @@ module EventSource
 
       def subscribe(queue_name, &block)
         identifier = queue_name.to_s.match(/^on_(.*)/)[1]
-        
-        routing_key = 
-            if ("#{app_name}_" + publisher_key.to_s.gsub(delimiter, '_')) == identifier
-              [app_name, publisher_key].map(&:to_s).join(delimiter)
-            else
-              [app_name, publisher_key, identifier].map(&:to_s).join(delimiter)
-            end
+        unique_key_elements = [app_name]
+        unique_key_elements.push(formatted_publisher_key)
+        unique_key_elements.push(identifier) unless formatted_publisher_key.gsub(delimiter, '_') == identifier
+        logger.debug "Subscriber#susbcribe Unique_key #{unique_key_elements.join(delimiter)}"
 
         if block_given?
-          EventSource::Subscriber.executable_container[routing_key] = block
+          EventSource::Subscriber.executable_container[unique_key_elements.join(delimiter)] = block
         end
+      end
+
+      def formatted_publisher_key
+        publisher_key.to_s.split(delimiter).reject(&:empty?).join(delimiter)
       end
 
       def app_name
@@ -90,7 +91,12 @@ module EventSource
       end
 
       def create_subscription
-        subscribe_operation = subscribe_operation_for("on_#{app_name}.#{publisher_key}")
+        subscribe_operation_name = (protocol == :http) ? 
+                                        "/on#{publisher_key}" : "on_#{app_name}.#{publisher_key}"
+
+        logger.debug "Subscriber#create_subscription subscribe_operation_name #{subscribe_operation_name}"
+
+        subscribe_operation = find_subscribe_operation_for(subscribe_operation_name)
 
         unless subscribe_operation
           raise EventSource::Error::SubscriberNotFound,
@@ -104,7 +110,7 @@ module EventSource
         EventSource::Subscriber.executable_container[name]
       end
 
-      def subscribe_operation_for(subscribe_operation_name)
+      def find_subscribe_operation_for(subscribe_operation_name)
         connection_manager.find_subscribe_operation({
           protocol: protocol, subscribe_operation_name: subscribe_operation_name
         })
@@ -116,6 +122,10 @@ module EventSource
 
       def delimiter
         EventSource.delimiter(protocol)
+      end
+
+      def logger
+        EventSourceLogger.new.logger
       end
     end
   end

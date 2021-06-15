@@ -31,7 +31,7 @@ module EventSource
               bindings.slice(:durable, :auto_delete, :vhost)
             )
           exchange.on_return do |return_info, properties, content|
-            logger.info "Got a returned message: #{content} with return info: #{return_info}, properties: #{properties}"
+            logger.error "Got a returned message: #{content} with return info: #{return_info}, properties: #{properties}"
           end
 
           logger.info "Found or created Bunny exchange #{exchange.name}"

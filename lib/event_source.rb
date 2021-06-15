@@ -75,4 +75,9 @@ module EventSource
       @config ||= EventSource::Configure::Config.new
     end
   end
+
+  class EventSourceLogger
+    include EventSource::Logging
+    
+  end
 end

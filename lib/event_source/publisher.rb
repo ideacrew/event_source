@@ -60,11 +60,13 @@ module EventSource
 
       # TODO: coordinate server connection name with dev ops
       def publish(event)
-        publish_operation_name = publisher_key 
-        event_key = event.name.split('.').last
-        publish_operation_name += "#{delimiter}#{event_key}" unless publisher_key.split(delimiter).last == event_key
+        event_key = publisher_key if protocol == :http
+        event_key ||= event.name.split('.').last
 
-        publish_operation_for(publish_operation_name).call(event.payload)
+        publish_operation_name = publish_operation_name_for(event_key)
+
+        logger.debug "Publisher#publish publish_operation_name: #{publish_operation_name}"
+        find_publish_operation_for(publish_operation_name).call(event.payload)
       end
 
       def channel_name
@@ -85,10 +87,10 @@ module EventSource
       def validate
         return unless @events
 
-        @events.keys.each do |event_name|
-          publish_operation_name = publisher_key 
-          publish_operation_name += "#{delimiter}#{event_name}" unless publisher_key.split(delimiter).last == event_name
-          publish_operation = publish_operation_for(publish_operation_name)
+        @events.keys.each do |event_name| 
+          publish_operation_name = publish_operation_name_for(event_name)
+          publish_operation = find_publish_operation_for(publish_operation_name)
+          logger.debug "Publisher#validate publish_operation_name: #{publish_operation_name}"
 
           next if publish_operation
           raise EventSource::AsyncApi::Error::PublishOperationNotFoundError,
@@ -96,7 +98,12 @@ module EventSource
         end
       end
 
-      def publish_operation_for(publish_operation_name)
+      def publish_operation_name_for(event_name)
+        publish_operation_name = publisher_key if publisher_key == event_name 
+        publish_operation_name || [publisher_key, event_name].join(delimiter)
+      end
+
+      def find_publish_operation_for(publish_operation_name)
         connection_manager.find_publish_operation({
           protocol: protocol, publish_operation_name: publish_operation_name
         })
@@ -112,6 +119,10 @@ module EventSource
 
       def protocol
         EventSource::Publisher.publisher_container[self][:protocol]
+      end
+
+      def logger
+        EventSourceLogger.new.logger
       end
     end
   end
