@@ -14,7 +14,8 @@ module EventSource
     attr_reader :subscribe_operations,
                 :publish_operations,
                 :consumers,
-                :channel_proxy
+                :channel_proxy,
+                :connection
 
     # The list of DSL methods that a protocol's injected channel proxy class
     # must respond to
@@ -35,11 +36,11 @@ module EventSource
     # @param async_api_channel_item [Hash] configuration values in the form of
     #   a {EventSource::AsyncApi::ChannelItem}
     # @return [Object]
-    def initialize(channel_proxy, connection, async_api_channel_item)
+    def initialize(connection, channel_proxy, async_api_channel_item)
+      @connection = connection
       @channel_proxy = channel_proxy
       @publish_operations = {}
       @subscribe_operations = {}
-      @connection = connection
 
       add_publish_operation(async_api_channel_item)
       add_subscribe_operation(async_api_channel_item)
@@ -78,6 +79,7 @@ module EventSource
       logger.info "Adding Publish Operation:  #{operation_id}"
       @publish_operations[operation_id] = 
         EventSource::PublishOperation.new(
+          self,
           publish_proxy,
           async_api_channel_item[:publish]
         )
@@ -94,9 +96,10 @@ module EventSource
       subscribe_proxy =
         @channel_proxy.add_subscribe_operation(async_api_channel_item)
 
-      # operation_id = async_api_channel_item[:subscribe][:operationId]
-      @subscribe_operations[subscribe_proxy.name] =
+      operation_id = async_api_channel_item[:subscribe][:operationId]
+      @subscribe_operations[operation_id] =
         EventSource::SubscribeOperation.new(
+          self,
           subscribe_proxy,
           async_api_channel_item[:subscribe]
         )

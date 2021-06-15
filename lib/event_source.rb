@@ -52,10 +52,12 @@ module EventSource
 
     def_delegators :config,
                    :pub_sub_root,
+                   :app_name,
                    :load_protocols,
                    :create_connections,
                    :load_async_api_resources,
                    :load_components,
+                   :delimiter,
                    :async_api_schemas=
 
     def configure

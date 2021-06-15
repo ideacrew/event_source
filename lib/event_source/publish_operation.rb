@@ -4,12 +4,13 @@ module EventSource
   # A protocol-level object responsible for publishing messages
   class PublishOperation
     # @attr_reader [Object] subject instance of the protocol's publisher class
-    attr_reader :subject, :name
+    attr_reader :channel, :subject, :name
 
     ADAPTER_METHODS = %i[call name].freeze
 
     # @param [Object] publish_proxy instanc of the protocol's publisher class
-    def initialize(publish_proxy, async_api_publish_operation)
+    def initialize(channel, publish_proxy, async_api_publish_operation)
+      @channel = channel
       @subject = publish_proxy
       @async_api_publish_operation = async_api_publish_operation
       @name = async_api_publish_operation[:operationId]

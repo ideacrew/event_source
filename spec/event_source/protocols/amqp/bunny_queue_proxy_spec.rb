@@ -120,7 +120,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyQueueProxy do
       it 'should execute the block' do
         subject
         expect(subject.consumer_count).to eq 0
-        subject.subscribe(
+        subject.register_subscription(
           'SubscriberClass',
           subscribe_operation[:bindings],
           &proc_to_execute

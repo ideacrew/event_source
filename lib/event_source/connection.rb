@@ -85,6 +85,14 @@ module EventSource
       subscribe_operations[name]
     end
 
+    def publish_operation_exists?(name)
+      publish_operations.key?(name)
+    end
+
+    def subscribe_operation_exists?(name)
+      subscribe_operations.key?(name)
+    end
+
     # Create and register a collection of new {EventSource::Channel} instances
     def add_channels(async_api_channels)
       async_api_channels[:channels]
@@ -117,7 +125,7 @@ module EventSource
       channel_proxy =
         @connection_proxy.add_channel(channel_item_key, async_api_channel_item)
       @channels[channel_item_key] =
-        Channel.new(channel_proxy, self, async_api_channel_item)
+        Channel.new(self, channel_proxy, async_api_channel_item)
     end
 
     # Find a {EventSource::Channel} in the registry.
@@ -127,8 +135,6 @@ module EventSource
     def find_channel_by_name(name)
       @channels[name]
     end
-
-
 
     def connection_params
       @connection_proxy.connection_params

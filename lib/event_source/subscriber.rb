@@ -7,20 +7,24 @@ module EventSource
   # Mixin that provides a DSL to register and receive published {EventSource::Event}
   #   messages
   class Subscriber < Module
-    send(:include, Dry.Equalizer(:protocol, :exchange))
+    send(:include, Dry.Equalizer(:protocol, :publisher_key))
 
-    # include Dry.Equalizer(:protocol, :exchange)
+    # include Dry.Equalizer(:protocol, :publisher_key)
 
     # @attr_reader [Symbol] protocol communication protocol used by this
     #   subscriber (for example: :amqp)
-    # @attr_reader [String] exchange the unique key for publisher broadcasting event
+    # @attr_reader [String] publisher_key the unique key for publisher broadcasting event
     #   messsages that this subsciber will receive
-    # TODO: Ram update the references to :exchange to reflect publisher or publish_operation
-    attr_reader :protocol, :exchange
+    # TODO: Ram update the references to :publisher_key to reflect publisher or publish_operation
+    attr_reader :protocol, :publisher_key
 
     # @api private
     def self.subscriber_container
       @subscriber_container ||= Concurrent::Map.new
+    end
+
+    def self.executable_container
+      @executable_container ||= Concurrent::Map.new
     end
 
     def self.[](exchange_ref)
@@ -31,22 +35,22 @@ module EventSource
     end
 
     # @api private
-    def initialize(protocol, exchange)
+    def initialize(protocol, publisher_key)
       super()
       @protocol = protocol
-      @exchange = exchange
+      @publisher_key = publisher_key
     end
 
     def included(base)
       self.class.subscriber_container[base] = {
-        exchange: exchange,
+        publisher_key: publisher_key,
         protocol: protocol
       }
       base.extend ClassMethods
 
       TracePoint.trace(:end) do |t|
         if base == t.self
-          base.register_subscription_methods
+          base.create_subscription
           t.disable
         end
       end
@@ -54,8 +58,8 @@ module EventSource
 
     # methods to register subscriptions
     module ClassMethods
-      def exchange_name
-        EventSource::Subscriber.subscriber_container[self][:exchange]
+      def publisher_key
+        EventSource::Subscriber.subscriber_container[self][:publisher_key]
       end
 
       def protocol
@@ -63,28 +67,55 @@ module EventSource
       end
 
       def channel_name
-        exchange_name.to_sym
+        publisher_key.to_sym
       end
 
       def subscribe(queue_name, &block)
-        subscribe_operation = connection.find_subscribe_operation_by_name(queue_name.to_s)
+        identifier = queue_name.to_s.match(/^on_(.*)/)[1]
+        
+        routing_key = 
+            if ("#{app_name}_" + publisher_key.to_s.gsub(delimiter, '_')) == identifier
+              [app_name, publisher_key].map(&:to_s).join(delimiter)
+            else
+              [app_name, publisher_key, identifier].map(&:to_s).join(delimiter)
+            end
+
+        if block_given?
+          EventSource::Subscriber.executable_container[routing_key] = block
+        end
+      end
+
+      def app_name
+        EventSource.app_name
+      end
+
+      def create_subscription
+        subscribe_operation = subscribe_operation_for("on_#{app_name}.#{publisher_key}")
 
         unless subscribe_operation
           raise EventSource::Error::SubscriberNotFound,
                 "Unable to find queue #{queue_name}"
         end
-        subscribe_operation.subscribe(self, &block)
+
+        subscribe_operation.subscribe(self)
       end
 
-      def register_subscription_methods
-        instance_methods(false).each do |method_name|
-          subscribe(method_name) if method_name.match(/^on_(.*)$/)
-        end
+      def executable_for(name)
+        EventSource::Subscriber.executable_container[name]
       end
 
-      def connection
-        connection_manager = EventSource::ConnectionManager.instance
-        connection_manager.connection_by_protocol_and_channel(protocol, channel_name)
+      def subscribe_operation_for(subscribe_operation_name)
+        connection_manager.find_subscribe_operation({
+          protocol: protocol, subscribe_operation_name: subscribe_operation_name
+        })
+      end
+
+      def connection_manager
+        EventSource::ConnectionManager.instance
+      end
+
+      def delimiter
+        EventSource.delimiter(protocol)
       end
     end
   end

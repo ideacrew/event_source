@@ -33,7 +33,7 @@ module EventSource
       include EventSource::Logging
 
       # TODO: add default for pub_sub_root
-      attr_writer :async_api_schemas, :pub_sub_root, :protocols, :server_configurations
+      attr_writer :async_api_schemas, :pub_sub_root, :protocols, :server_configurations, :app_name
 
       def load_protocols
         @protocols.each do |protocol|
@@ -91,6 +91,21 @@ module EventSource
             require file
           end
         end
+      end
+
+      def delimiter(protocol)
+        case protocol
+        when :amqp
+          '.'
+        when :http
+          '/'
+        else
+          '.'
+        end
+      end
+
+      def app_name
+        @app_name
       end
     end
   end

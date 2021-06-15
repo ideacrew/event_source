@@ -6,9 +6,9 @@ module EventSource
     extend Dry::Initializer
 
     # @attr_reader [Array<String>] attribute_keys optional list of attributes that must be included in { Payload }
-    # @attr_reader [String] publisher_key namespaced key indicating the class that registers event for publishing
+    # @attr_reader [String] publisher_path namespaced key indicating the class that registers event for publishing
     # @attr_reader [String] payload attribute/value pairs for the message that accompanies the event
-    attr_reader :attribute_keys, :publisher_key, :payload
+    attr_reader :attribute_keys, :publisher_path, :payload
 
     HeaderDefaults = {
       version: '3.0',
@@ -24,12 +24,12 @@ module EventSource
 
       send(:payload=, options[:attributes] || {})
 
-      _metadata = (options[:metadata] || {}).merge(event_key: event_key)
+      _metadata = (options[:metadata] || {}).merge(name: name)
 
-      @publisher_key = klass_var_for(:publisher_key) || nil
-      if @publisher_key.eql?(nil)
+      @publisher_path = klass_var_for(:publisher_path) || nil
+      if @publisher_path.eql?(nil)
         raise EventSource::Error::PublisherKeyMissing,
-              "add 'publisher_key' to #{self.class.name}"
+              "add 'publisher_path' to #{self.class.name}"
       end
     end
 
@@ -61,20 +61,20 @@ module EventSource
     def publish
       raise EventSource::Error::AttributesInvalid, @event_errors unless valid?
 
-      publisher_klass = publisher_klass(publisher_key)
+      publisher_klass = publisher_klass(publisher_path)
       publisher_klass.publish(self)
 
       # EventSource.adapter.enqueue(self)
-      # EventSource.adapter.publish("on_#{event_key}".gsub(/\./, '_'), payload)
+      # EventSource.adapter.publish("on_#{name}".gsub(/\./, '_'), payload)
     end
 
     def publisher_klass(key)
       key.split('.').map(&:camelize).join('::').constantize
     end
 
-    def event_key
-      return @event_key if defined?(@event_key)
-      @event_key = self.class.name.gsub('::', '.').underscore
+    def name
+      return @name if defined?(@name)
+      @name = self.class.name.gsub('::', '.').underscore
     end
 
     def event_errors
@@ -102,8 +102,8 @@ module EventSource
 
     # Class methods
     class << self
-      def publisher_key(value = nil)
-        set_instance_variable_for(:publisher_key, value)
+      def publisher_path(value = nil)
+        set_instance_variable_for(:publisher_path, value)
       end
 
       def contract_key(value = nil)

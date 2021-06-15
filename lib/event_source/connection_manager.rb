@@ -95,6 +95,39 @@ module EventSource
       end
     end
 
+    # Find connection for given protocol and publish/subscribe operation name
+    # @param [Symbol] protocol the protocol name, `:http` or `:amqp`
+    # @param [String] publish_operation_name Publish operation name
+    # @param [String] subscribe_operation_name Subscribe operation name
+    # @return [Class] connection Protocol Specific Connection
+    def find_connection(params)
+      connections = connections_for(params[:protocol])
+
+      if params[:publish_operation_name]
+        connections.detect{|connection| connection.publish_operation_exists?(params[:publish_operation_name]) }
+      else
+        connections.detect{|connection| connection.subscribe_operation_exists?(params[:subscribe_operation_name]) }
+      end
+    end
+
+    # Find publish operation for given protocol and publish operation name
+    # @param [Symbol] protocol the protocol name, `:http` or `:amqp`
+    # @param [String] publish_operation_name Publish operation name
+    # @return [Class] publish_operation Publish operation
+    def find_publish_operation(params)
+      connection = find_connection(params)
+      connection.find_publish_operation_by_name(params[:publish_operation_name])
+    end
+
+    # Find subscribe operation for given protocol and subscribe operation name
+    # @param [Symbol] protocol the protocol name, `:http` or `:amqp`
+    # @param [String] subscribe_operation_name Subscribe operation name
+    # @return [Class] subscribe_operation Subscribe operation
+    def find_subscribe_operation(params)
+      connection = find_connection(params)
+      connection.find_subscribe_operation_by_name(params[:subscribe_operation_name])
+    end
+
     # TODO: do we need a method to gracefully close all open connections at shutdown?
 
     private

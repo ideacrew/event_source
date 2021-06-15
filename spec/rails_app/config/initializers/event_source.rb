@@ -4,6 +4,7 @@ EventSource.configure do |config|
   config.protocols = %w[amqp http]
   config.pub_sub_root = Pathname.pwd.join('spec', 'rails_app', 'app', 'event_source')
   config.server_key = Rails.env.to_sym
+  config.app_name = :enroll
 
   config.servers do |server|
     # mitc
@@ -87,7 +88,7 @@ EventSource.configure do |config|
 end
 
 dir = Pathname.pwd.join('spec', 'support', 'async_api_files')
-EventSource.async_api_schemas = ::Dir[::File.join(dir, '**', '*')].reject { |p| ::File.directory? p }.reduce([]) do |memo, file|
+EventSource.async_api_schemas = ::Dir[::File.join(dir, '**', '*')].reject { |p| ::File.directory? p }.sort.reduce([]) do |memo, file|
   # read
   # serialize yaml to hash
   # Add to memo

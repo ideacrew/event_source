@@ -39,9 +39,9 @@ EventSource enables these core components:
 
 Events are signals about anything notable that happens in the system. For example, events can indicate that an enrollment period has begun, an eligibility determined, an application submitted and an enrollment effectuated.
 
-Event classes are predefined in the system, inheriting from the `EventSource::Event` class. Event names use past tense form, for example: `Created`, `Updated`, `Deleted`. An Event class must include a `publisher_key` but optionally may specify attributes to carry in the Event's message payload. The `publisher_key` is a stringified class name that specifies the topic where event instances are published.
+Event classes are predefined in the system, inheriting from the `EventSource::Event` class. Event names use past tense form, for example: `Created`, `Updated`, `Deleted`. An Event class must include a `publisher_path` but optionally may specify attributes to carry in the Event's message payload. The `publisher_path` is a stringified class name that specifies the topic where event instances are published.
 
-For example, the following event has a `publisher_key` referencing the `Parties::OrganiztionPublisher` class. It also enumerates four `attribute_keys`: `:hbx_id, :legal_name, :fein, :entity_kind`.
+For example, the following event has a `publisher_path` referencing the `Parties::OrganiztionPublisher` class. It also enumerates four `attribute_keys`: `:hbx_id, :legal_name, :fein, :entity_kind`.
 
 contract_key
 entity_key
@@ -50,7 +50,7 @@ entity_key
     # app/events/parties/organization/created.rb
 
     class Parties::Organization::Created < EventSource::Event
-      publisher_key 'parties.organization_publisher'
+      publisher_path 'parties.organization_publisher'
       attribute_keys :hbx_id, :legal_name, :fein, :entity_kind
       ...
     end
@@ -121,7 +121,7 @@ end
 
 ### Publisher
 
-Publishers are responsible for broadcasting events to registered Subscribers. Mix Dry::Events::Publisher to define a publisher instance. For example, the following publisher manages events that reference the `publisher_key`: `'parties.organization_publisher'`.
+Publishers are responsible for broadcasting events to registered Subscribers. Mix Dry::Events::Publisher to define a publisher instance. For example, the following publisher manages events that reference the `publisher_path`: `'parties.organization_publisher'`.
 
 ```ruby
 # app/event_source/publishers/parties/organization_publisher.rb
