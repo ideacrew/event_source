@@ -63,9 +63,6 @@ module EventSource
 
       publisher_klass = publisher_klass(publisher_path)
       publisher_klass.publish(self)
-
-      # EventSource.adapter.enqueue(self)
-      # EventSource.adapter.publish("on_#{name}".gsub(/\./, '_'), payload)
     end
 
     def publisher_klass(key)

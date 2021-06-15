@@ -61,7 +61,8 @@ module EventSource
       # TODO: coordinate server connection name with dev ops
       def publish(event)
         publish_operation_name = publisher_key 
-        publish_operation_name += "#{delimiter}#{event.name}" unless publisher_key.split(delimiter).last == event_name
+        event_key = event.name.split('.').last
+        publish_operation_name += "#{delimiter}#{event_key}" unless publisher_key.split(delimiter).last == event_key
 
         publish_operation_for(publish_operation_name).call(event.payload)
       end
@@ -83,6 +84,7 @@ module EventSource
       # Validates given protocol has publish operation defined for publish operation name
       def validate
         return unless @events
+
         @events.keys.each do |event_name|
           publish_operation_name = publisher_key 
           publish_operation_name += "#{delimiter}#{event_name}" unless publisher_key.split(delimiter).last == event_name

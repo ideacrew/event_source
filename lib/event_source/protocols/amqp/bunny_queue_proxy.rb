@@ -13,7 +13,7 @@ module EventSource
         # @attr_reader [Bunny::Queue] subject the queue object
         # @attr_reader [EventSource::Protcols::Amqp::BunnyChannelProxy] channel_proxy the channel_proxy used to access this queue
         # @attr_reader [String] exchange_name the Exchange to which this to bind this Queue
-        attr_reader :subject, :channel_proxy, :exchange_name
+        attr_reader :subject, :channel_proxy, :exchange_name, :consumers
 
         # @param channel_proxy [EventSource::Protocols::Amqp::BunnyChannelProxy] channel_proxy wrapping Bunny::Channel object
         # @param async_api_channel_item [Hash] {EventSource::AsyncApi::ChannelItem} definition and bindings
@@ -26,6 +26,7 @@ module EventSource
         def initialize(channel_proxy, async_api_channel_item)
           @channel_proxy = channel_proxy
           bindings = async_api_channel_item[:bindings]
+          @consumers = []
 
           queue_bindings = channel_item_queue_bindings_for(bindings)
           @exchange_name = exchange_name_from_queue(queue_bindings[:name])
@@ -64,7 +65,12 @@ module EventSource
             route_payload_for(subscriber_klass, delivery_info, metadata, payload)
           end
  
+          subscribe_consumer(consumer_proxy)
+        end
+
+        def subscribe_consumer(consumer_proxy)
           @subject.subscribe_with(consumer_proxy)
+          @consumers.push(consumer_proxy)
         end
 
         def consumer_proxy_for(bindings)

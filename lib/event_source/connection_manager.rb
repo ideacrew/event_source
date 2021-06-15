@@ -6,6 +6,7 @@ module EventSource
   #   network resources
   class ConnectionManager
     include Singleton
+    include EventSource::Logging
 
     # @attr_reader [Hash] connections The connection registry
     attr_reader :connections
@@ -115,6 +116,7 @@ module EventSource
     # @param [String] publish_operation_name Publish operation name
     # @return [Class] publish_operation Publish operation
     def find_publish_operation(params)
+      logger.info "find publish operation with #{params}"
       connection = find_connection(params)
       connection.find_publish_operation_by_name(params[:publish_operation_name])
     end
@@ -124,6 +126,7 @@ module EventSource
     # @param [String] subscribe_operation_name Subscribe operation name
     # @return [Class] subscribe_operation Subscribe operation
     def find_subscribe_operation(params)
+      logger.info "find subscribe operation with #{params}"
       connection = find_connection(params)
       connection.find_subscribe_operation_by_name(params[:subscribe_operation_name])
     end
