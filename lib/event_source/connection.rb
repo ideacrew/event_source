@@ -4,6 +4,7 @@ module EventSource
   # A DSL for a network (TCP) connection between an application and a
   #   message broker or an application and a remote service provider
   class Connection
+    include EventSource::Logging
     # @attr_reader [Hash] channels The collection of registered Connections
     # @attr_reader [Object] connection_proxy The protocol adapter instance for this DSL
     attr_reader :channels, :connection_proxy

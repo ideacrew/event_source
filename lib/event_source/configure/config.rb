@@ -33,7 +33,7 @@ module EventSource
       include EventSource::Logging
 
       # TODO: add default for pub_sub_root
-      attr_writer :async_api_schemas, :pub_sub_root, :protocols, :server_configurations, :app_name
+      attr_writer :pub_sub_root, :protocols, :server_configurations, :app_name
 
       def load_protocols
         @protocols.each do |protocol|
@@ -43,6 +43,10 @@ module EventSource
 
       def server_key=(value)
         @server_key = value&.to_sym
+      end
+
+      def async_api_schemas=(schemas)
+        @async_api_schemas = schemas.map(&:deep_symbolize_keys!)
       end
 
       def servers
@@ -65,23 +69,44 @@ module EventSource
       def load_async_api_resources
         return unless @async_api_schemas
 
-        connection_manager = EventSource::ConnectionManager.instance
         @async_api_schemas.each do |resource|
-          resource.deep_symbolize_keys!
-          next unless resource[:servers]
-          connection =
-            connection_manager.fetch_connection(resource[:servers][@server_key])
-
-          unless connection
-            logger.error { "Unable to find connection for #{@server_key} with #{resource[:servers][@server_key]}" }
-            raise EventSource::Error::ConnectionNotFound, "unable to find connection for #{@server_key} with #{resource[:servers][@server_key]}}"
+          resource[:channels].each do |channel_item_key, async_api_channel_item|
+            if async_api_channel_item[:publish]
+              process_resource_for(resource[:servers], channel_item_key, async_api_channel_item)
+            end
           end
-
-          logger.info { "Connecting #{connection.connection_uri}" }
-          connection.start
-          logger.info { "Connected to #{connection.connection_uri}" }
-          connection.add_channels(channels: resource[:channels])
         end
+
+        @async_api_schemas.each do |resource|
+          resource[:channels].each do |channel_item_key, async_api_channel_item|
+            next if async_api_channel_item[:publish]
+            next unless async_api_channel_item[:subscribe]
+            process_resource_for(resource[:servers], channel_item_key, async_api_channel_item)
+          end
+        end
+      end
+
+      def connection_manager
+        return @connection_manager if defined? @connection_manager
+        @connection_manager = EventSource::ConnectionManager.instance
+      end
+
+      def process_resource_for(servers, channel_item_key,  async_api_channel_item)
+        return unless servers
+
+        connection =
+          connection_manager.fetch_connection(servers[@server_key])
+
+        unless connection
+          logger.error { "Unable to find connection for #{@server_key} with #{servers[@server_key]}" }
+          raise EventSource::Error::ConnectionNotFound, "unable to find connection for #{@server_key} with #{servers[@server_key]}}"
+        end
+
+        logger.info { "Connecting #{connection.connection_uri}" }
+        connection.start
+        logger.info { "Connected to #{connection.connection_uri}" }
+
+        connection.add_channel(channel_item_key, async_api_channel_item)
       end
 
       def load_components
