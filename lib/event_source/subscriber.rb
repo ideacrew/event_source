@@ -94,26 +94,23 @@ module EventSource
         subscribe_operation_name = (protocol == :http) ? 
                                         "/on#{publisher_key}" : "on_#{app_name}.#{publisher_key}"
 
-        logger.debug "Subscriber#create_subscription subscribe_operation_name #{subscribe_operation_name}"
+        connection_params = { protocol: protocol, subscribe_operation_name: subscribe_operation_name }
+        logger.debug "Subscriber#create_subscription find subscribe operation for #{connection_params}"
+        subscribe_operation = connection_manager.find_subscribe_operation(connection_params)
 
-        subscribe_operation = find_subscribe_operation_for(subscribe_operation_name)
-
-        unless subscribe_operation
-          raise EventSource::Error::SubscriberNotFound,
-                "Unable to find queue #{queue_name}"
+        if subscribe_operation
+          logger.debug "Subscriber#create_subscription found subscribe operation for #{connection_params}"
+          begin
+            subscribe_operation.subscribe(self)
+            logger.debug "Subscriber#create_subscription created subscription for #{subscribe_operation_name}"
+          rescue => exception
+            logger.error "Subscriber#create_subscription Subscription failed for #{subscribe_operation_name} with exception: #{exception}"
+          end
         end
-
-        subscribe_operation.subscribe(self)
       end
 
       def executable_for(name)
         EventSource::Subscriber.executable_container[name]
-      end
-
-      def find_subscribe_operation_for(subscribe_operation_name)
-        connection_manager.find_subscribe_operation({
-          protocol: protocol, subscribe_operation_name: subscribe_operation_name
-        })
       end
 
       def connection_manager

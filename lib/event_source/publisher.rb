@@ -85,16 +85,18 @@ module EventSource
 
       # Validates given protocol has publish operation defined for publish operation name
       def validate
-        return unless @events
+        return unless events
 
-        @events.keys.each do |event_name| 
+        events.keys.each do |event_name|
           publish_operation_name = publish_operation_name_for(event_name)
+          logger.debug "Publisher#validate find publish operation for: #{publish_operation_name}"
           publish_operation = find_publish_operation_for(publish_operation_name)
-          logger.debug "Publisher#validate publish_operation_name: #{publish_operation_name}"
 
-          next if publish_operation
-          raise EventSource::AsyncApi::Error::PublishOperationNotFoundError,
-                "publish operation #{publisher_key} not found"
+          if publish_operation
+            logger.debug "Publisher#validate found publish operation for: #{publish_operation_name}"
+          else
+            logger.error "Publisher#validate unable to find publish operation for: #{publish_operation_name}"
+          end
         end
       end
 
