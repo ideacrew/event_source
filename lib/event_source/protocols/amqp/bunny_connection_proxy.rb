@@ -52,7 +52,7 @@ module EventSource
           tls: false,
           username: 'guest',
           password: 'guest',
-          vhost: '/' # '/event_source' # (String) - default: "/" - Virtual host to use
+          vhost: 'event_source' # '/event_source' # (String) - default: "/" - Virtual host to use
         }.freeze
 
         # @param [Hash] server {EventSource::AsyncApi::Server} configuration
@@ -233,7 +233,7 @@ module EventSource
           tls: false,
           username: 'guest',
           password: 'guest',
-          vhost: '/', # (String) - default: "/" - Virtual host to use
+          vhost: 'event_source', # (String) - default: "/" - Virtual host to use
           # RabbitMQ URI Query params
           heartbeat: :server, # (Integer, Symbol) - default: :server - Heartbeat timeout to offer to the server. :server
           # means use the value suggested by RabbitMQ. 0 means heartbeats and socket read timeouts will be disabled (not recommended)
