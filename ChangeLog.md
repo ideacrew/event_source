@@ -1,3 +1,7 @@
+## Version 0.5.2
+
+Correct file loading in AsyncApi namespace to use idiomatic ruby conventions and avoid unpredictable gem search paths.
+
 ## Changes between EventSource 0.4.0 and 0.5.0 (June 3, 2021)
 
 ### Added support for HTTP protocol

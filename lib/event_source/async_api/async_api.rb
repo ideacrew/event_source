@@ -37,14 +37,7 @@ module EventSource
     require_relative 'server_binding'
     require_relative 'server'
     require_relative 'async_api_conf'
-    require_relative 'contracts/contract'
-    require_relative 'operations/async_api_conf/load_path'
-    require_relative 'operations/async_api_conf/load'
     require_relative 'contracts'
-
-    # Don't use this.  This has no control over what version of the gem the
-    # files will be loaded from.  If you update the gem and have an old version
-    # you don't know what files will be coming from where.
-    Gem.find_files('event_source/async_api/operations/**/*.rb').sort.each { |f| require(f) }
+    require_relative 'operations'
   end
 end
