@@ -68,7 +68,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyQueueProxy do
         is: :routing_key,
         binding_version: '0.2.0',
         queue: {
-          name: 'on_contact_created',
+          name: 'on_polypress.crm_contact_created',
           durable: true,
           auto_delete: true,
           vhost: '/',
@@ -120,7 +120,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyQueueProxy do
       it 'should execute the block' do
         subject
         expect(subject.consumer_count).to eq 0
-        subject.subscribe(
+        subject.register_subscription(
           'SubscriberClass',
           subscribe_operation[:bindings],
           &proc_to_execute

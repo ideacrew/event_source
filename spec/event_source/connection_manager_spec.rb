@@ -91,5 +91,73 @@ RSpec.describe EventSource::ConnectionManager do
         end
       end
     end
+
+    context '.find_publish_operation' do 
+
+      let(:params) { {protocol: :amqp, publish_operation_name: 'on_my_app.polypress.document_builder'}}
+      let(:connection) { double }
+      let(:operation) { double }
+
+      context 'when connection exists with given operation' do 
+        before do 
+          allow(connection_manager).to receive(:find_connection).with(params).and_return(connection)
+          allow(connection).to receive(:find_publish_operation_by_name).and_return(operation)
+        end
+
+        it 'should log connection found message' do
+          connection_manager.find_publish_operation(params)
+
+          expect(@log_output.readline).to match(/find publish operation with #{params}/)
+          expect(@log_output.readline).to match(/found connection for #{params}/)
+        end
+      end
+
+      context 'when connection not exists with given operation' do
+        before do 
+          allow(connection_manager).to receive(:find_connection).with(params).and_return(nil)
+        end
+
+        it 'should log error' do
+          connection_manager.find_publish_operation(params)
+
+          expect(@log_output.readline).to match(/find publish operation with #{params}/)
+          expect(@log_output.readline).to match(/Unable find connection for publish operation: #{params}/)
+        end
+      end
+    end
+
+    context '.find_susbcribe_operation' do 
+
+      let(:params) { {protocol: :amqp, subscribe_operation_name: 'on_my_app.polypress.document_builder'}}
+      let(:connection) { double }
+      let(:operation) { double }
+
+      context 'when connection exists with given operation' do 
+        before do 
+          allow(connection_manager).to receive(:find_connection).with(params).and_return(connection)
+          allow(connection).to receive(:find_subscribe_operation_by_name).and_return(operation)
+        end
+
+        it 'should log connection found message' do
+          connection_manager.find_subscribe_operation(params)
+
+          expect(@log_output.readline).to match(/find subscribe operation with #{params}/)
+          expect(@log_output.readline).to match(/found connection for #{params}/)
+        end
+      end
+
+      context 'when connection not exists with given operation' do
+        before do 
+          allow(connection_manager).to receive(:find_connection).with(params).and_return(nil)
+        end
+
+        it 'should log error' do
+          connection_manager.find_subscribe_operation(params)
+
+          expect(@log_output.readline).to match(/find subscribe operation with #{params}/)
+          expect(@log_output.readline).to match(/Unable find connection for subscribe operation: #{params}/)
+        end
+      end
+    end
   end
 end

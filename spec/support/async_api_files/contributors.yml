@@ -39,7 +39,7 @@ channels:
           headers:
             Content-Type: application/json
     subscribe:
-      operationId: /repos/thoughtbot/factory_girl/contributors
+      operationId: /on/repos/thoughtbot/factory_girl/contributors
       description: Example HTTP restful service call
       bindings:
         http:

@@ -23,7 +23,7 @@ module EventSource
         ::Logging.appenders.rolling_file(
           'event_source.log',
           age: 'daily',
-          level: :info,
+          level: :debug,
           layout: ::Logging.layouts.json
         )
 

@@ -52,7 +52,7 @@ module EventSource
           tls: false,
           username: 'guest',
           password: 'guest',
-          vhost: "/" # '/event_source' # (String) - default: "/" - Virtual host to use
+          vhost: 'event_source' # '/event_source' # (String) - default: "/" - Virtual host to use
         }.freeze
 
         # @param [Hash] server {EventSource::AsyncApi::Server} configuration
@@ -61,10 +61,15 @@ module EventSource
         def initialize(server, options = {})
           @protocol_version = ProtocolVersion
           @client_version = ClientVersion
-          @server_options = options.merge(RabbitMqOptionDefaults)
+          @server_options = RabbitMqOptionDefaults.merge(options)
           @connection_params = self.class.connection_params_for(server)
           @connection_uri = self.class.connection_uri_for(server)
-          @subject = Bunny.new(@connection_params, @server_options)
+
+          logger.debug "ConnectionProxy:  connection_params: #{@connection_params}"
+          logger.debug "ConnectionProxy:  connection_params: #{@server_options}"
+          @subject = Bunny.new(@connection_params.merge(@server_options), {})
+          logger.debug "ConnectionProxy: vhost #{@subject.vhost}"
+          @subject
         end
 
         # The Connection object
@@ -118,6 +123,9 @@ module EventSource
           logger.info "Connection #{connection_uri} closed."
         end
 
+        # @see {close}
+        alias_method :stop, :close
+
         # Returns true if this connection is closed
         # @return [Boolean]
         def closed?
@@ -157,7 +165,7 @@ module EventSource
               auth_mechanism: 'PLAIN',
               user: 'guest',
               pass: 'guest',
-              heartbeat: :server, # will use RabbitMQ setting
+              heartbeat: 5, # will use RabbitMQ setting
               frame_max: 131_072
             )
           end
@@ -169,7 +177,7 @@ module EventSource
             host = params[:host]
             port = params[:port]
             path = params[:vhost]
-            if path == "/"
+            if path == '/'
               "#{scheme}://#{host}:#{port}#{path}"
             else
               "#{scheme}://#{host}:#{port}/#{path}"
@@ -188,7 +196,7 @@ module EventSource
             end
             vhost = vhost_for(server)
 
-            { host: host, port: port, vhost: vhost}
+            { host: host, port: port, vhost: vhost }
           end
 
           def vhost_for(server)
@@ -205,7 +213,8 @@ module EventSource
             else
               vhost = ConnectDefaults[:vhost]
             end
-            vhost = vhost.match(/^\/(.+)$/)[1] if vhost && vhost.match(/^\/.+$/)
+            vhost = vhost.match(%r{^\/(.+)$})[1] if vhost &&
+              vhost.match(%r{^\/.+$})
             vhost || ConnectDefaults[:vhost]
           end
         end
@@ -225,11 +234,11 @@ module EventSource
 
         BINDINGS_DEFAULT = {
           host: '127.0.0.1',
-          port: 15_672, # (Integer) - default: 5672 - Port RabbitMQ listens on
+          port: 5_672, # (Integer) - default: 5672 - Port RabbitMQ listens on
           tls: false,
           username: 'guest',
           password: 'guest',
-          vhost: '/', # (String) - default: "/" - Virtual host to use
+          vhost: 'event_source', # (String) - default: "/" - Virtual host to use
           # RabbitMQ URI Query params
           heartbeat: :server, # (Integer, Symbol) - default: :server - Heartbeat timeout to offer to the server. :server
           # means use the value suggested by RabbitMQ. 0 means heartbeats and socket read timeouts will be disabled (not recommended)

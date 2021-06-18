@@ -16,27 +16,27 @@
 
 module EventSource
   class MyValidEvent < EventSource::Event
-    publisher_key 'parties.organization_publisher'
+    publisher_path 'parties.organization_publisher'
   end
 
   class MyEvent < EventSource::Event
-    publisher_key 'parties.organization_publisher'
+    publisher_path 'parties.organization_publisher'
     attribute_keys :hbx_id, :fein, :entity_kind
   end
 
   class MyEventTwo < EventSource::Event
-    publisher_key 'parties.organization_publisher'
+    publisher_path 'parties.organization_publisher'
   end
 
   class MyEventThree < EventSource::Event
-    publisher_key 'parties.organization_publisher'
+    publisher_path 'parties.organization_publisher'
     attribute_keys :hbx_id, :entity_kind, :fein, :legal_name
   end
 end
 
 RSpec.describe EventSource::Event do
   context 'A new Event class' do
-    # context "and a required publisher_key isn't provided" do
+    # context "and a required publisher_path isn't provided" do
     #   let(:empty_event_class) do
     #     class MyEmptyEvent < EventSource::Event
     #       attribute_keys :hbx_id
@@ -52,13 +52,13 @@ RSpec.describe EventSource::Event do
     #   end
     # end
 
-    # context 'and the required publisher_key provided is invalid' do
-    #   let(:invalid_publisher_key) do
+    # context 'and the required publisher_path provided is invalid' do
+    #   let(:invalid_publisher_path) do
     #     'undefined_module.undefined_event'
     #   end
     #   let(:invalid_event_class) do
     #     class InvalidEvent < EventSource::Event
-    #       publisher_key 'undefined_module.undefined_event'
+    #       publisher_path 'undefined_module.undefined_event'
     #     end
     #     InvalidEvent
     #   end
@@ -67,7 +67,7 @@ RSpec.describe EventSource::Event do
     #   end
     # end
 
-    context 'and the required publisher_key provided is valid' do
+    context 'and the required publisher_path provided is valid' do
       let(:valid_event_class) { EventSource::MyValidEvent }
 
       subject { valid_event_class.new }
@@ -77,7 +77,7 @@ RSpec.describe EventSource::Event do
       # end
 
       it 'should have an event_key' do
-        expect(subject.event_key).to eq 'event_source.my_valid_event'
+        expect(subject.name).to eq 'event_source.my_valid_event'
       end
     end
 

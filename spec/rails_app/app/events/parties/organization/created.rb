@@ -3,7 +3,7 @@
 module Parties
   module Organization
     class Created < EventSource::Event
-      publisher_key 'parties.organization_publisher'
+      publisher_path 'parties.organization_publisher'
 
       # Schema used to validaate Event payload
       contract_class 'Parties::Organization::CreateContract'
