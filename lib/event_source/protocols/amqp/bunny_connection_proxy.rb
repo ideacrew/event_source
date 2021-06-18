@@ -165,7 +165,7 @@ module EventSource
               auth_mechanism: 'PLAIN',
               user: 'guest',
               pass: 'guest',
-              heartbeat: :server, # will use RabbitMQ setting
+              heartbeat: 5, # will use RabbitMQ setting
               frame_max: 131_072
             )
           end

@@ -66,11 +66,12 @@ module EventSource
           faraday_publish_bindings = sanitize_bindings(publish_bindings)
           @subject.body = payload if payload
           @subject.headers.update(faraday_publish_bindings[:headers]) if faraday_publish_bindings[:headers]
-          logger.debug "FaradayExchange#publish  processing request with headers: #{@subject.headers}"
+          logger.debug "FaradayExchange#publish  connection: #{connection.inspect}"
+          logger.debug "FaradayExchange#publish  processing request with headers: #{@subject.headers} body: #{@subject.body}"
 
           # @subject.call(payload, faraday_publish_bindings)
           response = connection.builder.build_response(connection, @subject)
-          logger.debug "Executed Faraday request..."
+          logger.debug "Executed Faraday request...response: #{response.status}"
 
           correlation_id = JSON.parse(payload)['CorrelationID'] if payload
           response.headers.merge!('CorrelationID' => (correlation_id || generate_correlation_id))
