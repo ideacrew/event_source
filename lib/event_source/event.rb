@@ -26,8 +26,11 @@ module EventSource
 
       _metadata = (options[:metadata] || {}).merge(name: name)
 
-      @publisher_key = klass_var_for(:publisher_key) || nil
-      raise EventSource::Error::PublisherKeyMissing, "add 'publisher_key' to #{self.class.name}" if @publisher_key.blank?
+      @publisher_path = klass_var_for(:publisher_path) || nil
+      if @publisher_path.eql?(nil)
+        raise EventSource::Error::PublisherKeyMissing,
+              "add 'publisher_path' to #{self.class.name}"
+      end
     end
 
     # Set payload
