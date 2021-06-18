@@ -10,6 +10,7 @@ jobs:
         run: |
           sudo apt-get install rabbitmq-server
           sudo rabbitmqctl add_vhost event_source
+          sudo rabbitmqctl set_permissions -p event_source guest ".*" ".*" ".*"
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.6
