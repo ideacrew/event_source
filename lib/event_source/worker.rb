@@ -78,7 +78,9 @@ module EventSource
         threads << Thread.new do
           while active? || actions_left?
             action_payload = wait_for_action
-            logger.debug "Spawn payload action: #{action_payload}"
+            logger.debug "Spawn payload action headers: #{action_payload.headers}"
+            logger.debug "Spawn payload action body: #{action_payload.body}"
+
             queue_proxy.actions.each do |action_proc|
               action_proc.call(action_payload.headers, action_payload.body)
             end
