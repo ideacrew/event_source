@@ -7,12 +7,13 @@ module EventSource
     module Http
       module Contracts
         # Schema and validation rules for http operation bindings
-        class PublishOperationBindingContract < Dry::Validation::Contract
+        class OperationBindingContract < Dry::Validation::Contract
 
           params do
-            required(:type).value(EventSource::Protocols::Http::Types::OperationBindingTypeKind)
+            optional(:type).value(EventSource::Protocols::Http::Types::OperationBindingTypeKind)
             optional(:method).value(EventSource::Protocols::Http::Types::OperationBindingMethodKind)
             optional(:query).value(:hash)
+            optional(:binding_version).value(:string)
             optional(:extensions).value(:hash)
 
             before(:key_coercer) do |a|

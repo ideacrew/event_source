@@ -71,6 +71,7 @@ module EventSource
         return unless @async_api_schemas
 
         @async_api_schemas.each do |resource|
+          #raise resource[:channels].inspect
           resource[:channels].each do |channel_item_key, async_api_channel_item|
             if async_api_channel_item[:publish]
               process_resource_for(resource[:servers], channel_item_key, async_api_channel_item)

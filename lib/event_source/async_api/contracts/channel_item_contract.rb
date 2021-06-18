@@ -17,7 +17,7 @@ module EventSource
         params do
           optional(:ref).value(:string)
           optional(:subscribe).value(:hash)
-          optional(:publish).value(:hash)
+          optional(:publish).value(OperationContract.params)
           optional(:description).value(:string)
           optional(:parameters).value(Types::HashOrNil)
           optional(:bindings).hash { optional(:amqp).maybe(:hash) }

@@ -85,6 +85,8 @@ module EventSource
       AmqpBindingVersionKind =
         Types::Coercible::String.default('0.2.0').enum('0.2.0')
 
+
+      OperationNameType = Types::String | Types::Symbol
       # PatternedFieldName  = String.constrained(format: /^[A-Za-z0-9_\-]+$/)
     end
   end
