@@ -64,7 +64,12 @@ module EventSource
           @server_options = RabbitMqOptionDefaults.merge(options)
           @connection_params = self.class.connection_params_for(server)
           @connection_uri = self.class.connection_uri_for(server)
-          @subject = Bunny.new(@connection_params, @server_options)
+
+          logger.debug "ConnectionProxy:  connection_params: #{@connection_params}"
+          logger.debug "ConnectionProxy:  connection_params: #{@server_options}"
+          @subject = Bunny.new(@connection_params.merge(@server_options), {})
+          logger.debug "ConnectionProxy: vhost #{@subject.vhost}"
+          @subject
         end
 
         # The Connection object
