@@ -213,8 +213,9 @@ module EventSource
             else
               vhost = ConnectDefaults[:vhost]
             end
-            vhost = vhost.match(%r{^\/(.+)$})[1] if vhost &&
-              vhost.match(%r{^\/.+$})
+            if vhost != "/"
+              vhost = vhost.match(%r{\A\/(.+)\Z})[1] if vhost && vhost.match(%r{\A\/.+\Z})
+            end
             vhost || ConnectDefaults[:vhost]
           end
         end
