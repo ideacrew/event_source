@@ -5,13 +5,13 @@ jobs:
   rspec:
     runs-on: ubuntu-latest
     steps:
-      - uses: mer-team/rabbitmq-mng-action@v1.2
+      - uses: getong/rabbitmq-action@v1.2
         with:
-          RABBITMQ_USER: 'guest'
-          RABBITMQ_PASS: 'guest'
-          RABBITMQ_PORT: 5672
-          RABBITMQ_MNG_PORT: 15672
-          RABBITMQ_TAG: '3-management-alpine'
+          rabbitmq version: '3.8.2-management-alpine'
+          host port: 5672
+          rabbitmq user: 'guest'
+          rabbitmq password: 'guest'
+          rabbitmq vhost: 'event_source'
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
         with:

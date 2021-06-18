@@ -74,6 +74,12 @@ module EventSource
     def config
       @config ||= EventSource::Configure::Config.new
     end
+
+    # Call this method on fork of a rails app you are working in.
+    # It cleans up your connections and channels and avoids strange
+    # behaviour.
+    def reconnect_publishers!
+    end
   end
 
   class EventSourceLogger
