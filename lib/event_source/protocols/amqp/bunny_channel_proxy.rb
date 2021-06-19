@@ -35,7 +35,14 @@ module EventSource
         end
 
         def create_channel
-          @subject = Bunny::Channel.new(connection).open
+          @subject = Bunny::Channel.new(connection)
+          # @subject.prefetch(1) # Limit number of messages received by consumer at a time before ack or nack previous message.
+          @subject.open
+        end
+
+        def subject
+          create_channel if closed?
+          @subject
         end
 
         # Returns the value of the attribute closed?
@@ -49,11 +56,11 @@ module EventSource
         end
 
         def publish_operations
-          @subject.exchanges
+          subject.exchanges
         end
 
         def subscribe_operations
-          @subject.queues
+          subject.queues
         end
 
         def find_publish_operation_by_name(publish_operation_name)
@@ -74,17 +81,17 @@ module EventSource
 
         # @return [String] a human-readable summary for this channel
         def to_s
-          @subject.to_s
+          subject.to_s
         end
 
         # @return [Symbol] Channel status (:opening, :open, :closed)
         def status
-          @subject.status
+          subject.status
         end
 
         #  Enables or disables message flow for channel
         def channel_flow(active)
-          @subject.channel_flow(active)
+          subject.channel_flow(active)
         end
 
         # return [Bunny::ConsumerWorkPool] Thread pool where
@@ -99,28 +106,24 @@ module EventSource
         # In order to receive messages, a queue needs to be
         # bound to at least one exchange
         def bind_queue(name, exchange, options = {})
-          create_channel if closed?
-          @subject.queue_bind(name, exchange, options)
+          subject.queue_bind(name, exchange, options)
         end
 
         def respond_to_missing?(name, include_private); end
 
         def method_missing(name, *args)
-          create_channel if closed?
-          @subject.send(name, *args)
+          subject.send(name, *args)
         end
 
         private
 
         def exchange_by_name(name)
-          create_channel if closed?
           exchanges[name.to_s]
         end
 
         # Returns the queues collection
         def queues
-          create_channel if closed?
-          @subject.queues
+          subject.queues
         end
 
         # Returns the queue matching the passed name
@@ -131,32 +134,30 @@ module EventSource
         end
 
         def delete_exchange(exchange)
-          @subject.exchange_delete(exchange)
+          subject.exchange_delete(exchange)
         rescue Bunny::NotFound => e
           puts "Channel-level exception! Code: #{e.channel_close.reply_code}, message: #{e.channel_close.reply_text}"
         end
 
         # Remove all messages from a queue
         def purge_queue(name, options = {})
-          @subject.queue_purge(name, options)
+          subject.queue_purge(name, options)
         end
 
         def delete_queue(queue_name)
           return unless queue_exists?(queue_name)
           begin
-            @subject.queue_delete(queue_name)
+            subject.queue_delete(queue_name)
           rescue Bunny::NotFound => e
             puts "Channel-level exception! Code: #{e.channel_close.reply_code}, message: #{e.channel_close.reply_text}"
           end
         end
 
         def add_queue
-          create_channel if closed?
           BunnyQueueProxy.new(self, async_api_channel_item)
         end
 
         def add_exchange
-          create_channel if closed?
           exchange_bindings =
             async_api_channel_item[:bindings][:amqp][:exchange]
           BunnyExchangeProxy.new(self, exchange_bindings)

@@ -39,7 +39,7 @@ module EventSource
         def bunny_queue_for(queue_bindings)
           queue =
             Bunny::Queue.new(
-              channel_proxy,
+              channel_proxy.subject,
               queue_bindings[:name],
               queue_bindings.slice(:durable, :auto_delete, :vhost, :exclusive)
             )
@@ -58,6 +58,23 @@ module EventSource
                 "exchange #{name} not found. got exception #{e.to_s}"
         end
 
+        def subscribe(subscriber_klass, bindings)
+          options = convert_to_subscribe_options(bindings[:amqp])
+          logger.debug "Queue#subscribe options:"
+          logger.debug options.inspect
+
+          @subject.subscribe(options) do |delivery_info, metadata, payload|
+            route_payload_for(subscriber_klass, delivery_info, metadata, payload)
+          end
+        end
+
+        def convert_to_subscribe_options(options)
+          subscribe_options = options.slice(:exclusive, :on_cancellation)
+          subscribe_options[:manual_ack] = options[:ack]
+          subscribe_options[:block] = false
+          subscribe_options
+        end
+
         def register_subscription(subscriber_klass, bindings)
           consumer_proxy = consumer_proxy_for(bindings)
           
@@ -74,7 +91,10 @@ module EventSource
         end
 
         def consumer_proxy_for(bindings)
-          operation_bindings = convert_to_bunny_options(bindings[:amqp])
+          operation_bindings = convert_to_consumer_options(bindings[:amqp])
+
+          logger.debug "consumer proxy options:"
+          logger.debug operation_bindings.inspect
 
           BunnyConsumerProxy.new(
             @subject.channel,
@@ -103,10 +123,9 @@ module EventSource
           end
         
           logger.debug "routing_key: #{routing_key}"
-
           return unless executable
 
-          @channel_proxy.instance_exec(
+          @subject.channel.instance_exec(
             delivery_info,
             metadata,
             payload,
@@ -131,10 +150,10 @@ module EventSource
           EventSource.app_name
         end
 
-        def convert_to_bunny_options(options)
-          operation_bindings = options.slice(:exclusive, :on_cancellation, :arguments)
-          operation_bindings[:no_ack] = !options[:ack] if options[:ack]
-          operation_bindings
+        def convert_to_consumer_options(options)
+          consumer_options = options.slice(:exclusive, :on_cancellation, :arguments)
+          consumer_options[:no_ack] = !options[:ack] if options[:ack]
+          consumer_options
         end
 
         def channel_item_queue_bindings_for(bindings)
