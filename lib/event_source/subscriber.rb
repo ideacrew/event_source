@@ -47,12 +47,27 @@ module EventSource
         protocol: protocol
       }
       base.extend ClassMethods
+      base.include InstanceMethods
 
       TracePoint.trace(:end) do |t|
         if base == t.self
           base.create_subscription
           t.disable
         end
+      end
+    end
+
+    module InstanceMethods
+      extend Forwardable
+
+      def_delegators :@channel, :ack, :nack, :reject
+
+      def channel=(channel)
+        @channel = channel
+      end
+
+      def logger
+        EventSourceLogger.new.logger
       end
     end
 
@@ -121,9 +136,53 @@ module EventSource
         EventSource.delimiter(protocol)
       end
 
+      def execute_subscribe_for(channel, delivery_info, metadata, payload, &executable)
+        subscriber = self.new
+        subscriber.channel = channel
+        subscription_handler = BunnyConsumerHandler.new(
+          subscriber,
+          delivery_info,
+          metadata,
+          payload,
+          &executable
+        )
+        subscription_handler.run
+      end
+
       def logger
         EventSourceLogger.new.logger
       end
+    end
+  end
+
+  class BunnyConsumerHandler
+    attr_reader :subscriber
+    include EventSource::Logging
+
+    def initialize(subscriber, delivery_info, metadata, payload, &executable)
+      @subscriber = subscriber
+      @delivery_info = delivery_info
+      @metadata = metadata
+      @payload = payload
+      @executable = executable
+    end
+
+    def run
+      subscriber.instance_exec(@delivery_info, @metadata, @payload, &@executable)
+      callbacks.fetch(:on_success).call
+    rescue StandardError => e
+      callbacks.fetch(:on_failure).call(e.backtrace)
+    end
+
+    def callbacks
+      {
+        on_success: lambda{
+          logger.debug "Subscription executed successfully!!"
+        },
+        on_failure: lambda{|exception|
+          logger.error "Subscription execution failed due to exception: #{exception}"
+        }
+      }
     end
   end
 end

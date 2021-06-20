@@ -125,7 +125,8 @@ module EventSource
           logger.debug "routing_key: #{routing_key}"
           return unless executable
 
-          @subject.channel.instance_exec(
+          subscriber_klass.execute_subscribe_for(
+            @subject.channel,
             delivery_info,
             metadata,
             payload,

@@ -25,7 +25,7 @@ module EventSource
         def bunny_exchange_for(bindings)
           exchange =
             Bunny::Exchange.new(
-              channel_proxy,
+              channel_proxy.subject,
               bindings[:type],
               bindings[:name],
               bindings.slice(:durable, :auto_delete, :vhost)
@@ -45,6 +45,7 @@ module EventSource
           bunny_publish_bindings = sanitize_bindings(publish_bindings || {})
           logger.debug "BunnyExchange#publish  publishing message with bindings: #{bunny_publish_bindings.inspect}"
           @subject.publish(payload, bunny_publish_bindings)
+          logger.debug "BunnyExchange#publish  published message: #{payload}"
           logger.debug "BunnyExchange#publish  published message to exchange: #{@subject.name}"
         end
 
