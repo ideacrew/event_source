@@ -19,15 +19,17 @@ module EventSource
         # # only show "info" or higher messages on STDOUT using the Basic layout
         ::Logging.appenders.stdout(level: :info, layout: layout)
 
+        Dir.mkdir('log') unless File.directory?('log')
         # # send all log events to the development log (including debug) as JSON
         ::Logging.appenders.rolling_file(
-          'event_source.log',
+          'log/event_source.log',
           age: 'daily',
           level: :debug,
+          keep: 7,
           layout: ::Logging.layouts.json
         )
 
-        logger_instance.add_appenders 'stdout', 'event_source.log'
+        logger_instance.add_appenders 'stdout', 'log/event_source.log'
       end
       logger_instance
     end
