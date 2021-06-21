@@ -1,6 +1,18 @@
 ## Version 0.5.3
 
-Correct file loading in AsyncApi namespace to use idiomatic ruby conventions and avoid unpredictable gem search paths.
+### SOAP Protocol Support Under HTTP
+
+### Extended Protocol Bindings for Operations
+
+Protocol Bindings for Operations have been moved to a Dry::Struct.  This is currently implemented only for HTTP, AMQP bindings are still treated as a hash.
+
+### Thread Safety and Worker Pools/Hosts
+
+### Improved Single-Location Connection Configuration for DevOps
+
+### File Loading
+
+Correct file loading in AsyncApi namespace to use idiomatic ruby conventions and avoid unpredictable gem search paths when requiring files within the library.
 
 ## Changes between EventSource 0.4.0 and 0.5.0 (June 3, 2021)
 

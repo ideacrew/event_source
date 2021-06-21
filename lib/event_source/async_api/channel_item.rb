@@ -22,12 +22,12 @@ module EventSource
       # @!attribute [r] subscribe
       # A definition of the Subscribe operation
       # @return [Operation]
-      attribute :subscribe, Operation.meta(omittable: true)
+      attribute :subscribe, SubscribeOperation.meta(omittable: true)
 
       # @!attribute [r] publish
       # A definition of the Publish operation
       # @return [Operation]
-      attribute :publish, Operation.meta(omittable: true)
+      attribute :publish, PublishOperation.meta(omittable: true)
 
       # @!attribute [r] url
       # A map of the parameters included in the channel name.

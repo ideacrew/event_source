@@ -16,8 +16,8 @@ module EventSource
         # @return [Dry::Monads::Result::Success, Dry::Monads::Result::Failure]
         params do
           optional(:ref).value(:string)
-          optional(:subscribe).value(:hash)
-          optional(:publish).value(OperationContract.params)
+          optional(:subscribe).value(SubscribeOperationContract.params)
+          optional(:publish).value(PublishOperationContract.params)
           optional(:description).value(:string)
           optional(:parameters).value(Types::HashOrNil)
           optional(:bindings).hash { optional(:amqp).maybe(:hash) }
