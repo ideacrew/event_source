@@ -3,27 +3,7 @@
 module EventSource
   module Protocols
     module Http
-      # HTTP protocol-specific information about the operation
-      # @example Channel binding including both an exchange and a queue
-      # channels:
-      #  employees:
-      #   subscribe:
-      #     bindings:
-      #       http:
-      #         type: request
-      #         method: GET
-      #         query:
-      #           type: object
-      #           required:
-      #             - companyId
-      #           properties:
-      #             companyId:
-      #               type: number
-      #               minimum: 1
-      #               description: The Id of the company.
-      #           additionalProperties: false
-      #         bindingVersion: '0.1.0'
-      class FaradayOperationBinding < Dry::Struct
+      class PublishBindings < Dry::Struct
         # @!attribute [r] type
         # Required. Type of operation. Its value MUST be either :request or :response
         # @return [Types::HttpOperationBindingTypeKind]
@@ -40,7 +20,7 @@ module EventSource
         # @!attribute [r] query
         # A Schema object containing the definitions for each query parameter.
         # This schema MUST be of type object and have a properties key.
-        attribute :query, Multidapter::Schema.meta(omittable: true)
+        attribute :query, Types::Hash.meta(omittable: true)
 
         # @!attribute [r] binding_version
         # The version of this binding. If omitted, "latest" MUST be assumed.

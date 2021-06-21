@@ -7,7 +7,7 @@ module EventSource
     module Http
       module Contracts
         # Schema and validation rules for http operation bindings
-        class OperationBindingContract < Dry::Validation::Contract
+        class SubscribeOperationBindingsContract < Dry::Validation::Contract
 
           params do
             optional(:type).value(EventSource::Protocols::Http::Types::OperationBindingTypeKind)

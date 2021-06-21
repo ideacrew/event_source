@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    event_source (0.5.2)
+    event_source (0.5.3)
       bunny (>= 1.7.1)
       deep_merge (~> 1.2.0)
       dry-events (~> 0.3)
