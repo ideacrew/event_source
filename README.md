@@ -30,21 +30,18 @@ Or install it yourself as:
 
 EventSource enables these core components:
 
-1. Event - notifications about system occurences
-2. Command - mixin to build and publish events
-3. Publisher - categorize and broadcast events
-4. Subscriber - consumers or listeners of published events
+1. Event - notifications about something that happens in the system
+2. Command - mixin to build and publish an Event
+3. Publisher - aggregate and broadcast Events
+4. Subscriber - consumers (listeners) for published Events
 
 ### Event
 
-Events are signals about anything notable that happens in the system. For example, events can indicate that an enrollment period has begun, an eligibility determined, an application submitted and an enrollment effectuated.
+Events are signals about anything notable that happens in the system. For example, events can indicate that an enrollment period has begun, an eligibility determined, an application submitted and an enrollment effectuated. Event names use past tense form as a convention, for example: `Created`, `Updated`, `Deleted`.
 
-Event classes are predefined in the system, inheriting from the `EventSource::Event` class. Event names use past tense form, for example: `Created`, `Updated`, `Deleted`. An Event class must include a `publisher_path` but optionally may specify attributes to carry in the Event's message payload. The `publisher_path` is a stringified class name that specifies the topic where event instances are published.
+Events are subclassed from the `EventSource::Event` class. An Event class must include a `publisher_path`. The `publisher_path` is a dot-notation, stringified class name that specifies the topic where event instances are published.
 
 For example, the following event has a `publisher_path` referencing the `Parties::OrganiztionPublisher` class. It also enumerates four `attribute_keys`: `:hbx_id, :legal_name, :fein, :entity_kind`.
-
-contract_key
-entity_key
 
 ```ruby
     # app/events/parties/organization/created.rb
@@ -56,7 +53,7 @@ entity_key
     end
 ```
 
-Including `attribute_keys` establishes a contract for required attributes in an event's attribute payload. Each event must include a value for each the specified key. Missing key/value pairs will prevent publishing the event instance. Additional key/value pairs are ignored.
+As shown in this example, an Event may optionally specify an Event payload's attribute keys by including `attribute_keys`. Note that this establishes a contract for attributes that must in an event's attribute payload. Each event must include a value for each the specified key. Missing key/value pairs will prevent publishing the event instance. Additional key/value pairs are ignored.
 
 Events that don't specify `attribute_keys` allow any passed key/value pairs as instance attributes.
 
@@ -88,7 +85,7 @@ created_event.valid?
 
 ### Command
 
-Commands offer a convenient way to extend an application with event-driven features. Mix EventSource::Command into any class to access a DSL to build and publish Events.
+Commands are an application's on-ramp to event-driven features. Mix `EventSource::Command` into any class to turn it into a Command and enable access to the DSL's Events.
 
 ```ruby
    # app/operations/parties/organization/create.rb
