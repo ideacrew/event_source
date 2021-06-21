@@ -5,7 +5,7 @@ module EventSource
     module Amqp
       module Contracts
         # Schema and validation rules for AMQP protocol's for {EventSource::SubscribeOperation}
-        class SubscribeOperationBindingContract < Contract
+        class SubscribeOperationBindingContract < Dry::Validation::Contract
           # @!method call(opts)
           # @param opts [Hash] the parameters to validate using this contract
           # @option opts [String] :consumer_tag unique consumer (aka Queue

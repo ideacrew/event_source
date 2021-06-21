@@ -41,12 +41,6 @@ module EventSource
                   .of(EventSource::AsyncApi::ExternalDocumentation)
                   .meta(omittable: true)
 
-      # @!attribute [r] bindings
-      # Map where the keys describe the name of the protocol and the values describe protocol-specific
-      # definitions for the operation.
-      # @return [Hash]
-      attribute :bindings, Types::Hash.meta(omittable: true)
-
       # @!attribute [r] traits
       # A list of traits to apply to the operation object. Traits MUST be merged into the operation
       # object using the JSON Merge Patch algorithm in the same order they are defined here

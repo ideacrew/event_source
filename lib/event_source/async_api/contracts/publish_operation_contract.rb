@@ -4,7 +4,7 @@ module EventSource
   module AsyncApi
     module Contracts
       # Schema and validation rules for {EventSource::AsyncApi::Operation}
-      class OperationContract < Dry::Validation::Contract
+      class PublishOperationContract < Dry::Validation::Contract
         params do
           optional(:operation_id).value(::EventSource::AsyncApi::Types::OperationNameType)
           optional(:summary).value(:string)
@@ -14,7 +14,7 @@ module EventSource
 
         rule(:bindings) do
           if key? && value
-            result = OperationBindingsContract.new.call(value)
+            result = PublishOperationBindingsContract.new.call(value)
             if result&.failure?
               key.failure(
                 text: 'invalid operation bindings',

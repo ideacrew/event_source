@@ -2,7 +2,13 @@
 
 ### SOAP Protocol Support Under HTTP
 
+### Extended Protocol Bindings for Operations
+
+Protocol Bindings for Operations have been moved to a Dry::Struct.  This is currently implemented only for HTTP, AMQP bindings are still treated as a hash.
+
 ### Thread Safety and Worker Pools/Hosts
+
+### Improved Single-Location Connection Configuration for DevOps
 
 ### File Loading
 

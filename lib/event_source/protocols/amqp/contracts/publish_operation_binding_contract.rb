@@ -5,7 +5,7 @@ module EventSource
     module Amqp
       module Contracts
         # Schema and validation rules for AMQP protocol's for {EventSource::PublishOperation}
-        class PublishOperationBindingContract < Contract
+        class PublishOperationBindingContract < Dry::Validation::Contract
           # @!method call(opts)
           # @param opts [Hash] the parameters to validate using this contract
           # @option opts [String] :cc Message routing key
