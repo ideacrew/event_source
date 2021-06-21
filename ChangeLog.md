@@ -1,4 +1,4 @@
-## Version 0.5.2
+## Version 0.5.3
 
 Correct file loading in AsyncApi namespace to use idiomatic ruby conventions and avoid unpredictable gem search paths.
 
