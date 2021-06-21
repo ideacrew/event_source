@@ -34,7 +34,7 @@ module EventSource
         def faraday_queue_for(_queue_bindings)
           queue =
             EventSource::Queue.new(
-              channel_proxy,
+              self,
               "on_#{channel_proxy.name.match(%r{^(/)?(.*)})[2].gsub(%r{/}, '_')}"
             )
           logger.info "Found or created Faraday queue #{queue.name}"
