@@ -34,7 +34,7 @@ module EventSource
         def faraday_queue_for(_queue_bindings)
           queue =
             EventSource::Queue.new(
-              channel_proxy,
+              self,
               "on_#{channel_proxy.name.match(%r{^(/)?(.*)})[2].gsub(%r{/}, '_')}"
             )
           logger.info "Found or created Faraday queue #{queue.name}"
@@ -50,17 +50,12 @@ module EventSource
         # @param [Hash] _options Subscribe operation bindings
         # @param [Proc] block Code block to execute when event is received
         # @return [Queue] Queue instance
-        def subscribe(subscriber_klass, _options, &block)
-          if block_given?
-            @subject.actions.push(block)
-          else
-            method_proc =
-              proc do |headers, payload|
-                subscriber_instance = subscriber_klass.new
-                subscriber_instance.send(@subject.name, headers, payload) if subscriber_instance.respond_to?(@subject.name)
-              end
-            @subject.actions.push(method_proc)
-          end
+        def register_subscription(subscriber_klass, _options)
+          unique_key = [app_name, formatted_exchange_name].join(delimiter)
+          logger.debug "FaradayQueueProxy#register_subscription Subscriber Class #{subscriber_klass}"
+          logger.debug "FaradayQueueProxy#register_subscription Unique_key #{unique_key}"
+          executable = subscriber_klass.executable_for(unique_key)
+          @subject.actions.push(executable)
         end
 
         def consumer_proxy_for(operation_bindings)
@@ -81,6 +76,18 @@ module EventSource
         end
 
         private
+
+        def delimiter
+          EventSource.delimiter(:http)
+        end
+
+        def app_name
+          EventSource.app_name
+        end
+
+        def formatted_exchange_name
+          exchange_name.to_s.split(delimiter).reject(&:empty?).join(delimiter)
+        end
 
         def convert_to_faraday_options(options)
           operation_bindings = {}

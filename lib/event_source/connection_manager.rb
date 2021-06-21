@@ -6,6 +6,7 @@ module EventSource
   #   network resources
   class ConnectionManager
     include Singleton
+    include EventSource::Logging
 
     # @attr_reader [Hash] connections The connection registry
     attr_reader :connections
@@ -92,6 +93,55 @@ module EventSource
     def drop_connections_for(protocol)
       connections.each do |connection_uri, _connection_instance|
         drop_connection(connection_uri) if URI.parse(connection_uri).scheme.to_sym == protocol
+      end
+    end
+
+    # Find connection for given protocol and publish/subscribe operation name
+    # @param [Symbol] protocol the protocol name, `:http` or `:amqp`
+    # @param [String] publish_operation_name Publish operation name
+    # @param [String] subscribe_operation_name Subscribe operation name
+    # @return [Class] connection Protocol Specific Connection
+    def find_connection(params)
+      connections = connections_for(params[:protocol])
+
+      if params[:publish_operation_name]
+        connections.detect{|connection| connection.publish_operation_exists?(params[:publish_operation_name]) }
+      else
+        connections.detect{|connection| connection.subscribe_operation_exists?(params[:subscribe_operation_name]) }
+      end
+    end
+
+    # Find publish operation for given protocol and publish operation name
+    # @param [Symbol] protocol the protocol name, `:http` or `:amqp`
+    # @param [String] publish_operation_name Publish operation name
+    # @return [Class] publish_operation Publish operation
+    def find_publish_operation(params)
+      logger.debug "find publish operation with #{params}"
+      connection = find_connection(params)
+
+      if connection
+        logger.debug "found connection for #{params}"
+        connection.find_publish_operation_by_name(params[:publish_operation_name])
+      else
+        logger.error "Unable find connection for publish operation: #{params}"
+        connection
+      end
+    end
+
+    # Find subscribe operation for given protocol and subscribe operation name
+    # @param [Symbol] protocol the protocol name, `:http` or `:amqp`
+    # @param [String] subscribe_operation_name Subscribe operation name
+    # @return [Class] subscribe_operation Subscribe operation
+    def find_subscribe_operation(params)
+      logger.debug "find subscribe operation with #{params}"
+      connection = find_connection(params)
+
+      if connection
+        logger.debug "found connection for #{params}"
+        connection.find_subscribe_operation_by_name(params[:subscribe_operation_name])
+      else
+        logger.error "Unable find connection for subscribe operation: #{params}"
+        connection
       end
     end
 

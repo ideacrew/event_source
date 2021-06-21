@@ -2,9 +2,9 @@
 
 module Parties
   class MitcPublisher
-    include ::EventSource::Publisher[http: '/determinations/eval']
+    # include ::EventSource::Publisher[http: '/determinations/eval']
 
-    register_event 'mitc.eligibility_determined'
+    # # register_event '/determinations/eval'
   end
 end
 

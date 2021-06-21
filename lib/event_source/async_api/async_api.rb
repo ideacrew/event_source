@@ -37,11 +37,7 @@ module EventSource
     require_relative 'server_binding'
     require_relative 'server'
     require_relative 'async_api_conf'
-    require_relative 'contracts/contract'
-    require_relative 'operations/async_api_conf/load_path'
-    require_relative 'operations/async_api_conf/load'
-
-    Gem.find_files('event_source/async_api/contracts/**/*.rb').sort.each { |f| require(f) }
-    Gem.find_files('event_source/async_api/operations/**/*.rb').sort.each { |f| require(f) }
+    require_relative 'contracts'
+    require_relative 'operations'
   end
 end

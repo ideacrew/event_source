@@ -35,7 +35,8 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyConnectionProxy do
       {
         protocol: protocol,
         protocol_version: protocol_version,
-        description: description
+        description: description,
+        vhost: "/"
       }
     end
     let(:valid_uri) { 'amqp://localhost:5672/' }

@@ -13,7 +13,7 @@ module EventSource
         # @attr_reader [Bunny::Queue] subject the queue object
         # @attr_reader [EventSource::Protcols::Amqp::BunnyChannelProxy] channel_proxy the channel_proxy used to access this queue
         # @attr_reader [String] exchange_name the Exchange to which this to bind this Queue
-        attr_reader :subject, :channel_proxy, :exchange_name
+        attr_reader :subject, :channel_proxy, :exchange_name, :consumers
 
         # @param channel_proxy [EventSource::Protocols::Amqp::BunnyChannelProxy] channel_proxy wrapping Bunny::Channel object
         # @param async_api_channel_item [Hash] {EventSource::AsyncApi::ChannelItem} definition and bindings
@@ -25,21 +25,21 @@ module EventSource
         # @return [Bunny::Queue]
         def initialize(channel_proxy, async_api_channel_item)
           @channel_proxy = channel_proxy
-          @exchange_name = channel_proxy.name
           bindings = async_api_channel_item[:bindings]
+          @consumers = []
 
-          @subject = bunny_queue_for(bindings)
-          bind_exchange(@exchange_name)
+          queue_bindings = channel_item_queue_bindings_for(bindings)
+          @exchange_name = exchange_name_from_queue(queue_bindings[:name])
+          @subject = bunny_queue_for(queue_bindings)
+          bind_exchange(@exchange_name, async_api_channel_item[:subscribe])
           subject
         end
 
         # Find a Bunny queue that matches the configuration of an {EventSource::AsyncApi::ChannelItem}
-        def bunny_queue_for(bindings)
-          queue_bindings = channel_item_queue_bindings_for(bindings)
-
+        def bunny_queue_for(queue_bindings)
           queue =
             Bunny::Queue.new(
-              channel_proxy,
+              channel_proxy.subject,
               queue_bindings[:name],
               queue_bindings.slice(:durable, :auto_delete, :vhost, :exclusive)
             )
@@ -49,49 +49,88 @@ module EventSource
         end
 
         # Bind this Queue to the Exchange
-        def bind_exchange(exchange_name)
-          if channel_proxy.publish_operation_exists?(exchange_name)
-            channel_proxy.bind_queue(@subject.name, exchange_name)
-            logger.info "Queue #{@subject.name} bound to exchange #{exchange_name}"
-          else
-            raise EventSource::AsyncApi::Error::ExchangeNotFoundError,
-                  "exchange #{name} not found"
+        def bind_exchange(exchange_name, async_api_subscribe_operation)
+          operation_bindings = async_api_subscribe_operation[:bindings][:amqp]
+          channel_proxy.bind_queue(@subject.name, exchange_name, {routing_key: operation_bindings[:routing_key]})
+          logger.info "Queue #{@subject.name} bound to exchange #{exchange_name}"
+        rescue Bunny::NotFound => e
+          raise EventSource::Protocols::Amqp::Error::ExchangeNotFoundError,
+                "exchange #{name} not found. got exception #{e.to_s}"
+        end
+
+        def subscribe(subscriber_klass, bindings)
+          options = convert_to_subscribe_options(bindings[:amqp])
+          logger.debug "Queue#subscribe options:"
+          logger.debug options.inspect
+
+          @subject.subscribe(options) do |delivery_info, metadata, payload|
+            route_payload_for(subscriber_klass, delivery_info, metadata, payload)
           end
         end
 
-        # Construct and subscribe a consumer_proxy with the queue
-        # @param [Object] subscriber_klass Subscriber class
-        # @param [Hash] options Subscribe operation bindings
-        # @param [Proc] block Code block to execute when event is received
-        # @return [BunnyConsumerProxy] Consumer proxy instance
-        def subscribe(subscriber_klass, options, &block)
-          operation_bindings = convert_to_bunny_options(options[:amqp])
-          consumer_proxy = consumer_proxy_for(operation_bindings)
+        def convert_to_subscribe_options(options)
+          subscribe_options = options.slice(:exclusive, :on_cancellation)
+          subscribe_options[:manual_ack] = options[:ack]
+          subscribe_options[:block] = false
+          subscribe_options
+        end
 
-          # redelivered?
+        def register_subscription(subscriber_klass, bindings)
+          consumer_proxy = consumer_proxy_for(bindings)
+          
           consumer_proxy.on_delivery do |delivery_info, metadata, payload|
-            if block_given?
-              @channel_proxy.instance_exec(
-                delivery_info,
-                metadata,
-                payload,
-                &block
-              )
-            end
-            subscriber_instance = subscriber_klass.new
-            subscriber_instance.send(queue_name, payload) if subscriber_instance.respond_to?(queue_name)
+            route_payload_for(subscriber_klass, delivery_info, metadata, payload)
           end
-
-          @subject.subscribe_with(consumer_proxy)
+ 
+          subscribe_consumer(consumer_proxy)
         end
 
-        def consumer_proxy_for(operation_bindings)
+        def subscribe_consumer(consumer_proxy)
+          @subject.subscribe_with(consumer_proxy)
+          @consumers.push(consumer_proxy)
+        end
+
+        def consumer_proxy_for(bindings)
+          operation_bindings = convert_to_consumer_options(bindings[:amqp])
+
+          logger.debug "consumer proxy options:"
+          logger.debug operation_bindings.inspect
+
           BunnyConsumerProxy.new(
             @subject.channel,
             @subject,
             '',
             operation_bindings[:no_ack],
-            operation_bindings[:exclusive]
+            operation_bindings[:exclusive],
+          )
+        end
+
+        def route_payload_for(subscriber_klass, delivery_info, metadata, payload)
+          logger.debug "**************************"
+          logger.debug subscriber_klass.inspect
+          logger.debug delivery_info.inspect
+          logger.debug metadata.inspect
+          logger.debug payload.inspect
+
+          if delivery_info.routing_key
+            routing_key = [app_name, delivery_info.routing_key].join(delimiter)
+            executable = subscriber_klass.executable_for(routing_key)
+          end
+
+          unless executable
+            routing_key = [app_name, exchange_name].join(delimiter)
+            executable = subscriber_klass.executable_for(routing_key)
+          end
+        
+          logger.debug "routing_key: #{routing_key}"
+          return unless executable
+
+          subscriber_klass.execute_subscribe_for(
+            @subject.channel,
+            delivery_info,
+            metadata,
+            payload,
+            &executable
           )
         end
 
@@ -104,31 +143,18 @@ module EventSource
 
         private
 
-        def convert_to_bunny_options(options)
-          operation_bindings = {}
-          if options.key?(:consumer_type)
-            operation_bindings[:consumer_type] =
-              options[:consumer_type]
-          end
-          operation_bindings[:no_ack] = !options[:ack] if options.key?(:ack)
-          operation_bindings[:exclusive] = options[:exclusive] if options.key?(
-            :exclusive
-          )
-          operation_bindings[:exclusive] = options[:exclusive] if options.key?(
-            :exclusive
-          )
-          if options.key?(:on_cancellation)
-            operation_bindings[:on_cancellation] =
-              options[:on_cancellation]
-          end
-          operation_bindings[:arguments] = options[:arguments] if options.key?(
-            :arguments
-          )
-          if options.key?(:bindingVersion)
-            operation_bindings[:binding_version] =
-              options[:bindingVersion]
-          end
-          operation_bindings
+        def delimiter
+          EventSource.delimiter(:amqp)
+        end
+
+        def app_name
+          EventSource.app_name
+        end
+
+        def convert_to_consumer_options(options)
+          consumer_options = options.slice(:exclusive, :on_cancellation, :arguments)
+          consumer_options[:no_ack] = !options[:ack] if options[:ack]
+          consumer_options
         end
 
         def channel_item_queue_bindings_for(bindings)
@@ -143,13 +169,18 @@ module EventSource
         def async_api_channel_item_bindings_valid?(bindings)
           result =
             EventSource::Protocols::Amqp::Contracts::ChannelBindingContract.new
-                                                                           .call(bindings)
+              .call(bindings)
           if result.success?
             true
           else
             raise EventSource::Protocols::Amqp::Error::ChannelBindingContractError,
                   "Error(s) #{result.errors.to_h} validating: #{bindings}"
           end
+        end
+
+        # "on_<app_name>.<exchange_name>"
+        def exchange_name_from_queue(queue_name)
+          queue_name.match(/^\w+\.(.+)/)[1]
         end
       end
     end

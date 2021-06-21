@@ -6,7 +6,7 @@ require 'concurrent/map'
 module EventSource
   # Mixin that provides a DSL to register and forward {EventSource::Event} messages
   class Publisher < Module
-    send(:include, Dry.Equalizer(:protocol, :exchange))
+    send(:include, Dry.Equalizer(:protocol, :publisher_key))
 
     # include Dry.Equalizer(:protocol, :exchange)
 
@@ -14,7 +14,7 @@ module EventSource
     #   publisher (for example: amqp)
     # @attr_reader [String] exchange name of the Exchange where event
     #   messages are published
-    attr_reader :protocol, :exchange
+    attr_reader :protocol, :publisher_key
 
     # Internal publisher registry, which is used to identify them globally
     #
@@ -33,15 +33,15 @@ module EventSource
     end
 
     # @api private
-    def initialize(protocol, exchange)
+    def initialize(protocol, publisher_key)
       super()
       @protocol = protocol
-      @exchange = exchange
+      @publisher_key = publisher_key
     end
 
     def included(base)
       self.class.publisher_container[base] = {
-        exchange: exchange,
+        publisher_key: publisher_key,
         protocol: protocol
       }
       base.extend(ClassMethods)
@@ -60,21 +60,21 @@ module EventSource
 
       # TODO: coordinate server connection name with dev ops
       def publish(event)
-        event_name =
-          EventSource::Inflector.underscore(event.class.name.split('::').last)
+        event_key = publisher_key if protocol == :http
+        event_key ||= event.name.split('.').last
 
-        publisher_operation_id = exchange_name # [exchange_name, event_name].join('.')
-        connection.publish_operation_by_id(publisher_operation_id).call(event.to_h)
-        # connection.publish_operations[exchange_name].call(event_payload)
+        publish_operation_name = publish_operation_name_for(event_key)
+
+        logger.debug "Publisher#publish publish_operation_name: #{publish_operation_name}"
+        find_publish_operation_for(publish_operation_name).call(event.payload)
       end
 
       def channel_name
-        exchange_name.to_sym
+        publisher_key.to_sym
       end
 
-      def connection
-        connection_manager = EventSource::ConnectionManager.instance
-        connection_manager.connection_by_protocol_and_channel(protocol, channel_name)
+      def delimiter
+        EventSource.delimiter(protocol)
       end
 
       def register_event(event_key, options = {})
@@ -83,21 +83,48 @@ module EventSource
         self
       end
 
+      # Validates given protocol has publish operation defined for publish operation name
       def validate
-        channel = connection.find_channel_by_name(channel_name)
-        exchange = channel.publish_operations[exchange_name]
+        return unless events
 
-        return if exchange
-        raise EventSource::AsyncApi::Error::ExchangeNotFoundError,
-              "exchange #{exchange_name} not found"
+        events.keys.each do |event_name|
+          publish_operation_name = publish_operation_name_for(event_name)
+          logger.debug "Publisher#validate find publish operation for: #{publish_operation_name}"
+          publish_operation = find_publish_operation_for(publish_operation_name)
+
+          if publish_operation
+            logger.debug "Publisher#validate found publish operation for: #{publish_operation_name}"
+          else
+            logger.error "Publisher#validate unable to find publish operation for: #{publish_operation_name}"
+          end
+        end
       end
 
-      def exchange_name
-        EventSource::Publisher.publisher_container[self][:exchange]
+      def publish_operation_name_for(event_name)
+        publish_operation_name = publisher_key if publisher_key == event_name 
+        publish_operation_name || [publisher_key, event_name].join(delimiter)
+      end
+
+      def find_publish_operation_for(publish_operation_name)
+        connection_manager.find_publish_operation({
+          protocol: protocol, publish_operation_name: publish_operation_name
+        })
+      end
+
+      def connection_manager
+        EventSource::ConnectionManager.instance
+      end
+
+      def publisher_key
+        EventSource::Publisher.publisher_container[self][:publisher_key]
       end
 
       def protocol
         EventSource::Publisher.publisher_container[self][:protocol]
+      end
+
+      def logger
+        EventSourceLogger.new.logger
       end
     end
   end

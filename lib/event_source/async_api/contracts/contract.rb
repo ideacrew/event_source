@@ -30,8 +30,8 @@ module EventSource
 
         rule(:channels) do
           if key? && value
-            value.each do |key, value|
-              result = ChannelItemContract.new.call(value)
+            value.each do |key, v|
+              result = ChannelItemContract.new.call(v)
 
               next unless result&.failure?
               key.failure(

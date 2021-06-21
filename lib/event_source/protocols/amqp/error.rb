@@ -24,6 +24,8 @@ module EventSource
         DuplicateConnectionError = Class.new(Error)
         UnknownConnectionProtocolError = Class.new(Error)
         ChannelBindingContractError = Class.new(Error)
+        ExchangeNotFoundError = Class.new(Error)
+        QueueNotFoundError = Class.new(Error)
       end
     end
   end

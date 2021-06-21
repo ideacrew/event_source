@@ -4,6 +4,7 @@ module EventSource
   # A DSL for a network (TCP) connection between an application and a
   #   message broker or an application and a remote service provider
   class Connection
+    include EventSource::Logging
     # @attr_reader [Hash] channels The collection of registered Connections
     # @attr_reader [Object] connection_proxy The protocol adapter instance for this DSL
     attr_reader :channels, :connection_proxy
@@ -45,6 +46,11 @@ module EventSource
       @connection_proxy.start
     end
 
+    # Stop the network connetion and associated resources
+    def stop
+      @connection_proxy.stop
+    end
+
     # Status flag indicating that this instance's network connection is open
     # @return [Boolean]
     def active?
@@ -56,9 +62,36 @@ module EventSource
       @connection_proxy.close
     end
 
-    def publish_operation_by_id(publish_operation_id)
-      channel = channels[publish_operation_id.to_sym]
-      channel.publish_operations[publish_operation_id]
+    def publish_operations
+      channels.values.map(&:publish_operations).inject(:merge)
+    end
+
+    def subscribe_operations
+      channels.values.map(&:subscribe_operations).inject(:merge)
+    end
+
+    # Find a PublishOperation in the registry.
+    # PublishOperations are unique and accessible from any channel on a Connection
+    # @param [String] name The unique key to match for the registered PublishOperation
+    # @return [EventSource::PublishOperation] a matching PublishOperation
+    def find_publish_operation_by_name(name)
+      publish_operations[name]
+    end
+
+    # Find a SubscribeOperation in the registry
+    # SubscribeOperations are unique and accessible from any channel on a Connection
+    # @param [String] name The unique key to match for the registered SubScribeOperation
+    # @return [EventSource::SubscribeOperation] a matching SubScribeOperation
+    def find_subscribe_operation_by_name(name)
+      subscribe_operations[name]
+    end
+
+    def publish_operation_exists?(name)
+      publish_operations.key?(name)
+    end
+
+    def subscribe_operation_exists?(name)
+      subscribe_operations.key?(name)
     end
 
     # Create and register a collection of new {EventSource::Channel} instances
@@ -93,7 +126,7 @@ module EventSource
       channel_proxy =
         @connection_proxy.add_channel(channel_item_key, async_api_channel_item)
       @channels[channel_item_key] =
-        Channel.new(channel_proxy, async_api_channel_item)
+        Channel.new(self, channel_proxy, async_api_channel_item)
     end
 
     # Find a {EventSource::Channel} in the registry.

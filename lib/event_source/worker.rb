@@ -30,7 +30,7 @@ module EventSource
     # Add an action to the queue for processing
     # @return [EventSource::Queue]
     def enqueue(payload)
-      logger.info("On Queue: #{queue_proxy.name}, enqueue payload: #{payload}")
+      logger.debug("On Queue: #{queue_proxy.name}, enqueue payload: #{payload}")
       queue_proxy.enqueue(payload)
     end
 
@@ -78,9 +78,16 @@ module EventSource
         threads << Thread.new do
           while active? || actions_left?
             action_payload = wait_for_action
-            logger.info "Spawn payload action: #{action_payload}"
+            logger.debug "Spawn payload action body: #{action_payload.body}"
+            logger.debug "Spawn payload action status: #{action_payload.status}"
+            logger.debug "Spawn payload action headers: #{action_payload.headers}"
+
             queue_proxy.actions.each do |action_proc|
-              action_proc.call(action_payload.headers, action_payload.body)
+              action_proc.call(
+                action_payload.body,
+                action_payload.status,
+                action_payload.headers
+              )
             end
 
             # action_proc, action_payload = wait_for_action
@@ -92,7 +99,7 @@ module EventSource
 
     # Perform an orderly shutdown
     def stop
-      logger.info("Stop Worker for Queue: #{queue_proxy.name}")
+      logger.debug("Stop Worker for Queue: #{queue_proxy.name}")
       queue_proxy.close
       threads.each(&:exit)
       threads.clear
