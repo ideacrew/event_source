@@ -6,6 +6,10 @@
 
 Protocol Bindings for Operations have been moved to a Dry::Struct.  This is currently implemented only for HTTP, AMQP bindings are still treated as a hash.
 
+### Difference Documentation
+
+In areas where we differ from the AsyncAPI spec, I have introduced documentation identifying the differences.  It can currently be found in `lib/event_source/async_api/ASYNC_API_DIFFERENCES.md`.  We need to migrate it to Hugo.
+
 ### Thread Safety and Worker Pools/Hosts
 
 ### Improved Single-Location Connection Configuration for DevOps

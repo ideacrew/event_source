@@ -23,6 +23,7 @@ module EventSource
         end
 
         def bunny_exchange_for(bindings)
+          STDERR.puts bindings.inspect
           exchange =
             Bunny::Exchange.new(
               channel_proxy.subject,
@@ -42,7 +43,7 @@ module EventSource
         # @param [Mixed] payload the message content
         # @param [Hash] publish_bindings
         def publish(payload:, publish_bindings:)
-          bunny_publish_bindings = sanitize_bindings(publish_bindings || {})
+          bunny_publish_bindings = sanitize_bindings((publish_bindings || {}).to_h)
           logger.debug "BunnyExchange#publish  publishing message with bindings: #{bunny_publish_bindings.inspect}"
           @subject.publish(payload, bunny_publish_bindings)
           logger.debug "BunnyExchange#publish  published message: #{payload}"
@@ -77,7 +78,7 @@ module EventSource
         #   bcc: ['external.audit']
         # @return [Hash] sanitized Bunny/RabitMQ bindings
         def sanitize_bindings(bindings)
-          options = bindings[:amqp]
+          options = bindings[:amqp] || {}
           operation_bindings = options.slice(
             :type, :content_type, :correlation_id, :correlation_id,
             :priority, :message_id, :app_id, :expiration, :mandatory, :routing_key

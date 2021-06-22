@@ -98,7 +98,7 @@ module EventSource
     def add_channels(async_api_channels)
       async_api_channels
         .each do |async_api_channel_item|
-        add_channel(async_api_channel_item.id, async_api_channel_item)
+        add_channel(async_api_channel_item.id.to_sym, async_api_channel_item)
       end
     end
 

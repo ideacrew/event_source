@@ -85,7 +85,7 @@ module EventSource
         @async_api_schemas.each do |resource|
           resource.channels.each do |async_api_channel_item|
             if async_api_channel_item.publish.present?
-              process_resource_for(resource.servers, async_api_channel_item.id, async_api_channel_item)
+              process_resource_for(resource.servers, async_api_channel_item.id.to_sym, async_api_channel_item)
             end
           end
         end
@@ -94,7 +94,7 @@ module EventSource
           resource.channels.each do |async_api_channel_item|
             next if async_api_channel_item.publish.present?
             next unless async_api_channel_item.subscribe.present?
-            process_resource_for(resource.servers, async_api_channel_item.id, async_api_channel_item)
+            process_resource_for(resource.servers, async_api_channel_item.id.to_sym, async_api_channel_item)
           end
         end
       end

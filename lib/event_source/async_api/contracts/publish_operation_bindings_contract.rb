@@ -10,7 +10,7 @@ module EventSource
       class PublishOperationBindingsContract < Contract
         params do
           optional(:http).hash
-          optional(:amqp).value(::EventSource::Protocols::Amqp::Contracts::PublishOperationBindingContract.params)
+          optional(:amqp).hash
         end
 
         rule(:http) do

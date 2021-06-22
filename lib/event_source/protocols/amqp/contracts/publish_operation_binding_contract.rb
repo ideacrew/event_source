@@ -24,7 +24,7 @@ module EventSource
           # @option opts [String] :app_id Optional application ID
           # @option opts [EventSource::AsyncApi::Types::AmqpBindingVersionKind] :bindingVersion
           params do
-            optional(:cc).maybe(:string)
+            optional(:cc).value(:string)
             optional(:deliveryMode).maybe(:integer)
             optional(:mandatory).maybe(:bool)
             optional(:timestamp).maybe(:bool)

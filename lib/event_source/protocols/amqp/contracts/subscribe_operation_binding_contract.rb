@@ -18,6 +18,7 @@ module EventSource
           # @option opts [String] :on_canellation Block to execute when this consumer is cancelled remotely (e.g. via the RabbitMQ Management plugin)
           # @option opts [EventSource::AsyncApi::Types::AmqpBindingVersionKind] :bindingVersion
           params do
+            optional(:cc).array(:string)
             optional(:consumer_tag).maybe(:string)
             optional(:ack).maybe(:bool)
             optional(:exclusive).maybe(:bool)

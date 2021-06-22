@@ -65,7 +65,7 @@ module EventSource
         def publish(payload: nil, publish_bindings: {})
           faraday_publish_bindings = sanitize_bindings(publish_bindings)
           @subject.body = payload if payload
-          @subject.headers.update(faraday_publish_bindings.headers) if faraday_publish_bindings.headers
+          @subject.headers.update(faraday_publish_bindings[:headers]) if faraday_publish_bindings[:headers]
           logger.debug "FaradayExchange#publish  connection: #{connection.inspect}"
           logger.debug "FaradayExchange#publish  processing request with headers: #{@subject.headers} body: #{@subject.body}"
 
@@ -104,8 +104,7 @@ module EventSource
         end
 
         def faraday_request_for(bindings)
-          STDERR.puts bindings.inspect
-          method = bindings ? bindings.method.downcase.to_sym : :get
+          method = bindings ? bindings[:method].downcase.to_sym : :get
           request =
             connection.build_request(method) do |req|
               req.path = request_path.to_s
@@ -117,7 +116,7 @@ module EventSource
 
         def sanitize_bindings(bindings)
           return {} unless bindings.present?
-          options = bindings[:http]
+          options = bindings[:http] || {}
           operation_bindings = {}
           operation_bindings[:headers] = options[:headers] if options[:headers]
           operation_bindings

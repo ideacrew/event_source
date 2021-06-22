@@ -76,6 +76,9 @@ module EventSource
           subscribe_options
         end
 
+        def resolve_subscriber_routing_keys(channel, operation)
+        end
+
         def register_subscription(subscriber_klass, bindings)
           consumer_proxy = consumer_proxy_for(bindings)
           
