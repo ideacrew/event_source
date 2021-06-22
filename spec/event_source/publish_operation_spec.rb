@@ -32,9 +32,8 @@ RSpec.describe EventSource::PublishOperation do
         .new
         .call(path: publish_resource_path)
         .success
-        .to_h
     connection.add_channels(
-      channels: publish_resource['channels'].deep_symbolize_keys
+      publish_resource.channels
     )
   end
 
@@ -44,9 +43,8 @@ RSpec.describe EventSource::PublishOperation do
         .new
         .call(path: subscribe_resource_path)
         .success
-        .to_h
     connection.add_channels(
-      channels: subscribe_resource['channels'].deep_symbolize_keys
+      subscribe_resource.channels
     )
   end
 

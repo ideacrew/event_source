@@ -23,7 +23,7 @@ RSpec.describe EventSource::Connection do
       EventSource::AsyncApi::Operations::AsyncApiConf::LoadPath
         .new
         .call(path: async_api_file)
-        .value!
+        .value!.channels
     end
 
     let(:server_options) do
@@ -43,7 +43,7 @@ RSpec.describe EventSource::Connection do
     context 'when channels params passed' do
       it 'should create individual channels' do
         connection.start unless connection.active?
-        connection.add_channels(channel.deep_symbolize_keys)
+        connection.add_channels(channel)
       end
     end
   end

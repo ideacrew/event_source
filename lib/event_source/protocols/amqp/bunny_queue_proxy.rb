@@ -28,6 +28,8 @@ module EventSource
           bindings = async_api_channel_item[:bindings]
           @consumers = []
 
+          STDERR.puts bindings.inspect
+          bindings.deep_symbolize_keys!
           queue_bindings = channel_item_queue_bindings_for(bindings)
           @exchange_name = exchange_name_from_queue(queue_bindings[:name])
           @subject = bunny_queue_for(queue_bindings)
@@ -50,8 +52,7 @@ module EventSource
 
         # Bind this Queue to the Exchange
         def bind_exchange(exchange_name, async_api_subscribe_operation)
-          operation_bindings = async_api_subscribe_operation[:bindings][:amqp]
-          channel_proxy.bind_queue(@subject.name, exchange_name, {routing_key: operation_bindings[:routing_key]})
+          channel_proxy.bind_queue(@subject.name, exchange_name, {routing_key: async_api_subscribe_operation.operationId})
           logger.info "Queue #{@subject.name} bound to exchange #{exchange_name}"
         rescue Bunny::NotFound => e
           raise EventSource::Protocols::Amqp::Error::ExchangeNotFoundError,
@@ -158,23 +159,14 @@ module EventSource
         end
 
         def channel_item_queue_bindings_for(bindings)
-          if async_api_channel_item_bindings_valid?(bindings)
-            bindings[:amqp][:queue]
-          else
-            raise EventSource::Protocols::Amqp::Error::ChannelBindingContractError,
-                  "Expected queue bindings: #{bindings}"
-          end
-        end
-
-        def async_api_channel_item_bindings_valid?(bindings)
           result =
             EventSource::Protocols::Amqp::Contracts::ChannelBindingContract.new
               .call(bindings)
           if result.success?
-            true
+            result.values[:amqp][:queue]
           else
             raise EventSource::Protocols::Amqp::Error::ChannelBindingContractError,
-                  "Error(s) #{result.errors.to_h} validating: #{bindings}"
+            "Error(s) #{result.errors.to_h} validating: #{bindings}"
           end
         end
 

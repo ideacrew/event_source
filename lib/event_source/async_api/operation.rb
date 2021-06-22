@@ -12,7 +12,7 @@ module EventSource
       # the operationId to uniquely identify an operation, therefore, it is RECOMMENDED to follow
       # common programming naming conventions
       # @return [String]
-      attribute :operationId, Types::String.meta(omittable: true)
+      attribute :operationId, Types::OperationNameType.meta(omittable: true)
 
       # @!attribute [r] summary
       # Short summary of what the operation is about

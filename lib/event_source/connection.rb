@@ -96,9 +96,9 @@ module EventSource
 
     # Create and register a collection of new {EventSource::Channel} instances
     def add_channels(async_api_channels)
-      async_api_channels.channels
-        .each do |channel_item_key, async_api_channel_item|
-        add_channel(channel_item_key, async_api_channel_item)
+      async_api_channels
+        .each do |async_api_channel_item|
+        add_channel(async_api_channel_item.id, async_api_channel_item)
       end
     end
 

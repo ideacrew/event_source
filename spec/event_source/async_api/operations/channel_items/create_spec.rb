@@ -24,17 +24,18 @@ RSpec.describe EventSource::AsyncApi::Operations::ChannelItems::Create do
   let(:bindings) { amqp_channel_binding }
 
   let(:subscribe_operation) do
-    { operation_id: :customer_enrolled, summary: 'A customer enrolled' }
+    { operationId: :customer_enrolled, summary: 'A customer enrolled' }
   end
   let(:subscribe) { subscribe_operation }
 
   let(:publish_operation) do
-    { operation_id: :enroll_customer, summary: 'Enroll a customer ' }
+    { operationId: :enroll_customer, summary: 'Enroll a customer ' }
   end
   let(:publish) { publish_operation }
 
   let(:publish_params) do
     {
+      id: "A channel ID",
       ref: ref,
       description: description,
       publish: publish,
@@ -45,6 +46,7 @@ RSpec.describe EventSource::AsyncApi::Operations::ChannelItems::Create do
 
   let(:subscribe_params) do
     {
+      id: "A channel ID",
       ref: ref,
       description: description,
       subscribe: subscribe,
@@ -55,8 +57,8 @@ RSpec.describe EventSource::AsyncApi::Operations::ChannelItems::Create do
 
   describe '#call' do
     context 'with no params' do
-      it 'should create an instance where all attribute values are nil' do
-        expect(subject.call({}).success?).to be_truthy
+      it 'is invalid' do
+        expect(subject.call({}).success?).to be_falsey
       end
     end
 

@@ -10,7 +10,7 @@ module EventSource
           optional(:summary).value(:string)
           optional(:description).value(:string)
           optional(:bindings).hash
-          #optional(:message).hash
+          optional(:message).hash
         end
 
         rule(:bindings) do

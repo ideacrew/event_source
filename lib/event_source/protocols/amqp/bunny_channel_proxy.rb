@@ -158,8 +158,10 @@ module EventSource
         end
 
         def add_exchange
+          async_api_channel_item.bindings.deep_symbolize_keys!
+          STDERR.puts async_api_channel_item.bindings.inspect
           exchange_bindings =
-            async_api_channel_item[:bindings][:amqp][:exchange]
+            async_api_channel_item.bindings[:amqp][:exchange]
           BunnyExchangeProxy.new(self, exchange_bindings)
         end
 
