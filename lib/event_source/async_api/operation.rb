@@ -12,7 +12,7 @@ module EventSource
       # the operationId to uniquely identify an operation, therefore, it is RECOMMENDED to follow
       # common programming naming conventions
       # @return [String]
-      attribute :operation_id, Types::Symbol.meta(omittable: true)
+      attribute :operationId, Types::String.meta(omittable: true)
 
       # @!attribute [r] summary
       # Short summary of what the operation is about
@@ -55,7 +55,7 @@ module EventSource
       # allowed here to specify multiple messages, however, a message MUST be valid only against one of
       # the referenced message objects
       # @return [EventSource::AsyncApi::Message]
-      attribute :message, EventSource::AsyncApi::Message.meta(omittable: true)
+      attribute :message, Types::Hash.meta(omittable: true) # EventSource::AsyncApi::Message.meta(omittable: true)
     end
   end
 end

@@ -44,6 +44,15 @@ EventSource.configure do |config|
       rabbitmq.user_name = "" # ENV['RABBITMQ_USERNAME']
       rabbitmq.password = "" # ENV['RABBITMQ_PASSWORD']
     end
+    
+    server.amqp do |rabbitmq|
+      rabbitmq.host = "amqp://localhost" # ENV['RABBITMQ_HOST']
+      rabbitmq.vhost =  "event_source" # ENV['RABBITMQ_VHOST']
+      rabbitmq.port = "5672" # ENV['RABBITMQ_PORT']
+      rabbitmq.url = "" # ENV['RABBITMQ_URL']
+      rabbitmq.user_name = "" # ENV['RABBITMQ_USERNAME']
+      rabbitmq.password = "" # ENV['RABBITMQ_PASSWORD']
+    end
 
     server.http do |http|
       http.host = "https://api.github.com"
@@ -92,7 +101,7 @@ EventSource.async_api_schemas = ::Dir[::File.join(dir, '**', '*')].reject { |p| 
   # read
   # serialize yaml to hash
   # Add to memo
-  memo << EventSource::AsyncApi::Operations::AsyncApiConf::LoadPath.new.call(path: file).success.to_h
+  memo << EventSource::AsyncApi::Operations::AsyncApiConf::LoadPath.new.call(path: file).success
 end
 
 EventSource.initialize!

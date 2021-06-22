@@ -28,34 +28,8 @@ module EventSource
           key.failure(text: 'invalid component hash', error: result.errors.to_h)
         end
 
-        rule(:channels) do
-          if key? && value
-            value.each do |key, v|
-              result = ChannelItemContract.new.call(v)
-
-              next unless result&.failure?
-              key.failure(
-                text: 'invalid channel_item',
-                error: result.errors.to_h
-              )
-            end
-          end
-        end
-
-        rule(:channel_items).each do
-          next unless key? && value
-          result = ChannelItemContract.new.call(value)
-
-          # Use dry-validation metadata form to pass error hash along with text to calling service
-          next unless result&.failure?
-          key.failure(
-            text: 'invalid channel_item hash',
-            error: result.errors.to_h
-          )
-        end
-
         rule(:info) do
-          if key? do
+          if key? && value
                result = InfoContract.new.call(value)
 
                # Use dry-validation metadata form to pass error hash along with text to calling service
@@ -65,37 +39,6 @@ module EventSource
                    error: result.errors.to_h
                  )
                end
-             end
-          end
-        end
-
-        rule(:message) do
-          if key? do
-               result = MessageContract.new.call(value)
-
-               # Use dry-validation metadata form to pass error hash along with text to calling service
-               if result&.failure?
-                 key.failure(
-                   text: 'invalid message hash',
-                   error: result.errors.to_h
-                 )
-               end
-             end
-          end
-        end
-
-        rule(:publish) do
-          if key? do
-               result = OperationContract.new.call(value)
-
-               # Use dry-validation metadata form to pass error hash along with text to calling service
-               if result&.failure?
-                 key.failure(
-                   text: 'invalid publish hash',
-                   error: result.errors.to_h
-                 )
-               end
-             end
           end
         end
 

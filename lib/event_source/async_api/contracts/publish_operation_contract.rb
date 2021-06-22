@@ -6,10 +6,11 @@ module EventSource
       # Schema and validation rules for {EventSource::AsyncApi::Operation}
       class PublishOperationContract < Dry::Validation::Contract
         params do
-          optional(:operation_id).value(::EventSource::AsyncApi::Types::OperationNameType)
+          optional(:operationId).value(::EventSource::AsyncApi::Types::OperationNameType)
           optional(:summary).value(:string)
           optional(:description).value(:string)
           optional(:bindings).hash
+          #optional(:message).hash
         end
 
         rule(:bindings) do

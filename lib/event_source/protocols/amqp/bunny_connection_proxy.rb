@@ -201,9 +201,7 @@ module EventSource
 
           def vhost_for(server)
             url = server[:url]
-            if server[:vhost]
-              vhost = server[:vhost]
-            elsif URI(url)
+            if URI(url)
               amqp_url = URI.parse(url)
               host = amqp_url.host || amqp_url.path # url w/single string parses into path
 

@@ -2,6 +2,8 @@
 
 require "event_source/protocols/http/types"
 require "event_source/protocols/http/publish_bindings"
+require "event_source/protocols/amqp/types"
+require "event_source/protocols/amqp/publish_bindings"
 
 module EventSource
   module AsyncApi

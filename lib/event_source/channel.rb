@@ -69,19 +69,19 @@ module EventSource
     #   an {EventSource::AsyncApi::ChannelItem}
     # @return [EventSource::PublishOperation]
     def add_publish_operation(async_api_channel_item)
-      return false unless async_api_channel_item[:publish]
+      return false unless async_api_channel_item.publish
       publish_proxy =
         @channel_proxy.add_publish_operation(async_api_channel_item)
       return false unless publish_proxy
 
-      operation_id = async_api_channel_item[:publish][:operationId]
+      operation_id = async_api_channel_item.publish.operationId
 
       logger.info "Adding Publish Operation:  #{operation_id}"
       @publish_operations[operation_id] = 
         EventSource::PublishOperation.new(
           self,
           publish_proxy,
-          async_api_channel_item[:publish]
+          async_api_channel_item.publish
         )
       logger.info "  Publish Operation Added: #{operation_id}"
     end
@@ -92,16 +92,16 @@ module EventSource
     #   an {EventSource::AsyncApi::ChannelItem}
     # @return [EventSource::SubscribeOperation]
     def add_subscribe_operation(async_api_channel_item)
-      return false unless async_api_channel_item[:subscribe]
+      return false unless async_api_channel_item.subscribe
       subscribe_proxy =
         @channel_proxy.add_subscribe_operation(async_api_channel_item)
 
-      operation_id = async_api_channel_item[:subscribe][:operationId]
+      operation_id = async_api_channel_item.subscribe.operationId
       @subscribe_operations[operation_id] =
         EventSource::SubscribeOperation.new(
           self,
           subscribe_proxy,
-          async_api_channel_item[:subscribe]
+          async_api_channel_item.subscribe
         )
     end
   end

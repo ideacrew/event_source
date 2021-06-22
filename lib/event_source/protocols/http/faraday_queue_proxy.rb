@@ -26,7 +26,7 @@ module EventSource
         def initialize(channel_proxy, async_api_channel_item)
           @channel_proxy = channel_proxy
           @exchange_name = channel_proxy.name
-          queue_bindings = async_api_channel_item[:subscribe][:bindings][:http]
+          queue_bindings = async_api_channel_item.subscribe.bindings.http
           @subject = faraday_queue_for(queue_bindings)
         end
 

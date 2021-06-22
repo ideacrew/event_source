@@ -47,7 +47,7 @@ module EventSource
         def initialize(channel_proxy, async_api_channel_item)
           @channel_proxy = channel_proxy
           @name = channel_proxy.name
-          request_bindings = async_api_channel_item[:publish][:bindings][:http]
+          request_bindings = async_api_channel_item.publish.bindings.http
           @subject = faraday_request_for(request_bindings)
         end
 
@@ -65,7 +65,7 @@ module EventSource
         def publish(payload: nil, publish_bindings: {})
           faraday_publish_bindings = sanitize_bindings(publish_bindings)
           @subject.body = payload if payload
-          @subject.headers.update(faraday_publish_bindings[:headers]) if faraday_publish_bindings[:headers]
+          @subject.headers.update(faraday_publish_bindings.headers) if faraday_publish_bindings.headers
           logger.debug "FaradayExchange#publish  connection: #{connection.inspect}"
           logger.debug "FaradayExchange#publish  processing request with headers: #{@subject.headers} body: #{@subject.body}"
 
@@ -104,7 +104,8 @@ module EventSource
         end
 
         def faraday_request_for(bindings)
-          method = bindings[:method].downcase.to_sym
+          STDERR.puts bindings.inspect
+          method = bindings ? bindings.method.downcase.to_sym : :get
           request =
             connection.build_request(method) do |req|
               req.path = request_path.to_s

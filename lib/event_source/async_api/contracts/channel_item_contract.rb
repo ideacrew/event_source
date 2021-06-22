@@ -15,6 +15,7 @@ module EventSource
         # @option opts [Types::HashOrNil] :bindings optional
         # @return [Dry::Monads::Result::Success, Dry::Monads::Result::Failure]
         params do
+          optional(:id).value(:string)
           optional(:ref).value(:string)
           optional(:subscribe).value(SubscribeOperationContract.params)
           optional(:publish).value(PublishOperationContract.params)

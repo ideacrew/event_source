@@ -7,6 +7,8 @@ module EventSource
     # use bindings to define them
     # Describes the operations available on a single channel
     class ChannelItem < Dry::Struct
+      attribute :id, Types::String.meta(omittable: false)
+
       # @!attribute [r] ref
       # Allows for an external definition of this channel item. The referenced structure
       # MUST be in the format of a Channel Item Object. If there are conflicts between the

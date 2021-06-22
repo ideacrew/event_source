@@ -20,11 +20,11 @@ module EventSource
         params do
           required(:asyncapi).value(:string)
           required(:info).value(:hash)
-          required(:channels).value(:hash)
+          required(:channels).array(ChannelItemContract.params)
           optional(:id).maybe(:symbol)
 
-          # optional(:servers).array(Types::HashOrNil)
-          optional(:servers).value(:hash)
+          optional(:servers).array(ServerContract.params)
+          #optional(:servers).value(:hash)
           optional(:components).array(Types::HashOrNil)
           optional(:tags).array(Types::HashOrNil)
           optional(:external_docs).array(Types::HashOrNil)
@@ -34,6 +34,47 @@ module EventSource
           #   Coerce ID attribute to Symbol if passed as String
           before(:value_coercer) do |result|
             result.to_h.merge!({ id: result.to_h[:id].to_sym }) if result.to_h.key? :id
+          end
+
+          before(:key_coercer) do |result|
+            result_hash = result.to_h
+            channel_set = []
+            if result_hash.key?(:channels)
+              channel_values = result_hash[:channels]
+              if channel_values.is_a?(Hash)
+                channel_values.each_pair do |k, v|
+                  channel_set << v.merge(id: k)
+                end
+                result_hash = result_hash.merge({channels: channel_set})
+              end
+            elsif result_hash.key?("channels")
+              channel_values = result_hash["channels"]
+              if channel_values.is_a?(Hash)
+                channel_values.each_pair do |k, v|
+                  channel_set << v.merge(id: k)
+                end
+                result_hash = result_hash.merge({"channels" => channel_set})
+              end  
+            end
+            server_set = []
+            if result_hash.key?(:servers)
+              server_values = result_hash[:servers]
+              if server_values.is_a?(Hash)
+                server_values.each_pair do |k, v|
+                  server_set << v.merge(id: k)
+                end
+                result_hash = result_hash.merge({servers: server_set})
+              end
+            elsif result_hash.key?("servers")
+              server_values = result_hash["servers"]
+              if server_values.is_a?(Hash)
+                server_values.each_pair do |k, v|
+                  server_set << v.merge(id: k)
+                end
+                result_hash = result_hash.merge({"servers" => server_set})
+              end  
+            end
+            result_hash
           end
         end
       end

@@ -25,22 +25,9 @@ module EventSource
     end
 
     # Add a network resource to the connection registry
-    # @param [Hash] async_api_server configuration values in the form of
-    #   an {EventSource::AsyncApi::Server}
-    # @example EventSource::AsyncApi::Server
-    #   servers:
-    #     production:
-    #       url: https://example.com
-    #       protocol: amqp
-    #       protocolVersion: "0.9.2"
-    #       description: RabbitMQ Production Server
-    #     test:
-    #       url: https://test.example.com
-    #       protocol: amqp
-    #       protocolVersion: "0.9.2"
-    #       description: RabbitMQ Test Server
-    # @return [EventSource::AsyncApi::Connection] Connection
+    # This resource is a connection configuration object.
     def add_connection(async_api_server)
+      STDERR.puts async_api_server.inspect
       client_klass = protocol_klass_for(async_api_server[:protocol])
       connection_uri = client_klass.connection_uri_for(async_api_server)
 
@@ -51,7 +38,7 @@ module EventSource
     end
 
     def fetch_connection(async_api_server)
-      client_klass = protocol_klass_for(async_api_server[:protocol])
+      client_klass = protocol_klass_for(async_api_server.protocol)
       connection_uri = client_klass.connection_uri_for(async_api_server)
       connections[connection_uri]
     end
@@ -154,9 +141,9 @@ module EventSource
     # @return [Class] Protocol Specific Connection Proxy Class
     def protocol_klass_for(protocol)
       case protocol.to_sym
-      when :amqp, :amqps
+      when :amqp, :amqps, "amqp", "amqps"
         EventSource::Protocols::Amqp::BunnyConnectionProxy
-      when :http, :https
+      when :http, :https, "http", "https"
         EventSource::Protocols::Http::FaradayConnectionProxy
       else
         raise EventSource::Protocols::Amqp::Error::UnknownConnectionProtocolError,

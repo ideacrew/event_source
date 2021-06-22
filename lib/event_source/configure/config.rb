@@ -47,7 +47,7 @@ module EventSource
       end
 
       def async_api_schemas=(schemas)
-        @async_api_schemas = schemas.map(&:deep_symbolize_keys!)
+        @async_api_schemas = schemas
       end
 
       def servers
@@ -60,10 +60,22 @@ module EventSource
         connection_manager = EventSource::ConnectionManager.instance
         @server_configurations.configurations.each do |server_conf|
           settings = server_conf.to_h
-          url = [settings[:host], ":", settings[:port]].join
-          url = ("#{settings[:protocol]}://") + url unless url.match(/^\w+\:\/\//)
+          url = format_urls_for_server_config(settings)
           settings[:url] = url
           connection_manager.add_connection(settings)
+        end
+      end
+
+      def format_urls_for_server_config(settings)
+        case settings[:protocol]
+        when :amqp, :amqps, "amqp", "amqps"
+          vhost = settings[:vhost].blank? ? "" : settings[:v_host] 
+          url = [settings[:host], ":", settings[:port], "/", vhost].join
+          url
+        else
+          url = [settings[:host], ":", settings[:port]].join
+          url = ("#{settings[:protocol]}://") + url unless url.match(/^\w+\:\/\//)
+          url
         end
       end
 
@@ -71,19 +83,18 @@ module EventSource
         return unless @async_api_schemas
 
         @async_api_schemas.each do |resource|
-          #raise resource[:channels].inspect
-          resource[:channels].each do |channel_item_key, async_api_channel_item|
-            if async_api_channel_item[:publish]
-              process_resource_for(resource[:servers], channel_item_key, async_api_channel_item)
+          resource.channels.each do |async_api_channel_item|
+            if async_api_channel_item.publish.present?
+              process_resource_for(resource.servers, async_api_channel_item.id, async_api_channel_item)
             end
           end
         end
 
         @async_api_schemas.each do |resource|
-          resource[:channels].each do |channel_item_key, async_api_channel_item|
-            next if async_api_channel_item[:publish]
-            next unless async_api_channel_item[:subscribe]
-            process_resource_for(resource[:servers], channel_item_key, async_api_channel_item)
+          resource.channels.each do |async_api_channel_item|
+            next if async_api_channel_item.publish.present?
+            next unless async_api_channel_item.subscribe.present?
+            process_resource_for(resource.servers, async_api_channel_item.id, async_api_channel_item)
           end
         end
       end
@@ -96,12 +107,15 @@ module EventSource
       def process_resource_for(servers, channel_item_key,  async_api_channel_item)
         return unless servers
 
+        matching_server = servers.detect do |s|
+          s.id.to_s == @server_key.to_s
+        end
         connection =
-          connection_manager.fetch_connection(servers[@server_key])
+          connection_manager.fetch_connection(matching_server)
 
         unless connection
-          logger.error { "Unable to find connection for #{@server_key} with #{servers[@server_key]}" }
-          raise EventSource::Error::ConnectionNotFound, "unable to find connection for #{@server_key} with #{servers[@server_key]}}"
+          logger.error { "Unable to find connection for #{@server_key} with #{servers}" }
+          raise EventSource::Error::ConnectionNotFound, "unable to find connection for #{@server_key} with #{servers}}"
         end
 
         logger.info { "Connecting #{connection.connection_uri}" }

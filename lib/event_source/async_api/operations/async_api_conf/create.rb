@@ -6,7 +6,7 @@ module EventSource
       module AsyncApiConf
         # Create a {AsyncApiConf} instance
         class Create
-          send(:include, Dry::Monads[:result, :do])
+          send(:include, Dry::Monads[:result, :do, :try])
 
           # @param [Hash] params Values to use to create the AsyncApiConf instance.
           #   Validated using {EventSource::AsyncApi::Contracts::AsyncApiConfContract}
@@ -24,7 +24,6 @@ module EventSource
           def call(params)
             values = yield validate(params)
             entity = yield create(values)
-
             Success(entity)
           end
 
@@ -39,9 +38,12 @@ module EventSource
           end
 
           def create(values)
-            async_api_conf =
-              EventSource::AsyncApi::AsyncApiConf.new(values.to_h)
-            Success(async_api_conf)
+            Try do
+              async_api_conf =
+                EventSource::AsyncApi::AsyncApiConf.new(values.to_h)
+            end.or do |e|
+              Failure(e)
+            end
           end
         end
       end
