@@ -69,7 +69,6 @@ module EventSource
           logger.debug "ConnectionProxy:  connection_params: #{@server_options}"
           @subject = Bunny.new(@connection_params.merge(@server_options), {})
           logger.debug "ConnectionProxy: vhost #{@subject.vhost}"
-          @subject
         end
 
         # The Connection object
@@ -123,7 +122,7 @@ module EventSource
           logger.info "Connection #{connection_uri} closed."
         end
 
-        # @see {close}
+        # @see close
         alias_method :stop, :close
 
         # Returns true if this connection is closed
@@ -211,8 +210,9 @@ module EventSource
             else
               vhost = ConnectDefaults[:vhost]
             end
-            if vhost != "/"
-              vhost = vhost.match(%r{\A\/(.+)\Z})[1] if vhost && vhost.match(%r{\A\/.+\Z})
+            if vhost != '/'
+              vhost = vhost.match(%r{\A\/(.+)\Z})[1] if vhost &&
+                vhost.match(%r{\A\/.+\Z})
             end
             vhost || ConnectDefaults[:vhost]
           end

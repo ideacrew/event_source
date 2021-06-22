@@ -16,3 +16,4 @@
 # ignore log files
 *.log
 *.log.age
+*.swp

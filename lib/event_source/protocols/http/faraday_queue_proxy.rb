@@ -47,8 +47,6 @@ module EventSource
 
         # Construct and subscribe a consumer_proxy with the queue
         # @param [Object] subscriber_klass Subscriber class
-        # @param [Hash] _options Subscribe operation bindings
-        # @param [Proc] block Code block to execute when event is received
         # @return [Queue] Queue instance
         def register_subscription(subscriber_klass, _options)
           unique_key = [app_name, formatted_exchange_name].join(delimiter)
