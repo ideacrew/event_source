@@ -18,8 +18,8 @@ module EventSource
             # Convert a security config and a body into a SOAP payload.
             # This assumes you have pre-validated your XML and it is valid.
             # @param [Hash] opts the parameters for the operation
-            # @options opts [String] :body XML body payload you want to wrap
-            # @options opts [
+            # @option opts [String] :body XML body payload you want to wrap
+            # @option opts [
             #                 ::EventSource::Protocols::Http::Soap::SecurityHeaderConfiguration
             #               ] :security_settings the security options for the SOAP request
             # @return [Dry::Result<String>] the wrapped soap payload

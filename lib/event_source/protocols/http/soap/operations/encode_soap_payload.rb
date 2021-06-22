@@ -18,8 +18,8 @@ module EventSource
             # a top level SOAP XML.  This assumes you have pre-validated your
             # XML and it is valid.
             # @param [Hash] opts the parameters for the operation
-            # @options opts [String] :body XML body payload you want to wrap
-            # @options opts [
+            # @option opts [String] :body XML body payload you want to wrap
+            # @option opts [
             #                 ::EventSource::Protocols::Http::Soap::UsernameTokenValues
             #               ] :username_token_values the token values for SOAP security
             # @return [Dry::Result<String>] the new soap payload
