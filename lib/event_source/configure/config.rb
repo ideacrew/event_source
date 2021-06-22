@@ -52,16 +52,20 @@ module EventSource
 
       def servers
         @server_configurations = Servers.new
+
         yield(@server_configurations)
       end
 
       def create_connections
         return unless @server_configurations
         connection_manager = EventSource::ConnectionManager.instance
+
         @server_configurations.configurations.each do |server_conf|
+
           settings = server_conf.to_h
           url = format_urls_for_server_config(settings)
           settings[:url] = url
+
           connection_manager.add_connection(settings)
         end
       end
@@ -118,7 +122,7 @@ module EventSource
           raise EventSource::Error::ConnectionNotFound, "unable to find connection for #{@server_key} with #{servers}}"
         end
 
-        logger.info { "Connecting #{connection.connection_uri}" }
+        logger.info { "Connecting #{connection.connection_uri}" } unless connection.active?
         connection.start
         logger.info { "Connected to #{connection.connection_uri}" }
 
