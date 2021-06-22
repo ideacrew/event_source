@@ -12,6 +12,7 @@
 
 .DS_Store
 .vscode
+node_modules
 
 # ignore log files
 *.log
