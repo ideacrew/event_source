@@ -64,6 +64,12 @@ EventSource.configure do |config|
       http.port = "3000"
     end
 
+    server.http do |http|
+      http.url = "http://aces-qa/some-random-lookup-uri"
+      http.host = "localhost"
+      http.protocol = :http
+    end
+
     # server.amqp do |amqp|
     #   amqp.url = "amqp://localhost:5672/"
     # end

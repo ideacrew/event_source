@@ -1,0 +1,37 @@
+asyncapi: "2.0.0"
+info:
+  title: ACES Services
+  version: "0.1.0"
+  description: Talk to the ACES submission service
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  production:
+    url: http://aces-qa/some-random-lookup-uri
+    protocol: http
+    description: ACES QA Server
+
+defaultContentType: application/soap+xml
+
+channels:
+  aces_submission:
+    publish:
+      operationId: /aces_submission
+      description: Example HTTP ACES call
+      bindings:
+        http:
+          type: request
+          method: POST
+          headers:
+            Content-Type: application/soap+xml
+    subscribe:
+      operationId: /on/aces_submission
+      description: Example HTTP ACES response
+      bindings:
+        http:
+          type: request
+          method: GET
+          headers:
+            Content-Type: application/soap+xml

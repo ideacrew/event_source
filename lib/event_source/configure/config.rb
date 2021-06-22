@@ -61,12 +61,15 @@ module EventSource
         connection_manager = EventSource::ConnectionManager.instance
 
         @server_configurations.configurations.each do |server_conf|
-
           settings = server_conf.to_h
           url = format_urls_for_server_config(settings)
           settings[:url] = url
 
-          connection_manager.add_connection(settings)
+          if server_conf.url.present?
+            connection_manager.add_connection(settings, server_conf.url)
+          else
+            connection_manager.add_connection(settings)
+          end
         end
       end
 
