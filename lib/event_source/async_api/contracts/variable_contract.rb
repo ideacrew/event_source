@@ -30,7 +30,7 @@ module EventSource
         # @return [Dry::Monads::Result::Success, Dry::Monads::Result::Failure]
         params do
           optional(:key).maybe(:symbol)
-          optional(:value).maybe(ServerVariableSchema)
+          optional(:value).maybe(ServerVariableSchema.params)
         end
       end
     end
