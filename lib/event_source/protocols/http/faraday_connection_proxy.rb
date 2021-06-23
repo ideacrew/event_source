@@ -78,6 +78,9 @@ module EventSource
           @subject = build_connection
         end
 
+        # FIXME:
+        #   Right now the connection middleware is built and chosen
+        #   before we even know what the settings for the operations are.
         def build_connection
           request_middleware_params = connection_params[:request_middleware_params]
           response_middleware_params = connection_params[:response_middleware_params]

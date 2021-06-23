@@ -78,7 +78,7 @@ module EventSource
           logger.debug "FaradayRequest#publish  response headers: #{response.headers}"
 
           @channel_proxy.enqueue(response)
-          logger.debug "FaradayRequest#publish  response enqueued."
+          logger.debug "FaradayRequest#publish response enqueued."
           response
         end
 

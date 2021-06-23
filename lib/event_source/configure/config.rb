@@ -4,31 +4,6 @@ require 'deep_merge'
 
 module EventSource
   module Configure
-
-    # Represents a server configuration.
-    class Servers
-
-      attr_reader :configurations
-
-      Configuration = Struct.new(:protocol, :host, :vhost, :port, :url, :user_name, :password)
-
-      def initialize
-        @configurations = []
-      end
-
-      def http
-        http_conf = Configuration.new(:http)
-        yield(http_conf)
-        @configurations.push(http_conf)
-      end
-
-      def amqp
-        amqp_conf = Configuration.new(:amqp)
-        yield(amqp_conf)
-        @configurations.push(amqp_conf)
-      end
-    end
-
     # This class contains all the configuration for a running queue bus application.
     class Config
       include EventSource::Logging
