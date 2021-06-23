@@ -41,7 +41,7 @@ module EventSource
       class FaradayChannelProxy
         # @attr_reader [Faraday::Connection] connection Connection to HTTP server
         # @attr_reader [Faraday::Request] subject Channel
-        attr_reader :connection, :name, :subject, :worker
+        attr_reader :connection, :name, :subject, :worker, :connection_proxy
 
         include EventSource::Logging
 
@@ -54,6 +54,7 @@ module EventSource
           async_api_channel_item
         )
           # @subscriber_queue = Queue.new
+          @connection_proxy = faraday_connection_proxy
           @publish_operations = {}
           @subscribe_operations = {}
           @connection = faraday_connection_proxy.connection
@@ -118,6 +119,10 @@ module EventSource
 
         def method_missing(name, *args)
           @subject.send(name, *args)
+        end
+
+        def channel_item
+          @async_api_channel_item
         end
 
         private

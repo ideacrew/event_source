@@ -67,7 +67,15 @@ EventSource.configure do |config|
     server.http do |http|
       http.url = "http://aces-qa/some-random-lookup-uri"
       http.host = "localhost"
+      http.port = 6767
       http.protocol = :http
+      http.soap do |soap|
+        soap.user_name = "aces user name"
+        soap.password = "aces password"
+        soap.password_encoding = :digest
+        soap.use_timestamp = true
+        soap.timestamp_ttl = 60.seconds
+      end
     end
 
     # server.amqp do |amqp|

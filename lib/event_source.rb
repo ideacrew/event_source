@@ -18,6 +18,7 @@ require 'event_source/inflector'
 require 'event_source/logging'
 require 'event_source/uris/uri'
 require 'event_source/types'
+require 'event_source/content_type_resolver'
 require 'event_source/async_api/types'
 require 'event_source/async_api/async_api'
 require 'event_source/railtie' if defined?(Rails)

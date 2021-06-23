@@ -51,11 +51,13 @@ module EventSource
       def format_urls_for_server_config(settings)
         case settings[:protocol]
         when :amqp, :amqps, "amqp", "amqps"
-          vhost = settings[:vhost].blank? ? "" : settings[:v_host] 
-          url = [settings[:host], ":", settings[:port], "/", vhost].join
+          vhost = settings[:vhost].blank? ? "" : settings[:v_host]
+          port_part = settings[:port].present? ? [":", settings[:port]].join : ""
+          url = [settings[:host], port_part, "/", vhost].join
           url
         else
-          url = [settings[:host], ":", settings[:port]].join
+          port_part = settings[:port].present? ? [":", settings[:port]].join : ""
+          url = [settings[:host], port_part].join
           url = ("#{settings[:protocol]}://") + url unless url.match(/^\w+\:\/\//)
           url
         end

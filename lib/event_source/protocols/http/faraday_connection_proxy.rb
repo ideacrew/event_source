@@ -46,6 +46,10 @@ module EventSource
         #
         # Override default values using the options argument in the constructor
         ResponseMiddlewareParamsDefault = {
+
+        }.freeze
+
+        JsonResponseMiddlewareParamsDefault = {
           json: {
             order: 10,
             options: {}
@@ -72,22 +76,17 @@ module EventSource
           @protocol_version = ProtocolVersion
           @client_version = ClientVersion
           @connection_params = connection_params_for(options)
+          
           @connection_uri = self.class.connection_uri_for(async_api_server)
           @channel_proxies = {}
-
-          @subject = build_connection
         end
 
-        # FIXME:
-        #   Right now the connection middleware is built and chosen
-        #   before we even know what the settings for the operations are.
-        def build_connection
-          request_middleware_params = connection_params[:request_middleware_params]
-          response_middleware_params = connection_params[:response_middleware_params]
+        def build_connection_for_request(publish_operation, subscribe_operation, request_content_type, response_content_type)
+          request_middleware_params = RequestMiddlewareParamsDefault
+          response_middleware_params = request_content_type.json? ? JsonResponseMiddlewareParamsDefault : ResponseMiddlewareParamsDefault
           http_params = connection_params[:http][:params]
           headers = connection_params[:http][:headers]
           adapter = connection_params[:adapter]
-
           Faraday.new(
             url: @connection_uri,
             params: http_params,
@@ -128,6 +127,7 @@ module EventSource
 
         # The status of the connection instance
         def active?
+          return true if @subject.blank?
           return true if @channel_proxies.empty?
           @channel_proxies.values.any?(&:active?)
         end
@@ -136,11 +136,10 @@ module EventSource
         #  connections this closes all currently open connections
         def close
           @channel_proxies.values.each(&:close)
-          @subject.close
         end
 
         def reconnect
-          @subject.reconnect!
+          EventSource::Noop.new
         end
 
         # The version of Faraday client in use
@@ -187,7 +186,6 @@ module EventSource
           # @return [String] uri connection key
           def connection_uri_for(async_api_server)
             server_uri = URI(async_api_server[:url]).normalize
-
             URI::HTTP.build(
               scheme: server_uri.scheme,
               host: server_uri.host,

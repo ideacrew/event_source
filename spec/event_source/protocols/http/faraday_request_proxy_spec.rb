@@ -5,9 +5,6 @@ require 'config_helper'
 require 'yaml'
 
 RSpec.describe EventSource::Protocols::Http::FaradayRequestProxy do
-  let(:asyncapi_file) { 'spec/support/async_api_files/contributors.yml' }
-  let(:asyncapi) { YAML.safe_load(File.read(asyncapi_file)) }
-
   let(:protocol) { :http }
   let(:url) { 'https://api.github.com' }
   let(:protocol_version) { '0.9.1' }
@@ -26,7 +23,7 @@ RSpec.describe EventSource::Protocols::Http::FaradayRequestProxy do
     EventSource::Protocols::Http::FaradayConnectionProxy.new(my_server)
   end
   let(:connection) { EventSource::Connection.new(connection_proxy) }
-  let(:channel_proxy) { connection_proxy.add_channel(channel_key, {}) }
+  let(:channel_proxy) { connection_proxy.add_channel(channel_key, channel_item) }
   let(:channel_key) { '/repos/thoughtbot/factory_girl/contributors' }
   let(:publish_operation) do
     {
