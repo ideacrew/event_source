@@ -11,7 +11,7 @@ RSpec.describe EventSource::Protocols::Http::Soap::Operations::GenerateUsernameT
   let(:security_header_configuration) do
     ::EventSource::Protocols::Http::Soap::SecurityHeaderConfiguration.new(
       {
-        username: "a username",
+        user_name: "a username",
         password: "a password"
       }
     )
@@ -47,7 +47,7 @@ RSpec.describe EventSource::Protocols::Http::Soap::Operations::GenerateUsernameT
   end
 
   it "encodes using digest by default" do
-    expect(subject.value!.digest_encoding).to eq EventSource::Protocols::Http::Soap::USERTOKEN_DIGEST_VALUES["digest"]
+    expect(subject.value!.digest_encoding).to eq EventSource::Protocols::Http::Soap::USERTOKEN_DIGEST_VALUES[:digest]
   end
 end
 
@@ -60,10 +60,10 @@ RSpec.describe EventSource::Protocols::Http::Soap::Operations::GenerateUsernameT
   let(:security_header_configuration) do
     ::EventSource::Protocols::Http::Soap::SecurityHeaderConfiguration.new(
       {
-        username: "a username",
+        user_name: "a username",
         password: "a password",
-        password_encoding: "plain",
-        generate_timestamp: true
+        password_encoding: :plain,
+        use_timestamp: true
       }
     )
   end
@@ -101,6 +101,6 @@ RSpec.describe EventSource::Protocols::Http::Soap::Operations::GenerateUsernameT
   end
 
   it "encodes using plain" do
-    expect(subject.value!.digest_encoding).to eq EventSource::Protocols::Http::Soap::USERTOKEN_DIGEST_VALUES["plain"]
+    expect(subject.value!.digest_encoding).to eq EventSource::Protocols::Http::Soap::USERTOKEN_DIGEST_VALUES[:plain]
   end
 end

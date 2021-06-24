@@ -10,7 +10,9 @@ Protocol Bindings for Operations have been moved to a Dry::Struct.  This is curr
 
 In areas where we differ from the AsyncAPI spec, I have introduced documentation identifying the differences.  It can currently be found in `hugo/content/docs/async_api_differences.md`.
 
-### Thread Safety and Worker Pools/Hosts
+### Thread Safety and Worker Pools/Hosts - but not yet
+
+AMQP workers need some love around worker process hosting - planned for next release.
 
 ### Improved Single-Location Connection Configuration for DevOps
 

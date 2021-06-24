@@ -34,7 +34,7 @@ module EventSource
               timestamp_opts = {
                 created: encode_created(created_time)
               }
-              if header_configuration.timestamp_ttl
+              if header_configuration.use_timestamp
                 end_time = created_time + header_configuration.timestamp_ttl.seconds
                 timestamp_opts[:expires] = encode_created(end_time)
               end
@@ -73,13 +73,13 @@ module EventSource
               digest
             )
               opts = {
-                username: header_configuration.username,
+                username: header_configuration.user_name,
                 digest_encoding: USERTOKEN_DIGEST_VALUES[header_configuration.password_encoding],
                 encoded_nonce: nonce_b64,
                 password_digest: digest,
                 created_value: created_value
               }
-              if header_configuration.generate_timestamp
+              if header_configuration.use_timestamp
                 opts[:security_timestamp_value] = generate_security_timestamp_values(header_configuration, created_time)
               end
               UsernameTokenValues.new(opts)

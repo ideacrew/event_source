@@ -8,7 +8,7 @@ RSpec.describe EventSource::Protocols::Http::Soap::Operations::DecoratePayloadUs
   let(:security_settings) do
     ::EventSource::Protocols::Http::Soap::SecurityHeaderConfiguration.new(
       {
-        username: "a username",
+        user_name: "a username",
         password: "a password"
       }
     )
