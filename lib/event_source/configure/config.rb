@@ -26,8 +26,7 @@ module EventSource
       end
 
       def servers
-        @server_configurations = Servers.new
-
+        @server_configurations ||= Servers.new
         yield(@server_configurations)
       end
 
@@ -51,9 +50,10 @@ module EventSource
       def format_urls_for_server_config(settings)
         case settings[:protocol]
         when :amqp, :amqps, "amqp", "amqps"
-          vhost = settings[:vhost].blank? ? "" : settings[:v_host]
+          vhost = settings[:vhost].blank? ? "/" : settings[:vhost]
           port_part = settings[:port].present? ? [":", settings[:port]].join : ""
-          url = [settings[:host], port_part, "/", vhost].join
+          url = [settings[:host], port_part, vhost].join
+          url = ("#{settings[:protocol]}://") + url unless url.match(/^\w+\:\/\//)
           url
         else
           port_part = settings[:port].present? ? [":", settings[:port]].join : ""

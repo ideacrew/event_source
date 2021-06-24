@@ -76,7 +76,7 @@ module EventSource
           logger.debug "FaradayExchange#publish  processing request with headers: #{@subject.headers} body: #{@subject.body}"
 
           # @subject.call(payload, faraday_publish_bindings)
-          response = @connection.builder.build_response(connection, @subject)
+          response = connection.builder.build_response(connection, @subject)
           logger.debug "Executed Faraday request...response: #{response.status}"
        
           payload_correlation_id = nil

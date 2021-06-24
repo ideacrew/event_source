@@ -1,15 +1,6 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
-
-module Subscribers
-  # Subscriber will receive response payload from mitc and perform validation along with persisting the payload
-  class AcesExampleSubscriber
-    include ::EventSource::Subscriber[http: 'polypress.document_publisher']
-    extend EventSource::Logging
-
-  end
-end
+#require 'rails_helper'
 
 RSpec.describe "An example service for ACES" do
   let(:async_api_file) do

@@ -37,19 +37,19 @@ EventSource.configure do |config|
     # - RABBITMQ_USERNAME=${RABBITMQ_USERNAME:-guest}
     # - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-guest}
     server.amqp do |rabbitmq|
-      rabbitmq.host = "amqp://localhost" # ENV['RABBITMQ_HOST']
+      rabbitmq.host = "localhost" # ENV['RABBITMQ_HOST']
       rabbitmq.vhost =  "/" # ENV['RABBITMQ_VHOST']
       rabbitmq.port = "5672" # ENV['RABBITMQ_PORT']
-      rabbitmq.url = "" # ENV['RABBITMQ_URL']
+      rabbitmq.url = "amqp://localhost:5672/" # ENV['RABBITMQ_URL']
       rabbitmq.user_name = "" # ENV['RABBITMQ_USERNAME']
       rabbitmq.password = "" # ENV['RABBITMQ_PASSWORD']
     end
     
     server.amqp do |rabbitmq|
-      rabbitmq.host = "amqp://localhost" # ENV['RABBITMQ_HOST']
-      rabbitmq.vhost =  "event_source" # ENV['RABBITMQ_VHOST']
+      rabbitmq.host = "localhost" # ENV['RABBITMQ_HOST']
+      rabbitmq.vhost =  "/event_source" # ENV['RABBITMQ_VHOST']
       rabbitmq.port = "5672" # ENV['RABBITMQ_PORT']
-      rabbitmq.url = "" # ENV['RABBITMQ_URL']
+      rabbitmq.url = "amqp://localhost:5672/event_source" # ENV['RABBITMQ_URL']
       rabbitmq.user_name = "" # ENV['RABBITMQ_USERNAME']
       rabbitmq.password = "" # ENV['RABBITMQ_PASSWORD']
     end

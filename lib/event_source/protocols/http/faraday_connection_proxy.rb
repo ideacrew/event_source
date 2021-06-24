@@ -82,7 +82,7 @@ module EventSource
         end
 
         def build_connection_for_request(publish_operation, subscribe_operation, request_content_type, response_content_type)
-          request_middleware_params = RequestMiddlewareParamsDefault
+          request_middleware_params = construct_request_middleware(publish_operation, request_content_type)
           response_middleware_params = request_content_type.json? ? JsonResponseMiddlewareParamsDefault : ResponseMiddlewareParamsDefault
           http_params = connection_params[:http][:params]
           headers = connection_params[:http][:headers]
@@ -227,6 +227,10 @@ module EventSource
             response_middleware_params: response_middleware_params,
             adapter: adapter
           }.merge http
+        end
+
+        def construct_request_middleware(publish_operation, request_content_type)
+          RequestMiddlewareParamsDefault
         end
       end
     end

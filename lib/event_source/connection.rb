@@ -67,12 +67,12 @@ module EventSource
 
     # List of {EventSource::PublishOperation}s registered for this Connection
     def publish_operations
-      channels.values.map(&:publish_operations).inject(:merge)
+      channels.values.map(&:publish_operations).inject({}, &:merge)
     end
 
     # List of {EventSource::SubscribeOperation}s registered for this Connection
     def subscribe_operations
-      channels.values.map(&:subscribe_operations).inject(:merge)
+      channels.values.map(&:subscribe_operations).inject({}, &:merge)
     end
 
     # Find a registered {EventSource::PublishOperation} by name on this Connection
