@@ -12,15 +12,21 @@ module EventSource
       def security_timestamp?
         !!use_timestamp
       end
+
+      def to_h
+        attribute_hash = super()
+        attribute_hash.reject { |_k, v| v.nil? }
+      end
     end
 
     AmqpConfiguration = Struct.new(:protocol, :host, :vhost, :port, :url, :user_name, :password, :call_location)
 
     HttpConfiguration = Struct.new(:protocol, :host, :port, :url, :user_name, :password, :soap_settings, :call_location) do
       def soap
-        soap_settings = SoapConfiguration.new
-        soap_settings.call_location = caller(1)
-        yield(soap_settings)
+        s_settings = SoapConfiguration.new
+        s_settings.call_location = caller(1)
+        yield(s_settings)
+        self.soap_settings = s_settings
       end
 
       def soap?

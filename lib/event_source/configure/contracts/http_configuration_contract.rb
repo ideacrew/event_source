@@ -7,12 +7,23 @@ module EventSource
       class HttpConfigurationContract < Dry::Validation::Contract
         params do
           optional(:url).value(:string)
-          optional(:hostname).value(:string)
+          optional(:host).value(:string)
           optional(:port).value(:integer)
           optional(:user_name).value(:string)
           optional(:password).value(:string)
           optional(:call_location).array(:string)
           optional(:soap_settings).hash
+        end
+
+        rule(:soap_settings) do
+          if key && value
+            validation_result = SoapSettingsContract.new.call(value)
+            key.failure(text: "invalid soap configuration", errors: validation_result.errors.to_h) unless validation_result.success?
+          end
+        end
+
+        rule(:url, :host) do
+          key.failure("either :url or :host must be specified") if values[:url].blank? && values[:host].blank?
         end
       end
     end
