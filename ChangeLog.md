@@ -14,6 +14,10 @@ In areas where we differ from the AsyncAPI spec, I have introduced documentation
 
 ### Improved Single-Location Connection Configuration for DevOps
 
+Connections may now be cross mapped via URL.  If you want to map a connection from an async api file but not keep the 'real' URL in the file, use the same URL as in the server settings in the yaml, and specify different host and port values.
+
+Additionally, invalid server configurations (right now only for HTTP services) will fail to boot the application, raising an exception and telling you exactly where and what you did wrong in your rails configuration files.
+
 ### File Loading
 
 Correct file loading in AsyncApi namespace to use idiomatic ruby conventions and avoid unpredictable gem search paths when requiring files within the library.
