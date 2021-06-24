@@ -56,7 +56,6 @@ EventSource.configure do |config|
 
     server.http do |http|
       http.host = "https://api.github.com"
-      http.port = ""
     end
 
     server.http do |http|

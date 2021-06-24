@@ -32,6 +32,7 @@ module EventSource
 
       def create_connections
         return unless @server_configurations
+        validate_connections
         connection_manager = EventSource::ConnectionManager.instance
 
         @server_configurations.configurations.each do |server_conf|
@@ -44,6 +45,25 @@ module EventSource
           else
             connection_manager.add_connection(settings)
           end
+        end
+      end
+
+      def validate_connections
+        validation_result = ::EventSource::Configure::Operations::ValidateServerConfigurations.new.call(
+          @server_configurations
+        )
+        if validation_result.success?
+        else
+          validation_result.failure.each do |result|
+            formatted_trace = result.first.call_location.first(3).map do |e_line|
+              "    #{e_line}"
+            end.join("\n")
+            logger.error "Invalid Server Configuration\n  Errors: #{result.last.to_h}\n  At:\n#{formatted_trace}"
+          end
+          first_failure = validation_result.failure.first
+          exception = Error::InvalidServerConfigurationException.new("Server configuration invalid: #{first_failure.last.to_h}")
+          exception.set_backtrace first_failure.first.call_location
+          raise exception
         end
       end
 
