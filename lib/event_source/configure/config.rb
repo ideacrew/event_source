@@ -4,31 +4,6 @@ require 'deep_merge'
 
 module EventSource
   module Configure
-
-    # Represents a server configuration.
-    class Servers
-
-      attr_reader :configurations
-
-      Configuration = Struct.new(:protocol, :host, :vhost, :port, :url, :user_name, :password)
-
-      def initialize
-        @configurations = []
-      end
-
-      def http
-        http_conf = Configuration.new(:http)
-        yield(http_conf)
-        @configurations.push(http_conf)
-      end
-
-      def amqp
-        amqp_conf = Configuration.new(:amqp)
-        yield(amqp_conf)
-        @configurations.push(amqp_conf)
-      end
-    end
-
     # This class contains all the configuration for a running queue bus application.
     class Config
       include EventSource::Logging
@@ -51,8 +26,7 @@ module EventSource
       end
 
       def servers
-        @server_configurations = Servers.new
-
+        @server_configurations ||= Servers.new
         yield(@server_configurations)
       end
 
@@ -61,23 +35,29 @@ module EventSource
         connection_manager = EventSource::ConnectionManager.instance
 
         @server_configurations.configurations.each do |server_conf|
-
           settings = server_conf.to_h
           url = format_urls_for_server_config(settings)
           settings[:url] = url
 
-          connection_manager.add_connection(settings)
+          if server_conf.url.present?
+            connection_manager.add_connection(settings, server_conf.url)
+          else
+            connection_manager.add_connection(settings)
+          end
         end
       end
 
       def format_urls_for_server_config(settings)
         case settings[:protocol]
         when :amqp, :amqps, "amqp", "amqps"
-          vhost = settings[:vhost].blank? ? "" : settings[:v_host] 
-          url = [settings[:host], ":", settings[:port], "/", vhost].join
+          vhost = settings[:vhost].blank? ? "/" : settings[:vhost]
+          port_part = settings[:port].present? ? [":", settings[:port]].join : ""
+          url = [settings[:host], port_part, vhost].join
+          url = ("#{settings[:protocol]}://") + url unless url.match(/^\w+\:\/\//)
           url
         else
-          url = [settings[:host], ":", settings[:port]].join
+          port_part = settings[:port].present? ? [":", settings[:port]].join : ""
+          url = [settings[:host], port_part].join
           url = ("#{settings[:protocol]}://") + url unless url.match(/^\w+\:\/\//)
           url
         end

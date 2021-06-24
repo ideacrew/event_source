@@ -1,4 +1,8 @@
-# Differences Between Our Objects and the AsyncAPI Spec
+---
+title: AsyncAPI Differences
+description: Areas where we differ from the AsyncAPI spec.
+
+---
 
 This document lists locations where our current object model differs from that presented in the AsyncAPI specification, and where possible, an explanation for why.  It also tracks any areas where we plan to address these differences.
 
@@ -15,3 +19,7 @@ Channel bindings are currently implemented as a hash, and are not strongly typed
 ## Servers
 
 The security section for servers is currently implemented as a list of hashes.  It should be implemented as a list of security schemas.
+
+## Default Content Type
+
+The top level `defaultContentType` specifier, while included in the model, is not propagated nor provided to adapters and proxies.  This means currently any custom content types need to be enacted through the message configuration.

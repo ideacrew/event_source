@@ -82,7 +82,7 @@ RSpec.describe EventSource::Protocols::Http::FaradayChannelProxy do
 
   let(:channel_proxy) do
     
-    described_class.new(connection, channel_id, channel_struct)
+    described_class.new(client, channel_id, channel_struct)
   end
 
   context 'Adapter pattern methods are present' do

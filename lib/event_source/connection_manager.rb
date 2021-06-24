@@ -18,7 +18,7 @@ module EventSource
     # Add a list of connections for the given set of server configurations
     #   to the connection registry
     # @param [Array] async_api_servers Async Api Server objects in Hash format
-    def add_connections(async_api_servers)
+    def add_connections(async_api_servers, servers)
       async_api_servers.each do |async_api_server|
         add_connection(async_api_server)
       end
@@ -26,13 +26,11 @@ module EventSource
 
     # Add a network resource to the connection registry
     # This resource is a connection configuration object.
-    def add_connection(async_api_server)
-      STDERR.puts async_api_server.inspect
+    def add_connection(async_api_server, server_key = nil)
       client_klass = protocol_klass_for(async_api_server[:protocol])
-      connection_uri = client_klass.connection_uri_for(async_api_server)
+      connection_uri = server_key ? server_key : client_klass.connection_uri_for(async_api_server)
 
       return connections[connection_uri] if connections.key? connection_uri
-
       client = client_klass.new(async_api_server)
       connections[connection_uri] = EventSource::Connection.new(client)
     end
@@ -43,7 +41,7 @@ module EventSource
     def fetch_connection(async_api_server)
       client_klass = protocol_klass_for(async_api_server.protocol)
       connection_uri = client_klass.connection_uri_for(async_api_server)
-      connections[connection_uri]
+      connections[connection_uri] || connections[async_api_server.url]
     end
 
     # Find all registered connections for the given protocol

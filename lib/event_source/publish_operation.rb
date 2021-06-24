@@ -27,7 +27,7 @@ module EventSource
     #   #publish("Message", :headers => { })
     def call(args)
       @subject.publish(
-        payload: args.to_json,
+        payload: args,
         publish_bindings: @async_api_publish_operation[:bindings]
       )
     end
