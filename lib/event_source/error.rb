@@ -3,7 +3,7 @@
 module EventSource
   module Error
     # @api private
-    module ErrorInitalizer
+    module ErrorInitializer
       attr_reader :original
 
       def initialize(msg, original = $ERROR_INFO)
@@ -14,7 +14,7 @@ module EventSource
 
     # @api public
     class Error < StandardError
-      include ErrorInitalizer
+      include ErrorInitializer
     end
 
     AttributesInvalid = Class.new(Error)
@@ -29,5 +29,7 @@ module EventSource
     RegisteredEventNotFound = Class.new(Error)
     SubscriberNotFound = Class.new(Error)
     ConnectionNotFound = Class.new(Error)
+
+    InvalidServerConfigurationException = Class.new(Exception)
   end
 end

@@ -8,7 +8,7 @@ module EventSource
         # @attr_reader [String] connection_uri String used to connect with HTTP server
         # @attr_reader [String] connection_params Settings used for configuring {::Faraday::Connection}
         # @attr_reader [Faraday::Connection] subject Server Connection instance
-        attr_reader :connection_uri, :connection_params, :subject
+        attr_reader :connection_uri, :connection_params, :subject, :request_path
 
         # AsyncAPI HTTP Bindings Protocol version supported by this client
         ProtocolVersion = '0.1.0'
@@ -76,8 +76,9 @@ module EventSource
           @protocol_version = ProtocolVersion
           @client_version = ClientVersion
           @connection_params = connection_params_for(options)
-          
+          @server = async_api_server
           @connection_uri = self.class.connection_uri_for(async_api_server)
+          @request_path = parse_request_path
           @channel_proxies = {}
         end
 
@@ -87,8 +88,9 @@ module EventSource
           http_params = connection_params[:http][:params]
           headers = connection_params[:http][:headers]
           adapter = connection_params[:adapter]
+          clean_connection_url = @request_path.blank? ? @connection_uri : @connection_uri.chomp(@request_path)
           Faraday.new(
-            url: @connection_uri,
+            url: clean_connection_url,
             params: http_params,
             headers: headers
           ) do |conn|
@@ -185,12 +187,12 @@ module EventSource
           # {EventSource::AsyncAPI::Server} configuration values
           # @return [String] uri connection key
           def connection_uri_for(async_api_server)
-            server_uri = URI(async_api_server[:url]).normalize
-            URI::HTTP.build(
-              scheme: server_uri.scheme,
-              host: server_uri.host,
-              port: server_uri.port
-            ).to_s
+            parsed_url = URI(async_api_server[:url]).normalize
+            if parsed_url.path && parsed_url.path == "/"
+              parsed_url.to_s.chomp("/")
+            else
+              parsed_url.to_s
+            end
           end
         end
 
@@ -211,6 +213,11 @@ module EventSource
 
         private
 
+        def parse_request_path
+          full_uri = URI(@connection_uri)
+          (!full_uri.path.blank?) ? full_uri.path : nil
+        end
+
         def connection_params_for(options)
           request_middleware_params =
             options[:request_middleware_params] ||
@@ -230,7 +237,27 @@ module EventSource
         end
 
         def construct_request_middleware(publish_operation, request_content_type)
-          RequestMiddlewareParamsDefault
+          if request_content_type.soap?
+            {
+              retry: {
+                order: 10,
+                options: {
+                  max: 5,
+                  interval: 0.05,
+                  interval_randomness: 0.5,
+                  backoff_factor: 2
+                }
+              },
+              soap_payload_header: {
+                order: 20,
+                options: {
+                  soap_settings: @server[:soap_settings]
+                }
+              }
+            }
+          else
+            RequestMiddlewareParamsDefault
+          end
         end
       end
     end

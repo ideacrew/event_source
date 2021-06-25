@@ -4,6 +4,8 @@ module EventSource
   module AsyncApi
     # Contact information for the exposed API.
     class Contact < Dry::Struct
+      transform_keys(&:to_sym)
+
       # @!attribute [r] name
       # The identifying name of the contact person/organization
       # @return [String]

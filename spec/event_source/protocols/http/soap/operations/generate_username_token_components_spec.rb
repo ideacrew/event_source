@@ -11,7 +11,7 @@ RSpec.describe EventSource::Protocols::Http::Soap::Operations::GenerateUsernameT
   let(:security_header_configuration) do
     ::EventSource::Protocols::Http::Soap::SecurityHeaderConfiguration.new(
       {
-        username: "a username",
+        user_name: "a username",
         password: "a password"
       }
     )
@@ -31,7 +31,7 @@ RSpec.describe EventSource::Protocols::Http::Soap::Operations::GenerateUsernameT
   end
 
   it "encodes a digest" do
-    expect(subject.value!.password_digest).to eq "HdtE2kYDcvKA6ZWqTW2nUdib1yA="
+    expect(subject.value!.password_digest).to eq "gezxLszKnZi//gE5Ewnj6vq/T4E="
   end
 
   it "encodes a nonce" do
@@ -39,7 +39,7 @@ RSpec.describe EventSource::Protocols::Http::Soap::Operations::GenerateUsernameT
   end
 
   it "encodes a token created value" do
-    expect(subject.value!.created_value).to eq "2021-01-13T20:04:00.000UTC"
+    expect(subject.value!.created_value).to eq "2021-01-13T20:04:00.000Z"
   end
 
   it "generates token values without a timestamp" do
@@ -47,7 +47,7 @@ RSpec.describe EventSource::Protocols::Http::Soap::Operations::GenerateUsernameT
   end
 
   it "encodes using digest by default" do
-    expect(subject.value!.digest_encoding).to eq EventSource::Protocols::Http::Soap::USERTOKEN_DIGEST_VALUES["digest"]
+    expect(subject.value!.digest_encoding).to eq EventSource::Protocols::Http::Soap::USERTOKEN_DIGEST_VALUES[:digest]
   end
 end
 
@@ -60,10 +60,10 @@ RSpec.describe EventSource::Protocols::Http::Soap::Operations::GenerateUsernameT
   let(:security_header_configuration) do
     ::EventSource::Protocols::Http::Soap::SecurityHeaderConfiguration.new(
       {
-        username: "a username",
+        user_name: "a username",
         password: "a password",
-        password_encoding: "plain",
-        generate_timestamp: true
+        password_encoding: :plain,
+        use_timestamp: true
       }
     )
   end
@@ -90,17 +90,17 @@ RSpec.describe EventSource::Protocols::Http::Soap::Operations::GenerateUsernameT
   end
 
   it "encodes a token created value" do
-    expect(subject.value!.created_value).to eq "2021-01-13T20:04:00.000UTC"
+    expect(subject.value!.created_value).to eq "2021-01-13T20:04:00.000Z"
   end
 
   it "generates token values without a timestamp" do
     timestamp_value = subject.value!.security_timestamp_value
     expect(timestamp_value).not_to eq nil
-    expect(timestamp_value.created).to eq "2021-01-13T20:04:00.000UTC"
-    expect(timestamp_value.expires).to eq "2021-01-13T20:05:00.000UTC"
+    expect(timestamp_value.created).to eq "2021-01-13T20:04:00.000Z"
+    expect(timestamp_value.expires).to eq "2021-01-13T20:05:00.000Z"
   end
 
   it "encodes using plain" do
-    expect(subject.value!.digest_encoding).to eq EventSource::Protocols::Http::Soap::USERTOKEN_DIGEST_VALUES["plain"]
+    expect(subject.value!.digest_encoding).to eq EventSource::Protocols::Http::Soap::USERTOKEN_DIGEST_VALUES[:plain]
   end
 end

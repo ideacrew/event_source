@@ -15,6 +15,8 @@ module EventSource
     #
     # Describes a message received on a given channel and operation
     class Message < Dry::Struct
+      transform_keys(&:to_sym)
+
       # @!attribute [r] headers
       # Schema definition of the application headers. Schema must be of type "object".
       # It must not define the protocol headers.
@@ -56,7 +58,7 @@ module EventSource
       # specific media type (e.g. application/json). When omitted, the value must be the one specified
       # on the default_content_type field
       # @return [String]
-      attribute :content_type, Types::String.meta(omittable: true)
+      attribute :contentType, Types::String.meta(omittable: true)
 
       # @!attribute [r] name
       # A machine-friendly name for the message

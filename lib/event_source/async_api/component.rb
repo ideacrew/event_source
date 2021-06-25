@@ -7,6 +7,8 @@ module EventSource
     # have no effect on the API unless they are explicitly referenced from
     # properties outside the components object.
     class Component < Dry::Struct
+      transform_keys(&:to_sym)
+
       # @!attribute [r] field_name
       # The component key
       # @return [Symbol]

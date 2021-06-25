@@ -4,6 +4,8 @@ module EventSource
   module Protocols
     module Http
       class SubscribeBindings < Dry::Struct
+        transform_keys(&:to_sym)
+
         # @!attribute [r] type
         # Required. Type of operation. Its value MUST be either :request or :response
         # @return [Types::HttpOperationBindingTypeKind]

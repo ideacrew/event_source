@@ -6,6 +6,8 @@ module EventSource
     # a place to document how and why messages are sent and received. For example, an operation
     # might describe a chat application use case where a user sends a text message to a group
     class Operation < Dry::Struct
+      transform_keys(&:to_sym)
+
       # @!attribute [r] operation_id
       # Unique string used to identify the operation. The id MUST be unique among all operations
       # described in the API. The operationId value is case-sensitive. Tools and libraries MAY use

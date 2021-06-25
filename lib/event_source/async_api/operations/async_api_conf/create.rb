@@ -39,8 +39,7 @@ module EventSource
 
           def create(values)
             Try do
-              async_api_conf =
-                EventSource::AsyncApi::AsyncApiConf.new(values.to_h)
+              EventSource::AsyncApi::AsyncApiConf.new(values.to_h)
             end.or do |e|
               Failure(e)
             end

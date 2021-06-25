@@ -16,10 +16,12 @@ servers:
 defaultContentType: application/soap+xml
 
 channels:
-  aces_submission:
+  /aces_submission:
     publish:
       operationId: /aces_submission
       description: Example HTTP ACES call
+      message:
+        contentType: application/soap+xml
       bindings:
         http:
           type: request
@@ -29,9 +31,4 @@ channels:
     subscribe:
       operationId: /on/aces_submission
       description: Example HTTP ACES response
-      bindings:
-        http:
-          type: request
-          method: GET
-          headers:
-            Content-Type: application/soap+xml
+      bindings: {}

@@ -9,6 +9,7 @@ module EventSource
   module AsyncApi
     # Describes operation bindings.
     class PublishBindings < Dry::Struct
+      transform_keys(&:to_sym)
       attribute :http, ::EventSource::Protocols::Http::PublishBindings.meta(omittable: true)
       attribute :amqp, Types::Hash.meta(omittable: true)
     end

@@ -26,9 +26,9 @@ module EventSource
 
     # Add a network resource to the connection registry
     # This resource is a connection configuration object.
-    def add_connection(async_api_server, server_key = nil)
+    def add_connection(async_api_server)
       client_klass = protocol_klass_for(async_api_server[:protocol])
-      connection_uri = server_key ? server_key : client_klass.connection_uri_for(async_api_server)
+      connection_uri = async_api_server[:ref]
 
       return connections[connection_uri] if connections.key? connection_uri
       client = client_klass.new(async_api_server)
@@ -39,9 +39,10 @@ module EventSource
     #   an {EventSource::AsyncApi::Server} configuration
     # @return [EventSource::Connection] Connection
     def fetch_connection(async_api_server)
+      # raise connections.keys.inspect
       client_klass = protocol_klass_for(async_api_server.protocol)
       connection_uri = client_klass.connection_uri_for(async_api_server)
-      connections[connection_uri] || connections[async_api_server.url]
+      connections[connection_uri]
     end
 
     # Find all registered connections for the given protocol
@@ -52,8 +53,8 @@ module EventSource
     def connections_for(protocol)
       connections.reduce(
         []
-      ) do |protocol_connections, (connection_uri, connection_instance)|
-        if URI.parse(connection_uri).scheme.to_sym == protocol
+      ) do |protocol_connections, (_connection_uri, connection_instance)|
+        if connection_instance.protocol == protocol
           protocol_connections << connection_instance
         end
         protocol_connections
@@ -139,8 +140,8 @@ module EventSource
     #   example: `:http` or `:amqp`
     # @return [Array<EventSource::Connection>] registered connections
     def drop_connections_for(protocol)
-      connections.each do |connection_uri, _connection_instance|
-        if URI.parse(connection_uri).scheme.to_sym == protocol
+      connections.each do |connection_uri, connection_instance|
+        if connection_instance.protocol == protocol
           drop_connection(connection_uri)
         end
       end
