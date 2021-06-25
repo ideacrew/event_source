@@ -15,12 +15,14 @@ module EventSource
 
         rule(:http) do
           if key? && value
-            result = ::EventSource::Protocols::Http::Contracts::PublishOperationBindingsContract.new.call(value)
-            if result&.failure?
+            validation_result = ::EventSource::Protocols::Http::Contracts::PublishOperationBindingsContract.new.call(value)
+            if validation_result&.failure?
               key.failure(
                 text: 'invalid operation bindings',
-                error: result.errors.to_h
+                error: validation_result.errors.to_h
               )
+            else
+              values.data.merge({http: validation_result.values})
             end
           end
         end

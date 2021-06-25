@@ -112,7 +112,7 @@ module EventSource
         end
 
         def enqueue(response)
-          @worker.enqueue(response)
+          worker.enqueue(response)
         end
 
         def respond_to_missing?(name, include_private); end

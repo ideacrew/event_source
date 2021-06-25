@@ -10,6 +10,8 @@ module EventSource
     # of different programming languages as long as they support the selected protocol. An application must also use
     # a protocol supported by the {Server} in order to connect and exchange {Message Messages}.
     class AsyncApiConf < Dry::Struct
+      transform_keys(&:to_sym)
+
       # @!attribute [r] asyncapi
       # AsyncAPI spec version being used (required)
       # @return [String]

@@ -26,14 +26,22 @@ RSpec.describe "An example service for ACES" do
 
   let(:connection_manager) { EventSource::ConnectionManager.instance }
 
+  let(:connection) do
+    EventSource::ConnectionManager.instance.fetch_connection(config.servers.first)
+  end
+
   let(:connection_proxy) do
-    EventSource::ConnectionManager.instance.fetch_connection(config.servers.first).connection_proxy
+    connection.connection_proxy
   end
 
   let(:channel) { config.channels.first }
 
+  let(:es_channel) do
+    connection.add_channel(channel.id, channel)
+  end
+
   let(:channel_proxy) do
-    connection_proxy.add_channel(channel.id, channel)
+    es_channel.channel_proxy
   end
 
   let(:request_proxy) do
@@ -42,7 +50,7 @@ RSpec.describe "An example service for ACES" do
   end
 
   before :each do
-    stub_request(:post, "http://localhost:6767/aces_submission").with(
+    stub_request(:post, "http://some_host:6767/connect_me").with(
       headers: {
       'Expect'=>'',
       'User-Agent'=>'Faraday v1.4.2'
@@ -51,7 +59,7 @@ RSpec.describe "An example service for ACES" do
   end
 
   it "responds to requests" do
-    request_proxy
+    request_proxy.publish
   end
 
   it "resolves connections" do

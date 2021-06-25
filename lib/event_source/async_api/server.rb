@@ -8,6 +8,8 @@ module EventSource
     # Variable substitution can be used so that some details, for example usernames and passwords,
     # can be injected by code generation tools.
     class Server < Dry::Struct
+      transform_keys(&:to_sym)
+
       attribute :id, Types::String.meta(omittable: false)
 
       # @!attribute [r] url

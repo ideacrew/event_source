@@ -15,12 +15,14 @@ module EventSource
 
         rule(:bindings) do
           if key? && value
-            result = PublishOperationBindingsContract.new.call(value)
-            if result&.failure?
+            validation_result = PublishOperationBindingsContract.new.call(value)
+            if validation_result&.failure?
               key.failure(
                 text: 'invalid operation bindings',
-                error: result.errors.to_h
+                error: validation_result.errors.to_h
               )
+            else
+              values.data.merge(bindings: validation_result.values.to_h)
             end
           end
         end

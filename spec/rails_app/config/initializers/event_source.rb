@@ -65,7 +65,7 @@ EventSource.configure do |config|
 
     server.http do |http|
       http.ref = "http://aces-qa/some-random-lookup-uri"
-      http.url = "http://localhost:6767/"
+      http.url = "http://some_host:6767/connect_me"
       http.soap do |soap|
         soap.user_name = "aces user name"
         soap.password = "aces password"

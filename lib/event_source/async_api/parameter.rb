@@ -5,6 +5,8 @@ module EventSource
     # Describes a map of parameters included in a channel name.
     # This map MUST contain all the parameters used in the parent channel name.
     class Parameter < Dry::Struct
+      transform_keys(&:to_sym)
+
       # @!attribute [r] description
       # A verbose explanation of the parameter. CommonMark syntax can be used for
       # rich text representation

@@ -7,6 +7,8 @@ module EventSource
     # use bindings to define them
     # Describes the operations available on a single channel
     class ChannelItem < Dry::Struct
+      transform_keys(&:to_sym)
+
       attribute :id, Types::String.meta(omittable: false)
 
       # @!attribute [r] ref
