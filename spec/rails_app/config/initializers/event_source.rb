@@ -69,7 +69,7 @@ EventSource.configure do |config|
       http.soap do |soap|
         soap.user_name = "aces user name"
         soap.password = "aces password"
-        soap.password_encoding = :digest
+        soap.password_encoding = :plain
         soap.use_timestamp = true
         soap.timestamp_ttl = 60.seconds
       end

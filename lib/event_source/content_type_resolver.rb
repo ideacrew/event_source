@@ -20,7 +20,7 @@ module EventSource
 
     def resolve_content_type(default_content_type, operation)
       return default_content_type unless operation
-      message_content_type = operation&.message&.contentType
+      message_content_type = operation&.message&.send(:[], "contentType")
       content_type_list = [message_content_type]
       content_type_list.compact.last || default_content_type
     end

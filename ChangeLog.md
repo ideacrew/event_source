@@ -2,6 +2,10 @@
 
 ### SOAP Protocol Support Under HTTP
 
+SOAP is now supported for HTTP publishing.  Make sure you have your message `contentType` configured as 'application/soap+xml' in your asyncapi YAML.
+
+SOAP configuration is done by devops in the server block for the HTTP protocol.  Check out `spec/rails_app/config/initializers/event_source.rb` for an example.
+
 ### Extended Protocol Bindings for Operations
 
 Protocol Bindings for Operations have been moved to a Dry::Struct.  This is currently implemented only for HTTP, AMQP bindings are still treated as a hash.
@@ -18,7 +22,7 @@ AMQP workers need some love around worker process hosting - planned for next rel
 
 Connection redirection is complete.
 
-If you would like to have a 'placeholder' URL in the yaml, and put the 'real' url in the ruby configuration file, set the server ref value to the URL in the yaml and make the host, url, port, or other values what you want them to be for the 'real' server:
+If you would like to have a 'placeholder' URL in the yaml, and put the 'real' url in the ruby configuration file, set the server `ref` value to the URL in the yaml and make the host, url, port, or other values what you want them to be for the 'real' server:
 
 Async API YAML:
 ```yaml

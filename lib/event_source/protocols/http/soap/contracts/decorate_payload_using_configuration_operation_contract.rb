@@ -8,7 +8,9 @@ module EventSource
           # Validate parameters for the DecoratePayloadUsingConfiguration operation.
           class DecoratePayloadUsingConfigurationOperationContract < Contract
             params do
-              required(:body).filled(:string)
+              optional(:body).maybe(
+                ::EventSource::Protocols::Http::Types::SoapBodyStringType
+              )
               required(:security_settings).filled(
                 Types::Nominal(
                   ::EventSource::Protocols::Http::Soap::SecurityHeaderConfiguration

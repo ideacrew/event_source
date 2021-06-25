@@ -34,7 +34,7 @@ module EventSource
               timestamp_opts = {
                 created: encode_created(created_time)
               }
-              if header_configuration.use_timestamp
+              if header_configuration.timestamp_ttl
                 end_time = created_time + header_configuration.timestamp_ttl.seconds
                 timestamp_opts[:expires] = encode_created(end_time)
               end
@@ -52,7 +52,7 @@ module EventSource
             end
 
             def encode_created(created_time)
-              created_time.strftime("%Y-%m-%dT%H:%M:%S.%L%Z")
+              created_time.strftime("%Y-%m-%dT%H:%M:%S.%LZ")
             end
 
             def generate_digest(header_configuration, nonce_binary, created_value)

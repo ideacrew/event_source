@@ -5,6 +5,7 @@ require_relative "soap/username_token_values"
 require_relative "soap/security_header_configuration"
 require_relative "soap/contracts"
 require_relative "soap/operations"
+require_relative "soap/payload_header_middleware"
 
 module EventSource
   module Protocols

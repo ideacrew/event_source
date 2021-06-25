@@ -20,6 +20,8 @@ channels:
     publish:
       operationId: /aces_submission
       description: Example HTTP ACES call
+      message:
+        contentType: application/soap+xml
       bindings:
         http:
           type: request

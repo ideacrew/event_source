@@ -76,7 +76,7 @@ module EventSource
           @protocol_version = ProtocolVersion
           @client_version = ClientVersion
           @connection_params = connection_params_for(options)
-          
+          @server = async_api_server
           @connection_uri = self.class.connection_uri_for(async_api_server)
           @request_path = parse_request_path
           @channel_proxies = {}
@@ -237,7 +237,27 @@ module EventSource
         end
 
         def construct_request_middleware(publish_operation, request_content_type)
-          RequestMiddlewareParamsDefault
+          if request_content_type.soap?
+            {
+              retry: {
+                order: 10,
+                options: {
+                  max: 5,
+                  interval: 0.05,
+                  interval_randomness: 0.5,
+                  backoff_factor: 2
+                }
+              },
+              soap_payload_header: {
+                order: 20,
+                options: {
+                  soap_settings: @server[:soap_settings]
+                }
+              }
+            }
+          else
+            RequestMiddlewareParamsDefault
+          end
         end
       end
     end

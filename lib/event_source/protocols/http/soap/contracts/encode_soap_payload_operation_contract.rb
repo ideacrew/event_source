@@ -8,7 +8,9 @@ module EventSource
           # Validate parameters for the EncodeSoapPayload operation.
           class EncodeSoapPayloadOperationContract < Contract
             params do
-              required(:body).filled(:string)
+              optional(:body).maybe(
+                ::EventSource::Protocols::Http::Types::SoapBodyStringType
+              )
               required(:username_token_values).filled(
                 Types::Nominal(
                   ::EventSource::Protocols::Http::Soap::UsernameTokenValues
