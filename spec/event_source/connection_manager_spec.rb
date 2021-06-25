@@ -58,6 +58,7 @@ RSpec.describe EventSource::ConnectionManager do
 
         let(:my_server) do
           {
+            ref: url,
             url: url,
             protocol: protocol,
             protocol_version: protocol_version,

@@ -6,6 +6,7 @@ module EventSource
       # Contract for HTTP configuration.
       class HttpConfigurationContract < Dry::Validation::Contract
         params do
+          optional(:ref).value(:string)
           optional(:url).value(:string)
           optional(:host).value(:string)
           optional(:port).value(:integer)

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-#require 'rails_helper'
+require 'rails_helper'
 
 RSpec.describe "An example service for ACES" do
   let(:async_api_file) do

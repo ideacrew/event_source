@@ -16,9 +16,26 @@ AMQP workers need some love around worker process hosting - planned for next rel
 
 ### Improved Single-Location Connection Configuration for DevOps
 
-Connections may now be cross mapped via URL.  If you want to map a connection from an async api file but not keep the 'real' URL in the file, use the same URL as in the server settings in the yaml, and specify different host and port values.
+Connection redirection is complete.
 
-Additionally, invalid server configurations (right now only for HTTP services) will fail to boot the application, raising an exception and telling you exactly where and what you did wrong in your rails configuration files.
+If you would like to have a 'placeholder' URL in the yaml, and put the 'real' url in the ruby configuration file, set the server ref value to the URL in the yaml and make the host, url, port, or other values what you want them to be for the 'real' server:
+
+Async API YAML:
+```yaml
+servers:
+  production:
+    url: http://aces-qa/some-random-lookup-uri
+    protocol: http
+    description: ACES QA Server
+```
+
+ruby configuration file:
+```ruby
+    server.http do |http|
+      http.ref = "http://aces-qa/some-random-lookup-uri"
+      http.url = "http://localhost:6767/"
+    end
+```
 
 ### File Loading
 

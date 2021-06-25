@@ -49,7 +49,7 @@ EventSource.configure do |config|
       rabbitmq.host = "localhost" # ENV['RABBITMQ_HOST']
       rabbitmq.vhost =  "/event_source" # ENV['RABBITMQ_VHOST']
       rabbitmq.port = "5672" # ENV['RABBITMQ_PORT']
-      rabbitmq.url = "amqp://localhost:5672/event_source" # ENV['RABBITMQ_URL']
+      rabbitmq.ref = "amqp://localhost:5672/event_source" # ENV['RABBITMQ_URL']
       rabbitmq.user_name = "" # ENV['RABBITMQ_USERNAME']
       rabbitmq.password = "" # ENV['RABBITMQ_PASSWORD']
     end
@@ -64,10 +64,8 @@ EventSource.configure do |config|
     end
 
     server.http do |http|
-      http.url = "http://aces-qa/some-random-lookup-uri"
-      http.host = "localhost"
-      http.port = 6767
-      http.protocol = :http
+      http.ref = "http://aces-qa/some-random-lookup-uri"
+      http.url = "http://localhost:6767/"
       http.soap do |soap|
         soap.user_name = "aces user name"
         soap.password = "aces password"

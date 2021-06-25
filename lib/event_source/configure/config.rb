@@ -37,14 +37,10 @@ module EventSource
 
         @server_configurations.configurations.each do |server_conf|
           settings = server_conf.to_h
-          url = format_urls_for_server_config(settings)
-          settings[:url] = url
+          settings[:url] = format_urls_for_server_config(settings)
+          settings[:ref] = server_ref(settings)
 
-          if server_conf.url.present?
-            connection_manager.add_connection(settings, server_conf.url)
-          else
-            connection_manager.add_connection(settings)
-          end
+          connection_manager.add_connection(settings)
         end
       end
 
@@ -67,7 +63,12 @@ module EventSource
         end
       end
 
+      def server_ref(settings)
+        settings[:ref].present? ? settings[:ref] : settings[:url]
+      end
+
       def format_urls_for_server_config(settings)
+        return settings[:url] if settings[:url]
         case settings[:protocol]
         when :amqp, :amqps, "amqp", "amqps"
           vhost = settings[:vhost].blank? ? "/" : settings[:vhost]
@@ -118,6 +119,7 @@ module EventSource
           connection_manager.fetch_connection(matching_server)
 
         unless connection
+          raise [matching_server, channel_item_key].inspect
           logger.error { "Unable to find connection for #{@server_key} with #{servers}" }
           raise EventSource::Error::ConnectionNotFound, "unable to find connection for #{@server_key} with #{servers}}"
         end

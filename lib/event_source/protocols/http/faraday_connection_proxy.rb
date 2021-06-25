@@ -185,12 +185,12 @@ module EventSource
           # {EventSource::AsyncAPI::Server} configuration values
           # @return [String] uri connection key
           def connection_uri_for(async_api_server)
-            server_uri = URI(async_api_server[:url]).normalize
-            URI::HTTP.build(
-              scheme: server_uri.scheme,
-              host: server_uri.host,
-              port: server_uri.port
-            ).to_s
+            parsed_url = URI(async_api_server[:url]).normalize
+            if parsed_url.path && parsed_url.path == "/"
+              parsed_url.to_s.chomp("/")
+            else
+              parsed_url.to_s
+            end
           end
         end
 
