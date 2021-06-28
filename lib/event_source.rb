@@ -44,11 +44,7 @@ module EventSource
       'no operation'
     end
   end
-
-  Inflector = Dry::Inflector.new
-
   class << self
-
     extend Forwardable
 
     def_delegators :config,
@@ -79,12 +75,10 @@ module EventSource
     # Call this method on fork of a rails app you are working in.
     # It cleans up your connections and channels and avoids strange
     # behaviour.
-    def reconnect_publishers!
-    end
+    def reconnect_publishers!; end
   end
 
   class EventSourceLogger
     include EventSource::Logging
-    
   end
 end
