@@ -58,7 +58,7 @@ jobs:
           bundle install
       - name: Run yard
         run: bundle exec yard && cp -rf ./doc ./hugo/static/
-      - run: cd hugo && npm install && hugo --minify
+      - run: cd hugo && npm install && hugo --minify --enableGitInfo
       - uses: nelonoel/branch-name@v1.0.1
       - uses: jakejarvis/s3-sync-action@master
         env:
