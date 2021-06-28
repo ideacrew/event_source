@@ -46,6 +46,7 @@ module EventSource
         validation_result = ::EventSource::Configure::Operations::ValidateServerConfigurations.new.call(
           @server_configurations
         )
+        return if validation_result.success?
         validation_result.failure.each do |result|
           formatted_trace = result.first.call_location.first(3).map do |e_line|
             "    #{e_line}"
