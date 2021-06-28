@@ -26,6 +26,12 @@ Or install it yourself as:
 
     $ gem install event_source
 
+## Development
+
+After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+
+To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+
 ## Usage
 
 EventSource enables these core components:
@@ -41,29 +47,29 @@ Events are signals about anything notable that happens in the system. For exampl
 
 Events are subclassed from the `EventSource::Event` class. An Event class must include a `publisher_path`. The `publisher_path` is a dot-notation, stringified class name that specifies the topic where event instances are published.
 
-For example, the following event has a `publisher_path` referencing the `Parties::OrganiztionPublisher` class. It also enumerates four `attribute_keys`: `:hbx_id, :legal_name, :fein, :entity_kind`.
+For example, the following event has a `publisher_path` referencing the `Organizations::OrganiztionPublisher` class. It also enumerates four `attribute_keys`: `:hbx_id, :legal_name, :fein, :entity_kind`.
 
 ```ruby
-    # app/events/parties/organization/created.rb
+ # app/event_source/events/organizations/general_organization/created.rb
 
-    class Parties::Organization::Created < EventSource::Event
-      publisher_path 'parties.organization_publisher'
-      attribute_keys :hbx_id, :legal_name, :fein, :entity_kind
-      ...
-    end
+ class Organizations::GeneralOrganizationCreated < EventSource::Event
+   publisher_path 'organizations.organization_publisher'
+   attribute_keys :hbx_id, :legal_name, :fein, :entity_kind
+   ...
+ end
 ```
 
 As shown in this example, an Event may optionally specify an Event payload's attribute keys by including `attribute_keys`. Note that this establishes a contract for attributes that must in an event's attribute payload. Each event must include a value for each the specified key. Missing key/value pairs will prevent publishing the event instance. Additional key/value pairs are ignored.
 
-Events that don't specify `attribute_keys` allow any passed key/value pairs as instance attributes.
+Events that don't specify `attribute_keys` do not validate and allow any passed key/value pairs as instance attributes.
 
-Here's an example `Parties::Organization::Created` instance:
+Here's an example of an `Organizations::GeneralOrganizationCreated` instance:
 
 <!-- prettier_ignore_start -->
 
 ```ruby
-created_event = Parties::Organization::Created.new
-# => <Parties::Organization::Created:0x00007fe642ff8748>
+created_event = Organizations::GeneralOrganizationCreated.new
+# => <Organizations::GeneralOrganizationCreated:0x00007fe642ff8748>
 
 created_event.valid?
 # => false
@@ -83,140 +89,171 @@ created_event.valid?
 # => true
 ```
 
+<!-- prettier_ignore_end -->
+
 ### Command
 
 Commands are an application's on-ramp to event-driven features. Mix `EventSource::Command` into any class to turn it into a Command and enable access to the DSL's Events.
 
-```ruby
-   # app/operations/parties/organization/create.rb
-
-   class Parties::Organization::Create
-    include EventSource::Command
-    ...
-   end
-```
-
-Command names use imperative form, for example: `Create`, `Update`, `Delete`. Where they already exist, Operations are likely candidates to extend as Commands.
-
-Create events using the `event` keyword followed by a reference to its `event_key` - a stringified reference to an existing Event class. The system will raise a runtime error if an event matching the `event_key` isn't found.
-
-For the following `build_event` method, the Command will publish the event `Parties::Orgaznization::Create`. Assigning a hash to the `attributes` option adds those key/value pairs to the event's message payload.
-
-```ruby
-def build_event(values)
-  event 'parties.organization.created', attributes: values
-end
-```
-
-After the Command has completed the intended operation, `publish` the Event. In this case following succussful persistance of the new organization to the data store.
-
-```ruby
-def create(values, event)
-  event.publish if Parties::OrganizationModel.create!(values)
-end
-```
-
-### Publisher
-
-Publishers are responsible for broadcasting events to registered Subscribers. Mix Dry::Events::Publisher to define a publisher instance. For example, the following publisher manages events that reference the `publisher_path`: `'parties.organization_publisher'`.
-
-```ruby
-# app/event_source/publishers/parties/organization_publisher.rb
-
-require 'dry/events/publisher'
-
-module Parties
-  class OrganizationPublisher
-    include Dry::Events::Publisher['parties.organization_publisher']
-
-    register_event 'parties.organization.created'
-    register_event 'parties.organization.fein_corrected'
-    register_event 'parties.organization.fein_updated'
-  end
-end
-```
-
-The publisher class enumerates events it supports using the `register_event` key.
-
-### Subscriber
-
-Subscribers listen for events and enable reactors. Mix `EventSource::Subscriber` to include the Subscriber DSL. For example, the following subscriber provides a block-level `subscribe` listener hook for `on_enroll_parties_organization_created` along with three event listeners: `on_enroll_parties_organization_created`, `on_enroll_parties_organization_fein_corrected` and `on_enroll_parties_organization_fein_updated`.
-
-```ruby
-# app/event_source/subscribers/organizations/organization_subscriber.rb
-
-module Organizations
-  class OrganizationSubscriber
-    include ::EventSource::Subscriber[amqp: 'organizations_organization']
-
-    # Sequence of steps that are executed as single operation
-    subscribe(:on_organizations_general_organization_created) do |delivery_info, metadata, payload|
-      begin
-        # do something here
-        ...
-        channel.ack delivery_info.delivery_tag, multiple_messages: false)
-        polypress_organization_created_notice_generated
-      rescue
-        channel.nack delivery_info.delivery_tag, multiple_messages: false, requeue: true
-      end
-    end
-
-    # Set of independent reactors that choreograph each intended to execute asynchronously
-    def on_organizations_general_organization_created(event)
-      UpdateOrganizationJob.perform_later(event)
-      publish_notice_reactor(event)
-      create_crm_organiation_reactor(event)
-      ...
-    end
-
-    class UpdateOrganizationJob
-      def perform
-      end
-    end
-
-    # Set of independent reactors that each intended to execute asynchronously
-    def on_enroll_parties_organization_fein_corrected(event)
-      ...
-    end
-
-    # Set of independent reactors that each intended to execute asynchronously
-    def on_enroll_parties_organization_fein_updated(event)
-      ...
-    end
-  end
-end
-```
-
-A `subscribe` listener enables reactor blocks. For example, when an `enroll.parties.organization.created` event is published the `subscribe` block below will pick up the event and execute code within the block. Reactor blocks are typically used under scenarios where communication with the message broker is required, for example acknowledgement when message is successfully processed:
-
 <!-- prettier_ignore_start -->
 
 ```ruby
-subscribe(
-  :on_enroll_parties_organization_created,
-) do |delivery_info, metadata, payload|
-  #
-  # do some work here
+# app/operations/organizations/create_general_organization.rb
 
-  begin
-    ack delivery_info.delivery_tag, multiple_messages: false
-  rescue StandardError
-    nack delivery_info.delivery_tag, multiple_messages: false, requeue: false
-    reject delivery_info.delivery_tag, requeue: false
-  end
-  redelivered?
+class Organizations::GeneralOrganizationCreate
+ include EventSource::Command
+ include Logging
+ send(:include, Dry::Monads[:result, :do])
+ send(:include, Dry::Monads[:try])
+
+ def call(params)
+   values = yield validate(params)
+   organization = yield create_general_organization(values)
+   event = yield publish_event(organization)
+   Success(organization)
+ end
+
+ ...
 end
 ```
 
 <!-- prettier_ignore_end -->
 
-Create syncronous reactors by adding methods with the following nameing convention to the Subscriber class: `parties_created` event is handled by `#on_parties_created` method:
+Command names use imperative form, for example: `Create`, `Update`, `Delete`. Where they already exist, Operations developed using [Dry::Tranaction](https://dry-rb.org/gems/dry-transaction) mixin are likely candidates to extend as Commands.
+
+Create events using the `event` keyword followed by a reference to its `event_key` - a stringified, dot-notation reference to an existing Event class. The system will raise a runtime error if an event matching the `event_key` isn't found.
+
+For the following `publish_event` method, the Command will publish the event `organizations.general_organization_created`. Assigning a hash to the `attributes` option adds those key/value pairs to the event's message payload.
+
+<!-- prettier_ignore_start -->
 
 ```ruby
-def on_parties_organization_created(event)
-  Enterprise.Publish event
+def publish_event(organization)
+  event =
+    event 'organizations.general_organization_created',
+          attributes: organization.to_h
+  event.publish
+  logger.info "Published event: #{event}"
 end
 ```
+
+<!-- prettier_ignore_end -->
+
+### Publisher
+
+Publishers are responsible for defining events that are broadcast to registered Subscribers. Below is a publisher class for Events that reference `publisher_path`: `'organizations.organization_publisher'`.
+
+Notice the `EventSource::Publisher` Mixin and parameter. It indicates that this publisher will use AMQP protocol to exchange messages. The `:amqp` key's associated value: `organizations.organization_publisher` indicates the AMQP channel used to publish these event messages.
+
+The `register_event` key enumerates events supported by this publisher class.
+
+<!-- prettier_ignore_start -->
+
+```ruby
+# app/event_source/publishers/organizations/organization_publisher.rb
+
+require 'dry/events/publisher'
+
+class OrganizationPublisher
+  include ::EventSource::Publisher[amqp: 'organizations.organization_events']
+
+  register_event 'general_organization_created'
+  register_event 'general_organization_fein_corrected'
+  register_event 'general_organization_fein_updated'
+
+  register_event 'exempt_organization_created'
+
+  register_event 'address_updated'
+end
+```
+
+<!-- prettier_ignore_end -->
+
+EventSource includes protocol support for: `:amap`, `:http` and `:soap` over http. There's a seperate, necessary process for configuring protcols, channels and associated elements to enable event messaging. These elements must be declared in AsyncApi YAML files in the [AcaEntities repository](https://github.com/ideacrew/aca_entities) for loading during service startup. Contact a senior developer or DevOps for more information.
+
+### Subscriber
+
+Subscribers listen for events and enable reactors. Mix `EventSource::Subscriber` to include the Subscriber DSL. The parameter indicates the EventSource Protocol and PublishOperation `amqp: 'organizations.organization_events'`
+
+The following example illustrates how the Polypress microservice may access events broadcast by the publisher above. First, some assumptions:
+
+1. The source service, Enroll App for example, publishes events over AMQP protocol using the channel: `organizations.organization_events`
+
+2. An AMQP AsyncAPI YAML file in the [AcaEntities repository](https://github.com/ideacrew/aca_entities) for Enroll App configures a Channel Item and Publish Operation for `organizations.organization_events`
+
+3. An AMQP AsyncAPI YAML file in the [AcaEntities repository](https://github.com/ideacrew/aca_entities) for Polypress configures a Channel Item and Subscribe Operation for `on_polypress.organizations.organization_events`
+
+4. The respective AMQP AsyncAPI file configurations include bindings for event message durability, acknowledgement and related settings.
+
+In the code example below, a Polypress `subscribe` block binds to the `on_polypress_general_organization_created` event. When the Enroll App publishes a matching event message, the Polypress process subscription block calls `::Operations.GenerateNotice`.
+
+<!-- prettier_ignore_start -->
+
+```ruby
+# app/event_source/subscribers/enroll/organizations/organization_subscriber.rb
+
+class OrganizationSubscriber
+  include EventSource::Logging
+  include ::EventSource::Subscriber[amqp: 'organizations.organization_events']
+
+  subscribe(
+    :on_polypress_general_organization_created,
+  ) do |delivery_info, metadata, event|
+    event = JSON.parse(event, symbolize_names: true)
+    result = ::Operations.GenerateNotice('new_general_organization').call(event)
+
+    if result.success?
+      ack(delivery_info.delivery_tag)
+      logger.info "Polypress acknowledged amqp message: #{event}"
+    else
+      nack(delivery_info.delivery_tag)
+      results
+        .map(&:failure)
+        .compact
+        .each do |result|
+          errors = result.failure.errors.to_h
+          routing_key = delivery_info[:routing_key]
+          logger.error(
+            "Polypress: on_polypress_organizations_general_organization_created_subscriber_error;
+nacked due to:#{errors}; for routing_key: #{routing_key}, event: #{event}",
+          )
+        end
+    end
+  rescue StandardError => e
+    nack(delivery_info.delivery_tag)
+    logger.error "Polypress: on_polypress_organizations_general_organization_created_subscriber_error: backtrace: #{e.backtrace}; nacked"
+  end
+end
+```
+
+In this case, the code synchronously processes the operation, branching flow based on the operation result:
+
+1. Operation returns a Success monad: the event message is acknowledged to the AMQP broker which removes the message from the queue. The successful result is recorded by the application logger.
+
+2. Operation returns a Failure monad: the event message is negatively-acknowledged to the AMQP broker which will follow configuration instructions to either retuen message to the queue or forward to a dead letter queue. The negative result is recorded by the application logger.
+
+3. An unhandled exception is raised. The AMQP broker will follow configuration instructoins to either retuen message to the queue or forward to a dead letter queue. The negative result is sent to the application logger. The exception is recorded by the application logger.
+
+<!-- prettier_ignore_end -->
+
+Where event message ack/naks aren't necessary asynchronous actions like the example below are preferred as they don't block the process waiting for an operation to complete.
+
+<!-- prettier_ignore_start -->
+
+```ruby
+subscribe(:on_organization_address_updated) do |delivery_info, metadata, event|
+  event = JSON.parse(event, symbolize_names: true)
+
+  # Set of independent reactors that choreograph each intended operation to execute asynchronously
+  def on_address_updated(event)
+    UpdateOrganizationJob.perform_later(event)
+    ...
+  end
+end
+
+```
+
+<!-- prettier_ignore_end -->
 
 ## File System Conventions
 
@@ -227,46 +264,53 @@ enroll system
 
 app
   |- contracts
+  | |- organizations
+  | | |- organization_contract.rb
   |- entities
   | |- organizations
   | | |- organization.rb
   |- event_source
   | |- events
   | | |- organizations
+  | | | |- address_updated.rb
   | | | |- general_organization_created.rb
-  | | | |- fein_corrected.rb
-  | | | |- fein_updated.rb
+  | | | |- general_organization_fein_corrected.rb
+  | | | |- general_organization_fein_updated.rb
   | |- subscribers
   | | |- polypress
   | | | |- enroll_medicaid_notices.rb
   | | |- medicaid_gateway
   | | | |- eligiblity_determinations.rb
   | |- publishers
-  | | |- enroll
   | | |- organizations
   | | | | |- organization_publisher.rb
   |- operations
   | |- organizations
-  | | |- correct_or_update_organization_fein.rb
-  | | |- create_organization.rb
+  | | |- correct_or_update_general_organization_fein.rb
+  | | |- create_general_organization_fein.rb
+  | | |- update_address.rb
+```
 
-  organizations.general_organization (entity)
-  organizations.exempt_organization (entity)
-  organizations.organization_contract (contract)
+This structure will result in dot-namespaced values like the following:
 
-  organizations.general_organization_model (model)
-  organizations.exempt_organization_model (model)
+```ruby
+organizations.exempt_organization (entity)
+organizations.general_organization (entity)
+contracts.organizations.exempt_organization_contract (contract)
+contracts.organizations.general_organization_contract (contract)
+organizations.general_organization_model (model)
+organizations.exempt_organization_model (model)
+operations.organizations.create_general_organization (command / operation)
+events.organizations.general_organization_created (event)
+events.organizations.address_updated (event)
+publishers.organizations.organizations_publisher (publisher)
+subscribers.polypress.enroll_medicaid_notices_subscriber (subscriber)
+subscribers.medicaid_gateway.eligiblity_determinations_subscriber (subscriber)
+```
 
-  organizations.create_organization (command/operation)
+And Routing Keys like the following:
 
-  events.organization_created (event)
-  enroll.organizations.organization_created (namespaced event)
-
-  publishers.enroll.organizations_publisher (publisher)
-  subscribers.polypress.organizations_subscriber (subscriber)
-  subscribers.medicaid_gateway.enroll_medicaid_notices (subscriber)
-
-
+```ruby
 medicaid_gateway: channal_item_name: magi_medicaid.mitc.eligibilities.determined_mixed_eligible:
 medicaid_gateway: publish_operation_id: magi_medicaid.mitc.eligibilities.determined_mixed_eligible:
 medicaid_gateway: publish_operation_id: magi_medicaid.mitc.eligibilities.determined_mixed_eligible:
@@ -274,45 +318,7 @@ medicaid_gateway exchange name (bindings): magi_medicaid.mitc.eligibilities
 medicaid_gateway routing key (bindings): magi_medicaid.mitc.eligibilities.determined_mixed_eligible:
 polypress subscriber: on_polypress.magi_medicaid.mitc.eligibilities
 
-publisher: crm_gateway
-  crms.sugar_crm.events.account_created (gateway event)
-  crms.events.account_created (enterprise event)
-
-  # parties.organizations.general_organization_created
-publisher: medicaid_gateway
-  medicaid.atp.events.account_created
-  medicaid.events.account_created
-  medicaid.accounts.account
-
-  medicaid.asus.events.account_created
-  medicaid.curam.events.account_created
-
-  magi_medicaid.mitc.events.aqhp_eligibility_determined
-
-
-publisher: enroll_app
-  families.events.magi_medicaid_application.submitted
-  families.events.family_member_demographics_updated
-
-  organizations.general_organization_created
-
-publishers.enroll_app.parties.organization_publisher
-  subscribers.enroll_app.parties.organization_subscriber
-
-  event_source/parties.events.organizations.organization_created
-  event_source/parties.publishers.organization_publisher
-  event_source/parties.subscribers.organization_subscriber
-
-  events/enroll_app/parties.organizations.organization_created
-  publishers/parties.organization_publisher
-  subscribers/parties.organization_subscriber
 ```
-
-## Development
-
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
 ## Future
 
@@ -327,7 +333,7 @@ The current implementation supports event-based publish and subscribe (Pub/Sub) 
 
 ```ruby
 topic_publishers = [
-  'parties.organizations.organization_publisher',
+  'Organizations.organizations.organization_publisher',
   'enrollment_publisher',
   'family_publisher',
   'marketplace.congress.cycle_event_publisher', # event => 'open_enfollment_begin'
