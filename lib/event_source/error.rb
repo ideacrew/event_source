@@ -30,6 +30,6 @@ module EventSource
     SubscriberNotFound = Class.new(Error)
     ConnectionNotFound = Class.new(Error)
 
-    InvalidServerConfigurationException = Class.new(Exception)
+    InvalidServerConfigurationException = Class.new(RuntimeError)
   end
 end

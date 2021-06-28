@@ -78,11 +78,9 @@ module EventSource
           # @subject.call(payload, faraday_publish_bindings)
           response = connection.builder.build_response(connection, @subject)
           logger.debug "Executed Faraday request...response: #{response.status}"
-       
+
           payload_correlation_id = nil
-          if @request_content_type.json?
-            payload_correlation_id = JSON.parse(text_payload)['CorrelationID'] if payload
-          end
+          payload_correlation_id = JSON.parse(text_payload)['CorrelationID'] if @request_content_type.json? && payload
           response.headers.merge!('CorrelationID' => (payload_correlation_id || generate_correlation_id))
           logger.debug "FaradayRequest#publish  response headers: #{response.headers}"
 

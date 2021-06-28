@@ -85,6 +85,6 @@ module EventSource
 
   class EventSourceLogger
     include EventSource::Logging
-    
+
   end
 end

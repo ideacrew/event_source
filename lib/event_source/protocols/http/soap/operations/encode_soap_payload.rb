@@ -54,9 +54,7 @@ module EventSource
                                          "xmlns:wsu" => Soap::XMLNS["wsu"]
                                        }) do |security|
                   # wsse:UsernameToken wsu:Id="UsernameToken-73590BD4745C9F3F7814189343300461"
-                  if security_values.security_timestamp_value
-                    encode_header_timestamp(security, security_values.security_timestamp_value)
-                  end
+                  encode_header_timestamp(security, security_values.security_timestamp_value) if security_values.security_timestamp_value
                   security[:wsse].UsernameToken do |ut|
                     ut[:wsse].Username security_values.username
                     ut[:wsse].Password({
@@ -74,9 +72,7 @@ module EventSource
             def encode_header_timestamp(security, security_timestamp_value)
               security[:wsu].Timestamp do |ts|
                 ts[:wsu].Created security_timestamp_value.created
-                if security_timestamp_value.expires
-                  ts[:wsu].Expires security_timestamp_value.expires
-                end
+                ts[:wsu].Expires security_timestamp_value.expires if security_timestamp_value.expires
               end
             end
 

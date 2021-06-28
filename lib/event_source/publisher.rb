@@ -87,7 +87,7 @@ module EventSource
       def validate
         return unless events
 
-        events.keys.each do |event_name|
+        events.each_key do |event_name|
           publish_operation_name = publish_operation_name_for(event_name)
           logger.debug "Publisher#validate find publish operation for: #{publish_operation_name}"
           publish_operation = find_publish_operation_for(publish_operation_name)
@@ -101,14 +101,14 @@ module EventSource
       end
 
       def publish_operation_name_for(event_name)
-        publish_operation_name = publisher_key if publisher_key == event_name 
+        publish_operation_name = publisher_key if publisher_key == event_name
         publish_operation_name || [publisher_key, event_name].join(delimiter)
       end
 
       def find_publish_operation_for(publish_operation_name)
         connection_manager.find_publish_operation({
-          protocol: protocol, publish_operation_name: publish_operation_name
-        })
+                                                    protocol: protocol, publish_operation_name: publish_operation_name
+                                                  })
       end
 
       def connection_manager

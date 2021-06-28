@@ -48,13 +48,13 @@ RSpec.describe EventSource::AsyncApi::Contracts::AsyncApiConfContract do
   let(:required_params) { { asyncapi: asyncapi, info: info, servers: servers, channels: channels } }
   let(:optional_params) { { id: id, servers: servers, components: components, tags: tags, external_docs: external_docs } }
   let(:all_params)      { required_params.merge(optional_params) }
-  
+
   let(:expected_required_params) do
-    required_params.merge({channels: [channel_item.merge({id: channel_id})], servers: [] })
+    required_params.merge({ channels: [channel_item.merge({ id: channel_id })], servers: [] })
   end
 
   let(:expected_all_params) do
-    required_params.merge(optional_params).merge({servers: [], channels: [channel_item.merge({id: channel_id})]})
+    required_params.merge(optional_params).merge({ servers: [], channels: [channel_item.merge({ id: channel_id })] })
   end
 
   context "Given gapped or invalid parameters" do

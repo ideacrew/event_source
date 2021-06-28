@@ -45,32 +45,32 @@ RSpec.describe EventSource::Worker do
   end
 
   let(:channel_item) { { subscribe: subscribe_operation } }
-  let(:queue_proxy) {
+  let(:queue_proxy) do
     queue_proxy = EventSource::Protocols::Http::FaradayQueueProxy.new(channel_proxy, channel_item)
     queue_proxy.actions.push(subscribe_action)
     queue_proxy
-  }
+  end
 
   let(:config) { { num_threads: 2 } }
   let(:response) do
     {
       status: 200,
-      headers: {content_type: 'application/json'},
-      body: {message: 'hello world'} 
-    }      
+      headers: { content_type: 'application/json' },
+      body: { message: 'hello world' }
+    }
   end
 
-  let(:subscribe_action) {
-    Proc.new do |body, status, headers|
+  let(:subscribe_action) do
+    proc do |body, status, headers|
       puts "body: #{body}"
       puts "status: #{status}"
-      puts "headers: #{headers}" 
+      puts "headers: #{headers}"
     end
-  }
+  end
 
-  let(:worker) {
+  let(:worker) do
     EventSource::Worker.start({ num_threads: 5 }, queue_proxy)
-  }
+  end
 
   before do
     worker
@@ -78,8 +78,8 @@ RSpec.describe EventSource::Worker do
 
   context 'when response enqueued' do
 
-    before do 
-      worker.enqueue(response)  
+    before do
+      worker.enqueue(response)
     end
 
     it 'should pass body, statusss, headers to the actions'

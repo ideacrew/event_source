@@ -67,8 +67,8 @@ RSpec.describe EventSource::Protocols::Http::FaradayRequestProxy do
     { id: "channel id", publish: publish_operation, subscribe: subscribe_operation }
   end
   let(:request_proxy) do
-     channel_struct = EventSource::AsyncApi::ChannelItem.new(channel_item)
-     described_class.new(channel_proxy, channel_struct)
+    channel_struct = EventSource::AsyncApi::ChannelItem.new(channel_item)
+    described_class.new(channel_proxy, channel_struct)
   end
 
   context 'When channel details along with bindings passed' do

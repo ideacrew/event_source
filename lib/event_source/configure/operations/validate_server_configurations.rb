@@ -19,7 +19,7 @@ module EventSource
           validation_results = configs.map do |sc|
             validate_configuration(sc)
           end
-          
+
           good, bad = validation_results.partition(&:success?)
           if bad.any?
             Failure(bad.map(&:failure))
