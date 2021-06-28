@@ -9,7 +9,7 @@ module EventSource
       include EventSource::Logging
 
       # TODO: add default for pub_sub_root
-      attr_writer :pub_sub_root, :protocols, :server_configurations, :app_name
+      attr_writer :pub_sub_root, :protocols, :server_configurations
 
       def load_protocols
         @protocols.each do |protocol|
@@ -21,9 +21,7 @@ module EventSource
         @server_key = value&.to_sym
       end
 
-      def async_api_schemas=(schemas)
-        @async_api_schemas = schemas
-      end
+      attr_writer :async_api_schemas
 
       def servers
         @server_configurations ||= Servers.new
@@ -48,19 +46,17 @@ module EventSource
         validation_result = ::EventSource::Configure::Operations::ValidateServerConfigurations.new.call(
           @server_configurations
         )
-        if validation_result.success?
-        else
-          validation_result.failure.each do |result|
-            formatted_trace = result.first.call_location.first(3).map do |e_line|
-              "    #{e_line}"
-            end.join("\n")
-            logger.error "Invalid Server Configuration\n  Errors: #{result.last.to_h}\n  At:\n#{formatted_trace}"
-          end
-          first_failure = validation_result.failure.first
-          exception = Error::InvalidServerConfigurationException.new("Server configuration invalid: #{first_failure.last.to_h}")
-          exception.set_backtrace first_failure.first.call_location
-          raise exception
+        return if validation_result.success?
+        validation_result.failure.each do |result|
+          formatted_trace = result.first.call_location.first(3).map do |e_line|
+            "    #{e_line}"
+          end.join("\n")
+          logger.error "Invalid Server Configuration\n  Errors: #{result.last.to_h}\n  At:\n#{formatted_trace}"
         end
+        first_failure = validation_result.failure.first
+        exception = Error::InvalidServerConfigurationException.new("Server configuration invalid: #{first_failure.last.to_h}")
+        exception.set_backtrace first_failure.first.call_location
+        raise exception
       end
 
       def server_ref(settings)
@@ -69,19 +65,18 @@ module EventSource
 
       def format_urls_for_server_config(settings)
         return settings[:url] if settings[:url]
+        url = ""
         case settings[:protocol]
         when :amqp, :amqps, "amqp", "amqps"
           vhost = settings[:vhost].blank? ? "/" : settings[:vhost]
           port_part = settings[:port].present? ? [":", settings[:port]].join : ""
           url = [settings[:host], port_part, vhost].join
-          url = ("#{settings[:protocol]}://") + url unless url.match(/^\w+\:\/\//)
-          url
         else
           port_part = settings[:port].present? ? [":", settings[:port]].join : ""
           url = [settings[:host], port_part].join
-          url = ("#{settings[:protocol]}://") + url unless url.match(/^\w+\:\/\//)
-          url
         end
+        url = "#{settings[:protocol]}://" + url unless url.match(%r{^\w+://})
+        url
       end
 
       def load_async_api_resources
@@ -119,7 +114,6 @@ module EventSource
           connection_manager.fetch_connection(matching_server)
 
         unless connection
-          raise [matching_server, channel_item_key].inspect
           logger.error { "Unable to find connection for #{@server_key} with #{servers}" }
           raise EventSource::Error::ConnectionNotFound, "unable to find connection for #{@server_key} with #{servers}}"
         end
@@ -142,8 +136,6 @@ module EventSource
 
       def delimiter(protocol)
         case protocol
-        when :amqp
-          '.'
         when :http
           '/'
         else
@@ -151,9 +143,7 @@ module EventSource
         end
       end
 
-      def app_name
-        @app_name
-      end
+      attr_accessor :app_name
     end
   end
 end

@@ -90,9 +90,7 @@ module EventSource
         unique_key_elements = [app_name]
         unique_key_elements.push(formatted_publisher_key)
 
-        unless formatted_publisher_key.gsub(delimiter, '_') == identifier
-          unique_key_elements.push(identifier)
-        end
+        unique_key_elements.push(identifier) unless formatted_publisher_key.gsub(delimiter, '_') == identifier
         logger.debug "Subscriber#susbcribe Unique_key #{unique_key_elements.join(delimiter)}"
         return unless block_given?
 
@@ -132,8 +130,8 @@ module EventSource
         begin
           subscribe_operation.subscribe(self)
           logger.debug "Subscriber#create_subscription created subscription for #{subscribe_operation_name}"
-        rescue => exception
-          logger.error "Subscriber#create_subscription Subscription failed for #{subscribe_operation_name} with exception: #{exception}"
+        rescue StandardError => e
+          logger.error "Subscriber#create_subscription Subscription failed for #{subscribe_operation_name} with exception: #{e}"
         end
       end
 

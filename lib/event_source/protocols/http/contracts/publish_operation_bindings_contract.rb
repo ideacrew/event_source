@@ -19,7 +19,7 @@ module EventSource
             before(:key_coercer) do |a|
               keep = a.to_h.reject { |k, _v| k.to_s.starts_with?("x-") }
               moved = a.to_h.select { |k, _v| k.to_s.starts_with?("x-") }
-              moved.any? ? {extensions: moved}.merge(keep) : keep
+              moved.any? ? { extensions: moved }.merge(keep) : keep
             end
           end
         end

@@ -82,7 +82,7 @@ module EventSource
           @channel_proxies = {}
         end
 
-        def build_connection_for_request(publish_operation, subscribe_operation, request_content_type, response_content_type)
+        def build_connection_for_request(publish_operation, _subscribe_operation, request_content_type, _response_content_type)
           request_middleware_params = construct_request_middleware(publish_operation, request_content_type)
           response_middleware_params = request_content_type.json? ? JsonResponseMiddlewareParamsDefault : ResponseMiddlewareParamsDefault
           http_params = connection_params[:http][:params]
@@ -215,7 +215,7 @@ module EventSource
 
         def parse_request_path
           full_uri = URI(@connection_uri)
-          (!full_uri.path.blank?) ? full_uri.path : nil
+          full_uri.path.blank? ? nil : full_uri.path
         end
 
         def connection_params_for(options)
@@ -236,7 +236,7 @@ module EventSource
           }.merge http
         end
 
-        def construct_request_middleware(publish_operation, request_content_type)
+        def construct_request_middleware(_publish_operation, request_content_type)
           if request_content_type.soap?
             {
               retry: {

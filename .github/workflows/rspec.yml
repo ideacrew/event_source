@@ -8,6 +8,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Boot RabbitMQ
         run: |
+          sudo apt-get update
           sudo apt-get install rabbitmq-server
           sudo rabbitmqctl add_vhost event_source
           sudo rabbitmqctl set_permissions -p event_source guest ".*" ".*" ".*"

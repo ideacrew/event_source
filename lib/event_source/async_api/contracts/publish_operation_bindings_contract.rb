@@ -22,7 +22,7 @@ module EventSource
                 error: validation_result.errors.to_h
               )
             else
-              values.data.merge({http: validation_result.values})
+              values.data.merge({ http: validation_result.values })
             end
           end
         end

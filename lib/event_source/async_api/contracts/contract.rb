@@ -30,15 +30,15 @@ module EventSource
 
         rule(:info) do
           if key? && value
-               result = InfoContract.new.call(value)
+            result = InfoContract.new.call(value)
 
-               # Use dry-validation metadata form to pass error hash along with text to calling service
-               if result&.failure?
-                 key.failure(
-                   text: 'invalid info hash',
-                   error: result.errors.to_h
-                 )
-               end
+            # Use dry-validation metadata form to pass error hash along with text to calling service
+            if result&.failure?
+              key.failure(
+                text: 'invalid info hash',
+                error: result.errors.to_h
+              )
+            end
           end
         end
 

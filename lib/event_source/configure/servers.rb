@@ -15,7 +15,7 @@ module EventSource
 
       def to_h
         attribute_hash = super()
-        attribute_hash.reject { |_k, v| v.nil? }
+        attribute_hash.compact
       end
     end
 
@@ -35,9 +35,9 @@ module EventSource
 
       def to_h
         attribute_hash = super()
-        main_hash = attribute_hash.reject { |_k, v| v.nil? }
+        main_hash = attribute_hash.compact
         return main_hash unless soap?
-        main_hash.merge({soap_settings: soap_settings.to_h})
+        main_hash.merge({ soap_settings: soap_settings.to_h })
       end
     end
 

@@ -52,20 +52,21 @@ RSpec.describe "An example service for ACES" do
   before :each do
     stub_request(:post, "http://some_host:6767/connect_me").with(
       headers: {
-      'Expect'=>'',
-      'User-Agent'=>'Faraday v1.4.2'
-      }).with do |request|
-        xml = Nokogiri::XML(request.body)
-        u_token = xml.at_xpath(
-          "/soap:Envelope/soap:Header/wsse:Security/wsse:UsernameToken",
-          EventSource::Protocols::Http::Soap::XMLNS
-        )
-        t_stamp = xml.at_xpath(
-          "/soap:Envelope/soap:Header/wsse:Security/wsu:Timestamp",
-          EventSource::Protocols::Http::Soap::XMLNS
-        )
-        u_token.present? && t_stamp.present?
-      end.to_return(status: 200, body: "", headers: {})
+        'Expect' => '',
+        'User-Agent' => 'Faraday v1.4.2'
+      }
+    ).with do |request|
+      xml = Nokogiri::XML(request.body)
+      u_token = xml.at_xpath(
+        "/soap:Envelope/soap:Header/wsse:Security/wsse:UsernameToken",
+        EventSource::Protocols::Http::Soap::XMLNS
+      )
+      t_stamp = xml.at_xpath(
+        "/soap:Envelope/soap:Header/wsse:Security/wsu:Timestamp",
+        EventSource::Protocols::Http::Soap::XMLNS
+      )
+      u_token.present? && t_stamp.present?
+    end.to_return(status: 200, body: "", headers: {})
   end
 
   it "responds to requests" do

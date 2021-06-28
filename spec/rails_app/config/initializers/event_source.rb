@@ -21,7 +21,7 @@ EventSource.configure do |config|
     # FDSH_USERNAME="my_id"
     # FDSH_PASSWORD="my_pwd"
     # FDSH_CERT_FILE="/path/to/cert.pem"
-    # FDSH_KEY_FILE="/path/to/key.pem" 
+    # FDSH_KEY_FILE="/path/to/key.pem"
     # # fdsh
     # server.http do |http|
     #   http.environment = :test
@@ -38,16 +38,16 @@ EventSource.configure do |config|
     # - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-guest}
     server.amqp do |rabbitmq|
       rabbitmq.host = "localhost" # ENV['RABBITMQ_HOST']
-      rabbitmq.vhost =  "/" # ENV['RABBITMQ_VHOST']
+      rabbitmq.vhost = "/" # ENV['RABBITMQ_VHOST']
       rabbitmq.port = "5672" # ENV['RABBITMQ_PORT']
       rabbitmq.url = "amqp://localhost:5672/" # ENV['RABBITMQ_URL']
       rabbitmq.user_name = "" # ENV['RABBITMQ_USERNAME']
       rabbitmq.password = "" # ENV['RABBITMQ_PASSWORD']
     end
-    
+
     server.amqp do |rabbitmq|
       rabbitmq.host = "localhost" # ENV['RABBITMQ_HOST']
-      rabbitmq.vhost =  "/event_source" # ENV['RABBITMQ_VHOST']
+      rabbitmq.vhost = "/event_source" # ENV['RABBITMQ_VHOST']
       rabbitmq.port = "5672" # ENV['RABBITMQ_PORT']
       rabbitmq.ref = "amqp://localhost:5672/event_source" # ENV['RABBITMQ_URL']
       rabbitmq.user_name = "" # ENV['RABBITMQ_USERNAME']

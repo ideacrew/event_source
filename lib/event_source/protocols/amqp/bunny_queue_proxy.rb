@@ -184,12 +184,12 @@ module EventSource
         def channel_item_queue_bindings_for(bindings)
           result =
             EventSource::Protocols::Amqp::Contracts::ChannelBindingContract.new
-              .call(bindings)
+                                                                           .call(bindings)
           if result.success?
             result.values[:amqp][:queue]
           else
             raise EventSource::Protocols::Amqp::Error::ChannelBindingContractError,
-            "Error(s) #{result.errors.to_h} validating: #{bindings}"
+                  "Error(s) #{result.errors.to_h} validating: #{bindings}"
           end
         end
 

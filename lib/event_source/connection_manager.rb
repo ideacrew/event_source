@@ -18,7 +18,7 @@ module EventSource
     # Add a list of connections for the given set of server configurations
     #   to the connection registry
     # @param [Array] async_api_servers Async Api Server objects in Hash format
-    def add_connections(async_api_servers, servers)
+    def add_connections(async_api_servers, _servers)
       async_api_servers.each do |async_api_server|
         add_connection(async_api_server)
       end
@@ -54,9 +54,7 @@ module EventSource
       connections.reduce(
         []
       ) do |protocol_connections, (_connection_uri, connection_instance)|
-        if connection_instance.protocol == protocol
-          protocol_connections << connection_instance
-        end
+        protocol_connections << connection_instance if connection_instance.protocol == protocol
         protocol_connections
       end
     end
@@ -141,9 +139,7 @@ module EventSource
     # @return [Array<EventSource::Connection>] registered connections
     def drop_connections_for(protocol)
       connections.each do |connection_uri, connection_instance|
-        if connection_instance.protocol == protocol
-          drop_connection(connection_uri)
-        end
+        drop_connection(connection_uri) if connection_instance.protocol == protocol
       end
     end
 

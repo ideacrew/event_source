@@ -123,7 +123,7 @@ module EventSource
         end
 
         # @see close
-        alias_method :stop, :close
+        alias stop close
 
         # Returns true if this connection is closed
         # @return [Boolean]
@@ -204,16 +204,11 @@ module EventSource
               amqp_url = URI.parse(url)
               host = amqp_url.host || amqp_url.path # url w/single string parses into path
 
-              if amqp_url.path.present? && amqp_url.path != host
-                vhost = amqp_url.path
-              end
+              vhost = amqp_url.path if amqp_url.path.present? && amqp_url.path != host
             else
               vhost = ConnectDefaults[:vhost]
             end
-            if vhost != '/'
-              vhost = vhost.match(%r{\A\/(.+)\Z})[1] if vhost &&
-                vhost.match(%r{\A\/.+\Z})
-            end
+            vhost = vhost.match(%r{\A/(.+)\Z})[1] if vhost != ('/') && vhost&.match(%r{\A/.+\Z})
             vhost || ConnectDefaults[:vhost]
           end
         end

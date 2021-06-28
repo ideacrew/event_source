@@ -24,7 +24,7 @@ module EventSource
           optional(:id).maybe(:symbol)
 
           optional(:servers).array(ServerContract.params)
-          #optional(:servers).value(:hash)
+          # optional(:servers).value(:hash)
           optional(:components).array(Types::HashOrNil)
           optional(:tags).array(TagContract.params)
           optional(:external_docs).array(Types::HashOrNil)
@@ -45,7 +45,7 @@ module EventSource
                 channel_values.each_pair do |k, v|
                   channel_set << v.merge(id: k)
                 end
-                result_hash = result_hash.merge({channels: channel_set})
+                result_hash = result_hash.merge({ channels: channel_set })
               end
             elsif result_hash.key?("channels")
               channel_values = result_hash["channels"]
@@ -53,8 +53,8 @@ module EventSource
                 channel_values.each_pair do |k, v|
                   channel_set << v.merge(id: k)
                 end
-                result_hash = result_hash.merge({"channels" => channel_set})
-              end  
+                result_hash = result_hash.merge({ "channels" => channel_set })
+              end
             end
             server_set = []
             if result_hash.key?(:servers)
@@ -63,7 +63,7 @@ module EventSource
                 server_values.each_pair do |k, v|
                   server_set << v.merge(id: k)
                 end
-                result_hash = result_hash.merge({servers: server_set})
+                result_hash = result_hash.merge({ servers: server_set })
               end
             elsif result_hash.key?("servers")
               server_values = result_hash["servers"]
@@ -71,8 +71,8 @@ module EventSource
                 server_values.each_pair do |k, v|
                   server_set << v.merge(id: k)
                 end
-                result_hash = result_hash.merge({"servers" => server_set})
-              end  
+                result_hash = result_hash.merge({ "servers" => server_set })
+              end
             end
             result_hash
           end
@@ -82,9 +82,7 @@ module EventSource
           next unless key? && value
           validation_result = ChannelItemContract.new.call(value)
           # Use dry-validation metadata form to pass error hash along with text to calling service
-          if validation_result&.failure?
-            key.failure(text: 'invalid channel hash', error: validation_result.errors.to_h)
-          end
+          key.failure(text: 'invalid channel hash', error: validation_result.errors.to_h) if validation_result&.failure?
         end
 
         # @!macro [attach] rulemacro
@@ -100,7 +98,6 @@ module EventSource
           next unless validation_result&.failure?
           key.failure(text: 'invalid component hash', error: validation_result.errors.to_h)
         end
-
 
         rule(:servers).each do
           next unless key? && value

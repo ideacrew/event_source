@@ -31,7 +31,7 @@ module EventSource
       # connection details of servers
       # @return [Array<Server>]
       attribute :servers, Types::Array.of(Server).meta(omittable: true)
-      #attribute :servers, Types::Hash.meta(omittable: false)
+      # attribute :servers, Types::Hash.meta(omittable: false)
 
       # @!attribute [r] channels
       # available channels and messages for API (required)
