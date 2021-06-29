@@ -2,7 +2,6 @@
 
 require 'spec_helper'
 require 'config_helper'
-require 'pry'
 
 RSpec.describe EventSource::Protocols::Amqp::BunnyConnectionProxy do
   let(:protocol) { :amqp }
