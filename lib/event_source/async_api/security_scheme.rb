@@ -12,6 +12,8 @@ module EventSource
     # * OAuth2's common flows (Implicit, Resource Owner Protected Credentials, Client Credentials and Authorization Code) as defined in RFC6749
     # * OpenID Connect Discovery
     class SecurityScheme < Dry::Struct
+      transform_keys(&:to_sym)
+
       # @!attribute [r] type
       # Applies to: Any (required). The type of the security scheme. Valid values are:
       # * :user_password

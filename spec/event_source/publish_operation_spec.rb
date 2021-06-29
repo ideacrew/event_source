@@ -29,24 +29,22 @@ RSpec.describe EventSource::PublishOperation do
   let(:load_publish_resource) do
     publish_resource =
       EventSource::AsyncApi::Operations::AsyncApiConf::LoadPath
-        .new
-        .call(path: publish_resource_path)
-        .success
-        .to_h
+      .new
+      .call(path: publish_resource_path)
+      .success
     connection.add_channels(
-      channels: publish_resource['channels'].deep_symbolize_keys
+      publish_resource.channels
     )
   end
 
   let(:load_subscribe_resource) do
     subscribe_resource =
       EventSource::AsyncApi::Operations::AsyncApiConf::LoadPath
-        .new
-        .call(path: subscribe_resource_path)
-        .success
-        .to_h
+      .new
+      .call(path: subscribe_resource_path)
+      .success
     connection.add_channels(
-      channels: subscribe_resource['channels'].deep_symbolize_keys
+      subscribe_resource.channels
     )
   end
 
@@ -68,10 +66,10 @@ RSpec.describe EventSource::PublishOperation do
     let(:publisher_name) do
       channel.publish_operations.values.first.name
     end
-    
-    let(:channel) {
+
+    let(:channel) do
       connection.channels.values.first
-    }
+    end
 
     let(:publish_operation) do
       connection.find_publish_operation_by_name(publisher_name)

@@ -7,7 +7,6 @@ module EventSource
     module Amqp
       # Create and manage a RabbitMQ Channel instance using Bunny client.  Provide an interface that support
       # the {EventSource::Channel} DSL
-
       class BunnyChannelProxy
         include EventSource::Logging
         extend Forwardable
@@ -159,8 +158,9 @@ module EventSource
         end
 
         def add_exchange
+          async_api_channel_item.bindings.deep_symbolize_keys!
           exchange_bindings =
-            async_api_channel_item[:bindings][:amqp][:exchange]
+            async_api_channel_item.bindings[:amqp][:exchange]
           BunnyExchangeProxy.new(self, exchange_bindings)
         end
 

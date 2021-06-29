@@ -13,9 +13,8 @@ module EventSource
           def call(path:)
             file_io  = yield read(path)
             params   = yield deserialize(file_io)
-            _channels = yield create(params)
-
-            Success(params)
+            channels = yield create(params)
+            Success(channels)
           end
 
           private
@@ -33,11 +32,7 @@ module EventSource
           end
 
           def create(params)
-            Try do
-              result = Create.new.call(params)
-              return result if result.failure?
-              result.value!
-            end.to_result
+            Create.new.call(params)
           end
         end
       end

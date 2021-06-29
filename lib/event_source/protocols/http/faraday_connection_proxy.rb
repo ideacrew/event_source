@@ -8,7 +8,7 @@ module EventSource
         # @attr_reader [String] connection_uri String used to connect with HTTP server
         # @attr_reader [String] connection_params Settings used for configuring {::Faraday::Connection}
         # @attr_reader [Faraday::Connection] subject Server Connection instance
-        attr_reader :connection_uri, :connection_params, :subject
+        attr_reader :connection_uri, :connection_params, :subject, :request_path
 
         # AsyncAPI HTTP Bindings Protocol version supported by this client
         ProtocolVersion = '0.1.0'
@@ -46,6 +46,10 @@ module EventSource
         #
         # Override default values using the options argument in the constructor
         ResponseMiddlewareParamsDefault = {
+
+        }.freeze
+
+        JsonResponseMiddlewareParamsDefault = {
           json: {
             order: 10,
             options: {}
@@ -72,33 +76,31 @@ module EventSource
           @protocol_version = ProtocolVersion
           @client_version = ClientVersion
           @connection_params = connection_params_for(options)
+          @server = async_api_server
           @connection_uri = self.class.connection_uri_for(async_api_server)
+          @request_path = parse_request_path
           @channel_proxies = {}
-
-          @subject = build_connection
         end
 
-        def build_connection
-          request_middleware_params =
-            connection_params[:request_middleware_params]
-          response_middleware_params =
-            connection_params[:response_middleware_params]
+        def build_connection_for_request(publish_operation, _subscribe_operation, request_content_type, _response_content_type)
+          request_middleware_params = construct_request_middleware(publish_operation, request_content_type)
+          response_middleware_params = request_content_type.json? ? JsonResponseMiddlewareParamsDefault : ResponseMiddlewareParamsDefault
           http_params = connection_params[:http][:params]
           headers = connection_params[:http][:headers]
           adapter = connection_params[:adapter]
-
+          clean_connection_url = @request_path.blank? ? @connection_uri : @connection_uri.chomp(@request_path)
           Faraday.new(
-            url: @connection_uri,
+            url: clean_connection_url,
             params: http_params,
             headers: headers
           ) do |conn|
-            request_middleware_params.sort_by do |k, v|
+            request_middleware_params.sort_by do |_k, v|
               v[:order]
             end.each do |middleware, value|
               conn.request middleware.to_sym, value[:options]
             end
 
-            response_middleware_params.sort_by do |k, v|
+            response_middleware_params.sort_by do |_k, v|
               v[:order]
             end.each do |middleware, value|
               conn.response middleware.to_sym, value[:options]
@@ -127,6 +129,7 @@ module EventSource
 
         # The status of the connection instance
         def active?
+          return true if @subject.blank?
           return true if @channel_proxies.empty?
           @channel_proxies.values.any?(&:active?)
         end
@@ -135,11 +138,10 @@ module EventSource
         #  connections this closes all currently open connections
         def close
           @channel_proxies.values.each(&:close)
-          @subject.close
         end
 
         def reconnect
-          @subject.reconnect!
+          EventSource::Noop.new
         end
 
         # The version of Faraday client in use
@@ -185,22 +187,21 @@ module EventSource
           # {EventSource::AsyncAPI::Server} configuration values
           # @return [String] uri connection key
           def connection_uri_for(async_api_server)
-            server_uri = URI(async_api_server[:url]).normalize
-
-            URI::HTTP.build(
-              scheme: server_uri.scheme,
-              host: server_uri.host,
-              port: server_uri.port
-            ).to_s
+            parsed_url = URI(async_api_server[:url]).normalize
+            if parsed_url.path && parsed_url.path == "/"
+              parsed_url.to_s.chomp("/")
+            else
+              parsed_url.to_s
+            end
           end
         end
 
         # Set request_middleware_params
         # @overload request_middleware_params=(values)
         #   @param [Hash] values New values
-        #   @return [Event] A copy of the event with the provided values
+        #   @return [Object] An assignment method, so always returns the RHS
         def request_middleware_params=(values = nil)
-          return @request_middleware_params unless values.instance_of?(Hash)
+          return unless values.instance_of?(Hash)
 
           values.symbolize_keys!
 
@@ -212,13 +213,18 @@ module EventSource
 
         private
 
+        def parse_request_path
+          full_uri = URI(@connection_uri)
+          full_uri.path.blank? ? nil : full_uri.path
+        end
+
         def connection_params_for(options)
           request_middleware_params =
             options[:request_middleware_params] ||
-              RequestMiddlewareParamsDefault
+            RequestMiddlewareParamsDefault
           response_middleware_params =
             options[:response_middleware_params] ||
-              ResponseMiddlewareParamsDefault
+            ResponseMiddlewareParamsDefault
 
           adapter = AdapterDefaults.merge(options[:adapter] || {})
           http = HttpDefaults.merge(options[:http] || {})
@@ -228,6 +234,30 @@ module EventSource
             response_middleware_params: response_middleware_params,
             adapter: adapter
           }.merge http
+        end
+
+        def construct_request_middleware(_publish_operation, request_content_type)
+          if request_content_type.soap?
+            {
+              retry: {
+                order: 10,
+                options: {
+                  max: 5,
+                  interval: 0.05,
+                  interval_randomness: 0.5,
+                  backoff_factor: 2
+                }
+              },
+              soap_payload_header: {
+                order: 20,
+                options: {
+                  soap_settings: @server[:soap_settings]
+                }
+              }
+            }
+          else
+            RequestMiddlewareParamsDefault
+          end
         end
       end
     end

@@ -18,9 +18,9 @@ RSpec.describe EventSource::Subscriber do
     let(:subscriber) { Subscribers::ExampleSubscriber }
     let(:connection_manager) { EventSource::ConnectionManager.instance }
     let(:operation) { double }
-    let(:params) { {protocol: :amqp, subscribe_operation_name:  "on_enroll.polypress.document_publisher"} }
+    let(:params) { { protocol: :amqp, subscribe_operation_name:  "on_enroll.polypress.document_publisher" } }
 
-    context 'log messages' do 
+    context 'log messages' do
       before do
         allow(subscriber).to receive(:protocol).and_return(:amqp)
         allow(subscriber).to receive(:app_name).and_return('enroll')
@@ -32,7 +32,7 @@ RSpec.describe EventSource::Subscriber do
         before do
           allow(operation).to receive(:subscribe).and_return(true)
         end
-        
+
         it 'should log subscription success messages' do
           subscriber.create_subscription
 
@@ -45,10 +45,10 @@ RSpec.describe EventSource::Subscriber do
       context 'when subscribe operation found and subscribe is not successful' do
         let(:exception) { "boom!!!"}
 
-        before do 
+        before do
           allow(operation).to receive(:subscribe).and_raise(exception)
         end
-        
+
         it 'should log subscribe error' do
           subscriber.create_subscription
 

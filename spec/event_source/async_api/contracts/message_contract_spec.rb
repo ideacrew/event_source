@@ -66,7 +66,7 @@ RSpec.describe EventSource::AsyncApi::Contracts::MessageContract do
       traits: traits,
       tags: tags,
       schema_format: schema_format,
-      content_type: content_type,
+      contentType: content_type,
       external_docs: external_docs,
       bindings: bindings,
       examples: examples
@@ -96,7 +96,7 @@ RSpec.describe EventSource::AsyncApi::Contracts::MessageContract do
           expect(result[:traits]).to eq traits
 
           expect(result[:schema_format]).to eq schema_format
-          expect(result[:content_type]).to eq content_type
+          expect(result[:contentType]).to eq content_type
           expect(result[:external_docs]).to eq external_docs
           expect(result[:bindings]).to eq bindings
           expect(result[:examples]).to eq examples

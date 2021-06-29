@@ -39,7 +39,7 @@ module EventSource
       class FaradayRequestProxy
         include EventSource::Logging
 
-        attr_reader :channel_proxy, :subject, :name
+        attr_reader :channel_proxy, :subject, :name, :channel_item, :connection
 
         # @param channel_proxy [EventSource::Protocols::Http::FaradayChannelProxy] Http Channel proxy
         # @param async_api_channel_item [Hash] channel_bindings Channel definition and bindings
@@ -47,7 +47,10 @@ module EventSource
         def initialize(channel_proxy, async_api_channel_item)
           @channel_proxy = channel_proxy
           @name = channel_proxy.name
-          request_bindings = async_api_channel_item[:publish][:bindings][:http]
+          @channel_item = async_api_channel_item
+          request_bindings = async_api_channel_item.publish.bindings.http
+          @request_content_type = EventSource::ContentTypeResolver.new("application/json", @channel_item.publish)
+          @response_content_type = EventSource::ContentTypeResolver.new("application/json", @channel_item.subscribe)
           @subject = faraday_request_for(request_bindings)
         end
 
@@ -64,7 +67,10 @@ module EventSource
         # @return [Faraday::Response] response
         def publish(payload: nil, publish_bindings: {})
           faraday_publish_bindings = sanitize_bindings(publish_bindings)
-          @subject.body = payload if payload
+          text_payload = nil
+          text_payload = (@request_content_type.json? ? payload.to_json : payload) if payload
+          text_payload ||= ""
+          @subject.body = text_payload
           @subject.headers.update(faraday_publish_bindings[:headers]) if faraday_publish_bindings[:headers]
           logger.debug "FaradayExchange#publish  connection: #{connection.inspect}"
           logger.debug "FaradayExchange#publish  processing request with headers: #{@subject.headers} body: #{@subject.body}"
@@ -73,12 +79,13 @@ module EventSource
           response = connection.builder.build_response(connection, @subject)
           logger.debug "Executed Faraday request...response: #{response.status}"
 
-          correlation_id = JSON.parse(payload)['CorrelationID'] if payload
-          response.headers.merge!('CorrelationID' => (correlation_id || generate_correlation_id))
+          payload_correlation_id = nil
+          payload_correlation_id = JSON.parse(text_payload)['CorrelationID'] if @request_content_type.json? && payload
+          response.headers.merge!('CorrelationID' => (payload_correlation_id || generate_correlation_id))
           logger.debug "FaradayRequest#publish  response headers: #{response.headers}"
 
           @channel_proxy.enqueue(response)
-          logger.debug "FaradayRequest#publish  response enqueued."
+          logger.debug "FaradayRequest#publish response enqueued."
           response
         end
 
@@ -88,25 +95,26 @@ module EventSource
 
         def respond_to_missing?(name, include_private); end
 
-        # Forwards all missing method calls to the Bunny::Queue instance
         def method_missing(name, *args)
           @subject.send(name, *args)
         end
 
         private
 
-        def connection
-          channel_proxy.connection
+        def connection_proxy
+          channel_proxy.connection_proxy
         end
 
         def request_path
-          channel_proxy.name
+          connection_request_path = connection_proxy.request_path
+          connection_request_path.blank? ? channel_proxy.name : connection_request_path
         end
 
         def faraday_request_for(bindings)
-          method = bindings[:method].downcase.to_sym
+          method = bindings ? bindings[:method].downcase.to_sym : :get
+          @connection = connection_proxy.build_connection_for_request(nil, nil, @request_content_type, @response_content_type)
           request =
-            connection.build_request(method) do |req|
+            @connection.build_request(method) do |req|
               req.path = request_path.to_s
             end
 
@@ -116,7 +124,7 @@ module EventSource
 
         def sanitize_bindings(bindings)
           return {} unless bindings.present?
-          options = bindings[:http]
+          options = bindings[:http] || {}
           operation_bindings = {}
           operation_bindings[:headers] = options[:headers] if options[:headers]
           operation_bindings

@@ -58,6 +58,7 @@ RSpec.describe EventSource::ConnectionManager do
 
         let(:my_server) do
           {
+            ref: url,
             url: url,
             protocol: protocol,
             protocol_version: protocol_version,
@@ -92,14 +93,14 @@ RSpec.describe EventSource::ConnectionManager do
       end
     end
 
-    context '.find_publish_operation' do 
+    context '.find_publish_operation' do
 
-      let(:params) { {protocol: :amqp, publish_operation_name: 'on_my_app.polypress.document_builder'}}
+      let(:params) { { protocol: :amqp, publish_operation_name: 'on_my_app.polypress.document_builder' }}
       let(:connection) { double }
       let(:operation) { double }
 
-      context 'when connection exists with given operation' do 
-        before do 
+      context 'when connection exists with given operation' do
+        before do
           allow(connection_manager).to receive(:find_connection).with(params).and_return(connection)
           allow(connection).to receive(:find_publish_operation_by_name).and_return(operation)
         end
@@ -113,7 +114,7 @@ RSpec.describe EventSource::ConnectionManager do
       end
 
       context 'when connection not exists with given operation' do
-        before do 
+        before do
           allow(connection_manager).to receive(:find_connection).with(params).and_return(nil)
         end
 
@@ -126,14 +127,14 @@ RSpec.describe EventSource::ConnectionManager do
       end
     end
 
-    context '.find_susbcribe_operation' do 
+    context '.find_susbcribe_operation' do
 
-      let(:params) { {protocol: :amqp, subscribe_operation_name: 'on_my_app.polypress.document_builder'}}
+      let(:params) { { protocol: :amqp, subscribe_operation_name: 'on_my_app.polypress.document_builder' }}
       let(:connection) { double }
       let(:operation) { double }
 
-      context 'when connection exists with given operation' do 
-        before do 
+      context 'when connection exists with given operation' do
+        before do
           allow(connection_manager).to receive(:find_connection).with(params).and_return(connection)
           allow(connection).to receive(:find_subscribe_operation_by_name).and_return(operation)
         end
@@ -147,7 +148,7 @@ RSpec.describe EventSource::ConnectionManager do
       end
 
       context 'when connection not exists with given operation' do
-        before do 
+        before do
           allow(connection_manager).to receive(:find_connection).with(params).and_return(nil)
         end
 

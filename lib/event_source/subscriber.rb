@@ -93,6 +93,7 @@ module EventSource
           unique_key_elements.push(identifier)
         end
         logger.debug "Subscriber#susbcribe Unique_key #{unique_key_elements.join(delimiter)}"
+        return unless block_given?
 
         if block_given?
           EventSource::Subscriber.executable_container[

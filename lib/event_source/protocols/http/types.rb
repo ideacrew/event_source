@@ -23,6 +23,8 @@ module EventSource
             'OPTIONS',
             'TRACE'
           )
+
+        SoapBodyStringType = Types::Strict::String.default("")
       end
     end
   end

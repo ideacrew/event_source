@@ -3,6 +3,13 @@ info:
   title: Google Map Geocoder
   version: "0.1.0"
   description: An example documented AsyncApi HTTP service
+  contact:
+    name: IdeaCrew
+    url: https://ideacrew.com
+    email: info@ideacrew.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
 
 servers:
   production:
@@ -10,22 +17,22 @@ servers:
     protocol: http
     protocolVersion: "0.1.0"
     description: Google Server
-    security:
-      - apiKey: []
 
 defaultContentType: application/json
 
 channels:
   maps/api/geocode/json:
     subscribe:
-      message:
-        $ref: "#/components/messages/google_message"
-
+      operationId: maps/api/geocode/json
+      description: Return lat/long for given address
       bindings:
         http:
           type: request
           method: GET
-          query:
+          headers:
+            Content-Type: application/json
+            Accept: application/json
+          qhery:
             type: object
             required:
               - address
@@ -58,3 +65,7 @@ components:
       type: apiKey
       in: user
       description: Provide your API key as the user and leave the password empty.
+
+tags:
+  - name: linter_tag
+    description: placeholder that satisfies the linter

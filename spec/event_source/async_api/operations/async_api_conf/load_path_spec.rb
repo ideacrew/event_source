@@ -12,7 +12,7 @@ RSpec.describe EventSource::AsyncApi::Operations::AsyncApiConf::LoadPath do
 
       it 'should create new AsyncApiConf instance' do
         result = subject.call(path: async_api_file).value!
-        expect(result).to be_a Hash
+        expect(result).to be_a EventSource::AsyncApi::AsyncApiConf
       end
     end
   end

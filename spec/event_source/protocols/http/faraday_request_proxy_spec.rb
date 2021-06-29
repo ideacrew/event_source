@@ -5,9 +5,6 @@ require 'config_helper'
 require 'yaml'
 
 RSpec.describe EventSource::Protocols::Http::FaradayRequestProxy do
-  let(:asyncapi_file) { 'spec/support/async_api_files/contributors.yml' }
-  let(:asyncapi) { YAML.safe_load(File.read(asyncapi_file)) }
-
   let(:protocol) { :http }
   let(:url) { 'https://api.github.com' }
   let(:protocol_version) { '0.9.1' }
@@ -26,7 +23,7 @@ RSpec.describe EventSource::Protocols::Http::FaradayRequestProxy do
     EventSource::Protocols::Http::FaradayConnectionProxy.new(my_server)
   end
   let(:connection) { EventSource::Connection.new(connection_proxy) }
-  let(:channel_proxy) { connection_proxy.add_channel(channel_key, {}) }
+  let(:channel_proxy) { connection_proxy.add_channel(channel_key, channel_item) }
   let(:channel_key) { '/repos/thoughtbot/factory_girl/contributors' }
   let(:publish_operation) do
     {
@@ -67,9 +64,12 @@ RSpec.describe EventSource::Protocols::Http::FaradayRequestProxy do
   end
 
   let(:channel_item) do
-    { publish: publish_operation, subscribe: subscribe_operation }
+    { id: "channel id", publish: publish_operation, subscribe: subscribe_operation }
   end
-  let(:request_proxy) { described_class.new(channel_proxy, channel_item) }
+  let(:request_proxy) do
+    channel_struct = EventSource::AsyncApi::ChannelItem.new(channel_item)
+    described_class.new(channel_proxy, channel_struct)
+  end
 
   context 'When channel details along with bindings passed' do
     let(:request_method) do
@@ -83,9 +83,10 @@ RSpec.describe EventSource::Protocols::Http::FaradayRequestProxy do
     end
 
     it 'should return expected response' do
-      channel_proxy.add_subscribe_operation(channel_item)
+      channel_struct = EventSource::AsyncApi::ChannelItem.new(channel_item)
+      channel_proxy.add_subscribe_operation(channel_struct)
       response =
-        request_proxy.publish publish_bindings: publish_operation[:bindings]
+        request_proxy.publish publish_bindings: publish_operation
       expect(response.status).to eq 200
       expect(response.headers['Content-Type']).to eq 'application/json'
     end

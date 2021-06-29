@@ -7,6 +7,10 @@ module EventSource
     # use bindings to define them
     # Describes the operations available on a single channel
     class ChannelItem < Dry::Struct
+      transform_keys(&:to_sym)
+
+      attribute :id, Types::String.meta(omittable: false)
+
       # @!attribute [r] ref
       # Allows for an external definition of this channel item. The referenced structure
       # MUST be in the format of a Channel Item Object. If there are conflicts between the
@@ -22,12 +26,12 @@ module EventSource
       # @!attribute [r] subscribe
       # A definition of the Subscribe operation
       # @return [Operation]
-      attribute :subscribe, Operation.meta(omittable: true)
+      attribute :subscribe, SubscribeOperation.meta(omittable: true)
 
       # @!attribute [r] publish
       # A definition of the Publish operation
       # @return [Operation]
-      attribute :publish, Operation.meta(omittable: true)
+      attribute :publish, PublishOperation.meta(omittable: true)
 
       # @!attribute [r] url
       # A map of the parameters included in the channel name.

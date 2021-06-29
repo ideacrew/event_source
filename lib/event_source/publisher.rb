@@ -87,7 +87,7 @@ module EventSource
       def validate
         return unless events
 
-        events.keys.each do |event_name|
+        events.each_key do |event_name|
           publish_operation_name = publish_operation_name_for(event_name)
           logger.debug "Publisher#validate find publish operation for: #{publish_operation_name}"
           publish_operation = find_publish_operation_for(publish_operation_name)

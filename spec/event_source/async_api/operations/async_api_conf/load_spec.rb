@@ -10,7 +10,7 @@ RSpec.describe EventSource::AsyncApi::Operations::AsyncApiConf::Load do
     context 'with a AsyncApiConf and ChannelItem' do
       it 'should create new AsyncApiConf instance' do
         result = subject.call(dir: async_api_folder).value!
-        expect(result.first).to be_a Hash
+        expect(result.first).to be_a EventSource::AsyncApi::AsyncApiConf
       end
     end
   end

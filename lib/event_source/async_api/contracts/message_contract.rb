@@ -25,7 +25,7 @@ module EventSource
           optional(:headers).maybe(Types::HashOrNil)
           optional(:payload).maybe(:any)
           optional(:schema_format).maybe(:string)
-          optional(:content_type).maybe(:string)
+          optional(:contentType).maybe(:string)
           optional(:name).maybe(:string)
           optional(:title).maybe(:string)
           optional(:summary).maybe(:string)

@@ -5,6 +5,8 @@ module EventSource
     # Describes a trait that may be applied to a {Message} object. This object may contain any property
     # from the Message object, except payload and traits
     class MessageTrait < Dry::Struct
+      transform_keys(&:to_sym)
+
       # @!attribute [r] headers
       # Schema definition of the application headers. Schema must be of type "object".
       # It must not define the protocol headers.

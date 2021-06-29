@@ -21,7 +21,7 @@ EventSource.configure do |config|
     # FDSH_USERNAME="my_id"
     # FDSH_PASSWORD="my_pwd"
     # FDSH_CERT_FILE="/path/to/cert.pem"
-    # FDSH_KEY_FILE="/path/to/key.pem" 
+    # FDSH_KEY_FILE="/path/to/key.pem"
     # # fdsh
     # server.http do |http|
     #   http.environment = :test
@@ -37,22 +37,42 @@ EventSource.configure do |config|
     # - RABBITMQ_USERNAME=${RABBITMQ_USERNAME:-guest}
     # - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-guest}
     server.amqp do |rabbitmq|
-      rabbitmq.host = "amqp://localhost" # ENV['RABBITMQ_HOST']
-      rabbitmq.vhost =  "/" # ENV['RABBITMQ_VHOST']
+      rabbitmq.host = "localhost" # ENV['RABBITMQ_HOST']
+      rabbitmq.vhost = "/" # ENV['RABBITMQ_VHOST']
       rabbitmq.port = "5672" # ENV['RABBITMQ_PORT']
-      rabbitmq.url = "" # ENV['RABBITMQ_URL']
+      rabbitmq.url = "amqp://localhost:5672/" # ENV['RABBITMQ_URL']
+      rabbitmq.user_name = "" # ENV['RABBITMQ_USERNAME']
+      rabbitmq.password = "" # ENV['RABBITMQ_PASSWORD']
+    end
+
+    server.amqp do |rabbitmq|
+      rabbitmq.host = "localhost" # ENV['RABBITMQ_HOST']
+      rabbitmq.vhost = "/event_source" # ENV['RABBITMQ_VHOST']
+      rabbitmq.port = "5672" # ENV['RABBITMQ_PORT']
+      rabbitmq.ref = "amqp://localhost:5672/event_source" # ENV['RABBITMQ_URL']
       rabbitmq.user_name = "" # ENV['RABBITMQ_USERNAME']
       rabbitmq.password = "" # ENV['RABBITMQ_PASSWORD']
     end
 
     server.http do |http|
       http.host = "https://api.github.com"
-      http.port = ""
     end
 
     server.http do |http|
       http.host = "http://localhost"
       http.port = "3000"
+    end
+
+    server.http do |http|
+      http.ref = "http://aces-qa/some-random-lookup-uri"
+      http.url = "http://some_host:6767/connect_me"
+      http.soap do |soap|
+        soap.user_name = "aces user name"
+        soap.password = "aces password"
+        soap.password_encoding = :plain
+        soap.use_timestamp = true
+        soap.timestamp_ttl = 60.seconds
+      end
     end
 
     # server.amqp do |amqp|
@@ -92,7 +112,7 @@ EventSource.async_api_schemas = ::Dir[::File.join(dir, '**', '*')].reject { |p| 
   # read
   # serialize yaml to hash
   # Add to memo
-  memo << EventSource::AsyncApi::Operations::AsyncApiConf::LoadPath.new.call(path: file).success.to_h
+  memo << EventSource::AsyncApi::Operations::AsyncApiConf::LoadPath.new.call(path: file).success
 end
 
 EventSource.initialize!

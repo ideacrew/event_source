@@ -19,12 +19,13 @@ module EventSource
         # @return [Dry::Monads::Result::Success] if params pass validation
         # @return [Dry::Monads::Result::Failure] if params fail validation
         params do
+          required(:id).value(:string)
           required(:url).value(:string)
           required(:protocol).value(:symbol)
           optional(:protocol_version).maybe(Types::StringOrNil)
           optional(:description).maybe(Types::StringOrNil)
           optional(:variables).array(:hash)
-          optional(:security).maybe(Types::HashOrNil)
+          optional(:security).array(:hash)
           optional(:bindings).maybe(Types::HashOrNil)
 
           # before(:value_coercer) do |result|
@@ -34,20 +35,6 @@ module EventSource
 
         rule(:protocol) do
           key.failure('unsupported protocol') unless URI.scheme_list.keys.include?(value.to_s.upcase)
-        end
-
-        rule(:security) do
-          if key? && value
-            result = SecuritySchemeContract.new.call(value)
-
-            # Use dry-validation metadata form to pass error hash along with text to calling service
-            if result&.failure?
-              key.failure(
-                text: 'invalid security_scheme',
-                error: result.errors.to_h
-              )
-            end
-          end
         end
       end
     end

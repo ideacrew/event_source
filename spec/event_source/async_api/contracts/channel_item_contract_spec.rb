@@ -36,17 +36,18 @@ RSpec.describe EventSource::AsyncApi::Contracts::ChannelItemContract do
   let(:bindings) { amqp_channel_binding }
 
   let(:subscribe_operation) do
-    { operation_id: :customer_enrolled, summary: 'A customer enrolled' }
+    { operationId: :customer_enrolled, summary: 'A customer enrolled' }
   end
   let(:subscribe) { subscribe_operation }
 
   let(:publish_operation) do
-    { operation_id: :enroll_customer, summary: 'Enroll a customer ' }
+    { operationId: :enroll_customer, summary: 'Enroll a customer ' }
   end
   let(:publish) { publish_operation }
 
   let(:subscribe_params) do
     {
+      id: "A Channel ID",
       ref: ref,
       description: description,
       subscribe: subscribe,
@@ -57,8 +58,8 @@ RSpec.describe EventSource::AsyncApi::Contracts::ChannelItemContract do
 
   describe '#call' do
     context 'with no params' do
-      it 'when all attribute values are nil it should pass validation' do
-        expect(subject.call({}).success?).to be_truthy
+      it 'is invalid' do
+        expect(subject.call({}).success?).to be_falsey
       end
     end
 
@@ -66,6 +67,7 @@ RSpec.describe EventSource::AsyncApi::Contracts::ChannelItemContract do
       context 'with valid publish operation params' do
         let(:publish_params) do
           {
+            id: "A Publish ID",
             ref: ref,
             description: description,
             publish: publish,
@@ -87,27 +89,5 @@ RSpec.describe EventSource::AsyncApi::Contracts::ChannelItemContract do
         end
       end
     end
-
-    # context 'Given invalid channel bindings params' do
-    #   let(:amqp_channel_binding) do
-    #     {
-    #       amqp: {
-    #         is: :queue,
-    #         queue: {
-    #           name: :on_enroll_parties_organizations_fein_corrected,
-    #           auto_delete: true,
-    #           vhost: '/'
-    #         }
-    #       }
-    #     }
-    #   end
-
-    #   it 'should fail validation' do
-    #     result = subject.call(subscribe_params)
-
-    #     expect(result.success?).to be_falsey
-    #     binding.pry
-    #   end
-    # end
   end
 end
