@@ -36,17 +36,17 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyConnectionProxy do
         protocol: protocol,
         protocol_version: protocol_version,
         description: description,
-        vhost: "/"
+        vhost: '/'
       }
     end
+    let(:valid_uri_with_default_vhost) { 'amqp://localhost:5672/event_source' }
     let(:valid_uri) { 'amqp://localhost:5672/' }
-    let(:valid_uri_with_no_vhost_specified) { 'amqp://localhost:5672/event_source' }
     let(:valid_octet_uri) { 'amqp://127.0.0.1:5672/' }
 
     it 'should properly parse the URL', :aggregate_failures do
       expect(
         described_class.connection_uri_for(my_server.merge!(url: 'localhost'))
-      ).to eq valid_uri_with_no_vhost_specified
+      ).to eq valid_uri_with_default_vhost
 
       expect(
         described_class.connection_uri_for(
@@ -64,7 +64,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyConnectionProxy do
         described_class.connection_uri_for(
           my_server.merge!(url: 'amqp://localhost')
         )
-      ).to eq valid_uri_with_no_vhost_specified
+      ).to eq valid_uri_with_default_vhost
     end
   end
 

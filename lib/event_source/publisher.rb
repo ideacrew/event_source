@@ -106,9 +106,9 @@ module EventSource
       end
 
       def find_publish_operation_for(publish_operation_name)
-        connection_manager.find_publish_operation({
-                                                    protocol: protocol, publish_operation_name: publish_operation_name
-                                                  })
+        connection_manager.find_publish_operation(
+          { protocol: protocol, publish_operation_name: publish_operation_name }
+        )
       end
 
       def connection_manager

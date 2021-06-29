@@ -89,15 +89,18 @@ module EventSource
         identifier = queue_name.to_s.match(/^on_(.*)/)[1]
         unique_key_elements = [app_name]
         unique_key_elements.push(formatted_publisher_key)
-
-        unique_key_elements.push(identifier) unless formatted_publisher_key.gsub(delimiter, '_') == identifier
+        unless formatted_publisher_key.gsub(delimiter, '_') == identifier
+          unique_key_elements.push(identifier)
+        end
         logger.debug "Subscriber#susbcribe Unique_key #{unique_key_elements.join(delimiter)}"
         return unless block_given?
 
-        EventSource::Subscriber.executable_container[
-          unique_key_elements.join(delimiter)
-        ] =
-          block
+        if block_given?
+          EventSource::Subscriber.executable_container[
+            unique_key_elements.join(delimiter)
+          ] =
+            block
+        end
       end
 
       def formatted_publisher_key
@@ -110,7 +113,7 @@ module EventSource
 
       def create_subscription
         subscribe_operation_name =
-          if protocol == :http
+          if (protocol == :http)
             "/on#{publisher_key}"
           else
             "on_#{app_name}.#{publisher_key}"
@@ -124,14 +127,14 @@ module EventSource
         subscribe_operation =
           connection_manager.find_subscribe_operation(connection_params)
 
-        return unless subscribe_operation
-
-        logger.debug "Subscriber#create_subscription found subscribe operation for #{connection_params}"
-        begin
-          subscribe_operation.subscribe(self)
-          logger.debug "Subscriber#create_subscription created subscription for #{subscribe_operation_name}"
-        rescue StandardError => e
-          logger.error "Subscriber#create_subscription Subscription failed for #{subscribe_operation_name} with exception: #{e}"
+        if subscribe_operation
+          logger.debug "Subscriber#create_subscription found subscribe operation for #{connection_params}"
+          begin
+            subscribe_operation.subscribe(self)
+            logger.debug "Subscriber#create_subscription created subscription for #{subscribe_operation_name}"
+          rescue => exception
+            logger.error "Subscriber#create_subscription Subscription failed for #{subscribe_operation_name} with exception: #{exception}"
+          end
         end
       end
 
@@ -157,7 +160,7 @@ module EventSource
         subscriber = self.new
         subscriber.channel = channel
         subscription_handler =
-          EventSource::Protocols::Amqp::BunnyConsumerHandler.new(
+          BunnyConsumerHandler.new(
             subscriber,
             delivery_info,
             metadata,
@@ -170,6 +173,42 @@ module EventSource
       def logger
         EventSourceLogger.new.logger
       end
+    end
+  end
+
+  class BunnyConsumerHandler
+    attr_reader :subscriber
+    include EventSource::Logging
+
+    def initialize(subscriber, delivery_info, metadata, payload, &executable)
+      @subscriber = subscriber
+      @delivery_info = delivery_info
+      @metadata = metadata
+      @payload = payload
+      @executable = executable
+    end
+
+    def run
+      subscriber.instance_exec(
+        @delivery_info,
+        @metadata,
+        @payload,
+        &@executable
+      )
+      callbacks.fetch(:on_success).call
+    rescue StandardError => e
+      callbacks.fetch(:on_failure).call(e.backtrace)
+    end
+
+    def callbacks
+      {
+        on_success:
+          lambda { logger.debug 'Subscription executed successfully!!' },
+        on_failure:
+          lambda do |exception|
+            logger.error "Subscription execution failed due to exception: #{exception}"
+          end
+      }
     end
   end
 end

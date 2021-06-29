@@ -27,8 +27,7 @@ module EventSource
     # Register to receive messages published on this stream
     # @param [Object] subscriber_klass Subscriber class
     def subscribe(subscriber_klass)
-      # subject.register_subscription(subscriber_klass, @async_api_subscribe_operation[:bindings])
-      subject.subscribe(
+      subject.register_subscription(
         subscriber_klass,
         @async_api_subscribe_operation[:bindings]
       )
