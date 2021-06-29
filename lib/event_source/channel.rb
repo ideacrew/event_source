@@ -1,233 +1,108 @@
 # frozen_string_literal: true
 
 module EventSource
-  # This provides dsl for channel
+  # A DSL for a virtual Channel that manages message communication
+  #   over a {EventSource::Connection}. A Connection may have
+  #   many Channels over which messages are transmitted
   class Channel
+    include EventSource::Logging
 
-    attr_reader :key, :publish, :subscribe
+    # @attr_reader [Hash] subscribe_operations The collection of registered {EventSource::SubscribOperation} on this Connection
+    # @attr_reader [Hash] publish_operations The collection of registered {EventSource::Publishperation} on this Connection
+    # @attr_reader [Hash] consumers
+    # @attr_reader [Object] channel_proxy The protocol adapter instance for this DSL
+    attr_reader :subscribe_operations,
+                :publish_operations,
+                :consumers,
+                :channel_proxy,
+                :connection
 
-    def initialize(publisher_key, event_key)
-      @key = [publisher_key, event_key].join('.')
+    # The list of DSL methods that a protocol's injected channel proxy class
+    # must respond to
+    ADAPTER_METHODS = %i[
+      subscribe_operations
+      publish_operations
+      add_subscribe_operation
+      add_publish_operation
+      find_publish_operation_by_name
+      find_subscribe_operation_by_name
+      name
+      status
+      close
+    ].freeze
 
-      init_publish_operation(event_key)
-      init_subscribe_operation(event_key)
+    # @param channel_proxy [Object] an instance of the Connection protcol's
+    #  channel adapter that responds to this Channel DSL
+    # @param async_api_channel_item [Hash] configuration values in the form of
+    #   a {EventSource::AsyncApi::ChannelItem}
+    # @return [Object]
+    def initialize(connection, channel_proxy, async_api_channel_item)
+      @connection = connection
+      @channel_proxy = channel_proxy
+      @publish_operations = {}
+      @subscribe_operations = {}
+
+      add_publish_operation(async_api_channel_item)
+      add_subscribe_operation(async_api_channel_item)
     end
 
-    def app_key
-      self.class.app_key(key)
+    # The unique identifier for this Channel instance
+    # @return [String] name
+    def name
+      @channel_proxy.name
     end
 
-    def event_namespace
-      self.class.event_namespace(key)
+    # This Channel instance's currrent state. Values for states vary by
+    #   protcol type
+    # @return [Symbol] status
+    def status
+      @channel_proxy.status
     end
 
-    def init_publish_operation(event_key)
-      @publish = EventSource::PublishOperation.new(event_key)
+    # Stop all communication using this Channel instance
+    def close
+      @channel_proxy.close
     end
 
-    def init_subscribe_operation(_event_key)
-      @subscribe = EventSource::SubscribeOperation.new # (event_namespace)
+    # Create and register an operation to broadcast messages
+    # @param async_api_channel_item [Hash] configuration values in the form of
+    #   an {EventSource::AsyncApi::ChannelItem}
+    # @return [EventSource::PublishOperation]
+    def add_publish_operation(async_api_channel_item)
+      return false unless async_api_channel_item[:publish]
+      publish_proxy =
+        @channel_proxy.add_publish_operation(async_api_channel_item)
+      return false unless publish_proxy
+
+      operation_id = async_api_channel_item[:publish][:operationId]
+
+      logger.info "Adding Publish Operation:  #{operation_id}"
+      @publish_operations[operation_id] = 
+        EventSource::PublishOperation.new(
+          self,
+          publish_proxy,
+          async_api_channel_item[:publish]
+        )
+      logger.info "  Publish Operation Added: #{operation_id}"
     end
 
-    class << self
+    # Create and register an operation to receive messages broadcast by a PublishOperation.
+    # PublishOperation names must be unique across all Channels.
+    # @param async_api_channel_item [Hash] configuration values in the form of
+    #   an {EventSource::AsyncApi::ChannelItem}
+    # @return [EventSource::SubscribeOperation]
+    def add_subscribe_operation(async_api_channel_item)
+      return false unless async_api_channel_item[:subscribe]
+      subscribe_proxy =
+        @channel_proxy.add_subscribe_operation(async_api_channel_item)
 
-      def fanout(exchange_name = :default)
-        @channel = EventSource::Exchange.new(exchange_name, :fanout)
-      end
-
-      def app_key(_key)
-        # key.split('.')[0]
-        EventSource.application
-      end
-
-      def event_namespace(key)
-        # key.split(/#{app_key(key)}\./).last
-        key
-      end
+      operation_id = async_api_channel_item[:subscribe][:operationId]
+      @subscribe_operations[operation_id] =
+        EventSource::SubscribeOperation.new(
+          self,
+          subscribe_proxy,
+          async_api_channel_item[:subscribe]
+        )
     end
   end
 end
-
-# module EventSource
-#   class Channels
-
-#   	attr_accessor :channels
-
-#   	@channels = {
-#   	  :channel_id_one => channel_item1,
-#   	  :channel_id_two => channel_item2,
-#   	}
-#   end
-
-#   # - Make sure subscribers/publishers loaded from all engines
-#   # - Create channel object
-#   # - Publish/Subscribe operation object
-
-#   # publishers => collection of channels with publisher operation
-#   # subscribers => collection of channels with subscribe operation
-
-#   # {
-#   #   :channel_id_one => channel_item(channel_with_publisher_one),
-#   #   :channel_id_two => channel_item(channel_with_publisher_one),
-#   # }
-
-#   # {
-#   #   :channel_id_three => channel_item(channel_with_subscriber_three),
-#   #   :channel_id_four => channel_item(channel_with_subscriber_four),
-#   # }
-
-#   # enroll.publisher
-#   #    channel_id: enroll.person_publisher
-#   #      register_event: :person_updated
-
-#   # enroll.subscriber
-#   #    channel_id: enroll.person_publisher
-#   #      	  event_key: person_updated
-
-#   #    on_person_updated
-
-#   # faa.publisher
-#   #    channel_id: faa.applicant_publisher
-#   #      register_event: :applicant_updated
-
-#   # faa.subscriber
-#   #      channel_id: enroll.person_publisher
-#   #      	 queue_id: enroll.person_publisher
-#   #      	   event_key: person_updated
-
-#   # enroll.person_events
-
-#   # faa.applicant_events
-
-#   # class PublishOperation
-
-#   # 	attr_accessor :event_key, :summary, :description, :tags, :bindings, :traits, :message
-# 	 #  # publish operation bindings:
-# 	 #  #   amqp:
-# 	 #  #     expiration: 100000
-# 	 #  #     userId: guest
-# 	 #  #     cc: ['user.logs']
-# 	 #  #     priority: 10
-# 	 #  #     deliveryMode: 2
-# 	 #  #     mandatory: false
-# 	 #  #     bcc: ['external.audit']
-# 	 #  #     replyTo: user.signedup
-# 	 #  #     timestamp: true
-# 	 #  #     bindingVersion: 0.1.0
-#   # end
-
-#   # class SubscribeOperation
-
-#   # 	attr_reader :event_key, :bindings, :traits, :event
-#   # 	attr_accessor :summary, :description, :tags,
-
-#   #     # subscribe operation bindings:
-# 	 #  #   amqp:
-# 	 #  #     expiration: 100000
-# 	 #  #     userId: guest
-# 	 #  #     cc: ['user.logs']
-# 	 #  #     priority: 10
-# 	 #  #     deliveryMode: 2
-# 	 #  #     replyTo: user.signedup
-# 	 #  #     timestamp: true
-# 	 #  #     ack: true
-# 	 #  #     bindingVersion: 0.1.0
-
-#   # end
-
-#   # class Event
-#   # 	attr_reader :headers, :payload, :correlation_id, :contract_key, :content_type,
-#   # 	:name, :bindings, :traits
-#   # 	attr_accessor :summary, :title, :description, :tags
-
-#   #   event: {
-#   #     content_type: 'application/json',
-#   #     contract_key: 'aca_entities.organization_contract',
-#   #     correlation_id: '',
-#   #     headers: {
-#   #     },
-#   #     payload: {},
-#   #     entity_key: 'parties.organization',
-#   #     bindings: {
-#   #  	  	event_type: 'aca_entities.organization.fein_corrected'
-#   #     	content_encoding: 'gzip'
-#   #     }
-#   #   }
-#   #   # message bindings:
-#   #   #   amqp:
-#   #   #     contentEncoding: gzip
-#   #   #     messageType: 'user.signup'
-#   #   #     bindingVersion: 0.1.0
-#   # end
-
-#   # Channel
-#   #   RoutingKey/Queue
-
-#   #      Operation
-#   #      Subscribe
-
-#   class ChannelItem
-#     attr_accessor :ref, :description, :operation, :parameters, :bindings
-
-#   	def binding
-#   	  exchange object
-#       queue object
-#   	end
-
-#     def operations
-#     end
-
-#     def initialize(app_key)
-#       @app_key = Application.normalize(app_key)
-#       @subscriptions = SubscriptionList.new
-#     end
-
-#     def size
-#       @subscriptions.size
-#     end
-
-#     def subscribe(key, matcher_hash = nil, &block)
-#       dispatch_event('default', key, matcher_hash, block)
-#     end
-
-#     # allows definitions of other queues
-#     def method_missing(method_name, *args, &block)
-#       if args.size == 1 && block
-#         dispatch_event(method_name, args[0], nil, block)
-#       elsif args.size == 2 && block
-#         dispatch_event(method_name, args[0], args[1], block)
-#       else
-#         super
-#       end
-#     end
-
-#     def execute(key, attributes)
-#       sub = subscriptions.key(key)
-#       if sub
-#         sub.execute!(attributes)
-#       else
-#         # TODO: log that it's not there
-#       end
-#     end
-
-#     def subscription_matches(attributes)
-#       out = subscriptions.matches(attributes)
-#       out.each do |sub|
-#         sub.app_key = app_key
-#       end
-#       out
-#     end
-
-#     def dispatch_event(queue, key, matcher_hash, block)
-#       # if not matcher_hash, assume key is a event_type regex
-#       matcher_hash ||= { 'bus_event_type' => key }
-#       add_subscription("#{app_key}_#{queue}", key, '::QueueBus::Rider', matcher_hash, block)
-#     end
-
-#     # def add_subscription(queue_name, key, class_name, matcher_hash = nil, block)
-#     #   sub = Subscription.register(queue_name, key, class_name, matcher_hash, block)
-#     #   subscriptions.add(sub)
-#     #   sub
-#     # end
-#   end
-# end

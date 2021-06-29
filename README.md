@@ -39,9 +39,9 @@ EventSource enables these core components:
 
 Events are signals about anything notable that happens in the system. For example, events can indicate that an enrollment period has begun, an eligibility determined, an application submitted and an enrollment effectuated.
 
-Event classes are predefined in the system, inheriting from the `EventSource::Event` class. Event names use past tense form, for example: `Created`, `Updated`, `Deleted`. An Event class must include a `publisher_key` but optionally may specify attributes to carry in the Event's message payload. The `publisher_key` is a stringified class name that specifies the topic where event instances are published.
+Event classes are predefined in the system, inheriting from the `EventSource::Event` class. Event names use past tense form, for example: `Created`, `Updated`, `Deleted`. An Event class must include a `publisher_path` but optionally may specify attributes to carry in the Event's message payload. The `publisher_path` is a stringified class name that specifies the topic where event instances are published.
 
-For example, the following event has a `publisher_key` referencing the `Parties::OrganiztionPublisher` class. It also enumerates four `attribute_keys`: `:hbx_id, :legal_name, :fein, :entity_kind`.
+For example, the following event has a `publisher_path` referencing the `Parties::OrganiztionPublisher` class. It also enumerates four `attribute_keys`: `:hbx_id, :legal_name, :fein, :entity_kind`.
 
 contract_key
 entity_key
@@ -50,13 +50,15 @@ entity_key
     # app/events/parties/organization/created.rb
 
     class Parties::Organization::Created < EventSource::Event
-      publisher_key 'parties.organization_publisher'
+      publisher_path 'parties.organization_publisher'
       attribute_keys :hbx_id, :legal_name, :fein, :entity_kind
       ...
     end
 ```
 
-Including `attribute_keys` establishes a contract for an event's attribute payload. An event must include values for the enumerated keys. Additional key/value pairs are ignored. Missing key/value pairs will prevent publishing the event instance. Events that don't specify `attribute_keys` will allow any passed key-value pairs as instance attributes.
+Including `attribute_keys` establishes a contract for required attributes in an event's attribute payload. Each event must include a value for each the specified key. Missing key/value pairs will prevent publishing the event instance. Additional key/value pairs are ignored.
+
+Events that don't specify `attribute_keys` allow any passed key/value pairs as instance attributes.
 
 Here's an example `Parties::Organization::Created` instance:
 
@@ -83,8 +85,6 @@ created_event.attributes = {
 created_event.valid?
 # => true
 ```
-
-<!-- prettier_ignore_end -->
 
 ### Command
 
@@ -121,7 +121,7 @@ end
 
 ### Publisher
 
-Publishers are responsible for broadcasting events to registered Subscribers. Mix Dry::Events::Publisher to define a publisher instance. For example, the following publisher manages events that reference the `publisher_key`: `'parties.organization_publisher'`.
+Publishers are responsible for broadcasting events to registered Subscribers. Mix Dry::Events::Publisher to define a publisher instance. For example, the following publisher manages events that reference the `publisher_path`: `'parties.organization_publisher'`.
 
 ```ruby
 # app/event_source/publishers/parties/organization_publisher.rb
@@ -143,45 +143,75 @@ The publisher class enumerates events it supports using the `register_event` key
 
 ### Subscriber
 
-Subscribers listen and enable reactors for Publisher-shared events. Mix EventSource::Subscriber to include the Subscriber DSL. For example, the following subscriber provides a block-level `subscription` listener hook along with three event listeners: `on_parties_organization_created`, `on_parties_organization_fein_corrected` and `on_parties_enrollment_premium_corrected`.
+Subscribers listen for events and enable reactors. Mix `EventSource::Subscriber` to include the Subscriber DSL. For example, the following subscriber provides a block-level `subscribe` listener hook for `on_enroll_parties_organization_created` along with three event listeners: `on_enroll_parties_organization_created`, `on_enroll_parties_organization_fein_corrected` and `on_enroll_parties_organization_fein_updated`.
 
 ```ruby
-# app/event_source/subscribers/parties/organization_subscriber.rb
+# app/event_source/subscribers/organizations/organization_subscriber.rb
 
-module Parties
+module Organizations
   class OrganizationSubscriber
-    include ::EventSource::Subscriber
+    include ::EventSource::Subscriber[amqp: 'organizations_organization']
 
-    subscription 'parties.organization_publisher',
-                 async: {
-                   event_key: 'parties.organization.fein_corrected',
-                   job: 'ListenerJob',
-                 }
-
-    def on_parties_organization_created(event)
-      Enterprise.Publish event
+    # Sequence of steps that are executed as single operation
+    subscribe(:on_organizations_general_organization_created) do |delivery_info, metadata, payload|
+      begin
+        # do something here
+        ...
+        channel.ack delivery_info.delivery_tag, multiple_messages: false)
+        polypress_organization_created_notice_generated
+      rescue
+        channel.nack delivery_info.delivery_tag, multiple_messages: false, requeue: true
+      end
     end
 
-    def on_parties_organization_fein_corrected(event)
-      Enterprise.Publish event
+    # Set of independent reactors that choreograph each intended to execute asynchronously
+    def on_organizations_general_organization_created(event)
+      UpdateOrganizationJob.perform_later(event)
+      publish_notice_reactor(event)
+      create_crm_organiation_reactor(event)
+      ...
     end
 
-    def on_parties_enrollment_premium_corrected(event)
-      Enterprise.Publish event
+    class UpdateOrganizationJob
+      def perform
+      end
+    end
+
+    # Set of independent reactors that each intended to execute asynchronously
+    def on_enroll_parties_organization_fein_corrected(event)
+      ...
+    end
+
+    # Set of independent reactors that each intended to execute asynchronously
+    def on_enroll_parties_organization_fein_updated(event)
+      ...
     end
   end
 end
 ```
 
-A `subscription` listener enables asyncronous reactors. The `subscrption` below will pick up `'parties.organization.fein_corrected'` events share on the `'parties.organization_publisher'` and forward the event to an ActiveJob named: `ListenerJob`:
+A `subscribe` listener enables reactor blocks. For example, when an `enroll.parties.organization.created` event is published the `subscribe` block below will pick up the event and execute code within the block. Reactor blocks are typically used under scenarios where communication with the message broker is required, for example acknowledgement when message is successfully processed:
+
+<!-- prettier_ignore_start -->
 
 ```ruby
-subscription 'parties.organization_publisher',
-             async: {
-               event: 'parties.organization.fein_corrected',
-               job: 'ListenerJob',
-             }
+subscribe(
+  :on_enroll_parties_organization_created,
+) do |delivery_info, metadata, payload|
+  #
+  # do some work here
+
+  begin
+    ack delivery_info.delivery_tag, multiple_messages: false
+  rescue StandardError
+    nack delivery_info.delivery_tag, multiple_messages: false, requeue: false
+    reject delivery_info.delivery_tag, requeue: false
+  end
+  redelivered?
+end
 ```
+
+<!-- prettier_ignore_end -->
 
 Create syncronous reactors by adding methods with the following nameing convention to the Subscriber class: `parties_created` event is handled by `#on_parties_created` method:
 
@@ -193,28 +223,92 @@ end
 
 ## File System Conventions
 
-A good convention for Rails applications is to group EventSource components under the `/app/` into three subfolders: `event_source`, `events` and `operations`. For example:
+A good convention for Rails applications is to group EventSource components under the `app/` into three subfolders: `event_source`, `events` and `operations`. For example:
 
 ```ruby
+enroll system
+
 app
+  |- contracts
+  |- entities
+  | |- organizations
+  | | |- organization.rb
   |- event_source
-  | |- publishers
-  | | |- parties
-  | | | |- organization_publisher.rb
-  | |- subscribers
-  | | |- parties
-  | | | |- organization_subscriber.rb
-  |- events
-  | |- parties
+  | |- events
   | | |- organizations
-  | | | |- created.rb
+  | | | |- general_organization_created.rb
   | | | |- fein_corrected.rb
   | | | |- fein_updated.rb
-  |- operations
-  | |- parties
+  | |- subscribers
+  | | |- polypress
+  | | | |- enroll_medicaid_notices.rb
+  | | |- medicaid_gateway
+  | | | |- eligiblity_determinations.rb
+  | |- publishers
+  | | |- enroll
   | | |- organizations
-  | | | |- correct_or_update_fein.rb
-  | | | |- create.rb
+  | | | | |- organization_publisher.rb
+  |- operations
+  | |- organizations
+  | | |- correct_or_update_organization_fein.rb
+  | | |- create_organization.rb
+
+  organizations.general_organization (entity)
+  organizations.exempt_organization (entity)
+  organizations.organization_contract (contract)
+
+  organizations.general_organization_model (model)
+  organizations.exempt_organization_model (model)
+
+  organizations.create_organization (command/operation)
+
+  events.organization_created (event)
+  enroll.organizations.organization_created (namespaced event)
+
+  publishers.enroll.organizations_publisher (publisher)
+  subscribers.polypress.organizations_subscriber (subscriber)
+  subscribers.medicaid_gateway.enroll_medicaid_notices (subscriber)
+
+
+medicaid_gateway: channal_item_name: magi_medicaid.mitc.eligibilities.determined_mixed_eligible:
+medicaid_gateway: publish_operation_id: magi_medicaid.mitc.eligibilities.determined_mixed_eligible:
+medicaid_gateway: publish_operation_id: magi_medicaid.mitc.eligibilities.determined_mixed_eligible:
+medicaid_gateway exchange name (bindings): magi_medicaid.mitc.eligibilities
+medicaid_gateway routing key (bindings): magi_medicaid.mitc.eligibilities.determined_mixed_eligible:
+polypress subscriber: on_polypress.magi_medicaid.mitc.eligibilities
+
+publisher: crm_gateway
+  crms.sugar_crm.events.account_created (gateway event)
+  crms.events.account_created (enterprise event)
+
+  # parties.organizations.general_organization_created
+publisher: medicaid_gateway
+  medicaid.atp.events.account_created
+  medicaid.events.account_created
+  medicaid.accounts.account
+
+  medicaid.asus.events.account_created
+  medicaid.curam.events.account_created
+
+  magi_medicaid.mitc.events.aqhp_eligibility_determined
+
+
+publisher: enroll_app
+  families.events.magi_medicaid_application.submitted
+  families.events.family_member_demographics_updated
+
+  organizations.general_organization_created
+
+publishers.enroll_app.parties.organization_publisher
+  subscribers.enroll_app.parties.organization_subscriber
+
+  event_source/parties.events.organizations.organization_created
+  event_source/parties.publishers.organization_publisher
+  event_source/parties.subscribers.organization_subscriber
+
+  events/enroll_app/parties.organizations.organization_created
+  publishers/parties.organization_publisher
+  subscribers/parties.organization_subscriber
 ```
 
 ## Development

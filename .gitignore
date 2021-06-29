@@ -12,3 +12,7 @@
 
 .DS_Store
 .vscode
+
+# ignore log files
+*.log
+*.log.age

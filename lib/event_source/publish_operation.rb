@@ -1,26 +1,28 @@
 # frozen_string_literal: true
 
 module EventSource
-  # Publish operation interface
+  # A protocol-level object responsible for publishing messages
   class PublishOperation
+    # @attr_reader [Object] subject instance of the protocol's publisher class
+    attr_reader :channel, :subject, :name
 
-    attr_accessor :operation_key, :summary, :description, :tags, :bindings, :traits, :message
+    ADAPTER_METHODS = %i[call name].freeze
 
-    def initialize(key)
-      @operation_key = "on_#{key}"
+    # @param [Object] publish_proxy instanc of the protocol's publisher class
+    def initialize(channel, publish_proxy, async_api_publish_operation)
+      @channel = channel
+      @subject = publish_proxy
+      @async_api_publish_operation = async_api_publish_operation
+      @name = async_api_publish_operation[:operationId]
     end
 
-    # publish operation bindings:
-    #   amqp:
-    #     expiration: 100000
-    #     userId: guest
-    #     cc: ['user.logs']
-    #     priority: 10
-    #     deliveryMode: 2
-    #     mandatory: false
-    #     bcc: ['external.audit']
-    #     replyTo: user.signedup
-    #     timestamp: true
-    #     bindingVersion: 0.1.0
+    # Publish a message
+    # x.publish("Message", :headers => { })
+    def call(args)
+      @subject.publish(
+        payload: args.to_json,
+        publish_bindings: @async_api_publish_operation[:bindings]
+      )
+    end
   end
 end

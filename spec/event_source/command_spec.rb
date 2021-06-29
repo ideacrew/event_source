@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
+require 'yaml'
 
 module EventSource
   class InvalidCommand
@@ -13,8 +14,12 @@ module EventSource
 end
 
 RSpec.describe EventSource::Command do
-  let(:invalid_command) do
-    EventSource::InvalidCommand
+  let(:invalid_command) { EventSource::InvalidCommand }
+
+  after(:all) do
+    connection_manager = EventSource::ConnectionManager.instance
+    connection_manager.drop_connections_for(:amqp)
+    # binding.pry
   end
 
   context '.event' do
@@ -48,15 +53,16 @@ RSpec.describe EventSource::Command do
 
       let(:command) { Parties::Organization::CorrectOrUpdateFein }
 
-      before do
-        allow(EventSource.adapter).to receive(:publish).and_return(true)
-      end
-
       it 'should register event' do
-        result = command.new.call(payload)
+        manager = EventSource::ConnectionManager.instance
+        connection = manager.connections_for(:amqp).first
+        operation = connection.publish_operations.values[0]
+        operation.call({message: 'hello world!!!'})
 
-        expect(result).to be_success
-        expect(result.success.fein).to eq new_fein
+
+        result = command.new.call(payload)
+        # expect(result).to be_success
+        # expect(result.success.fein).to eq new_fein
       end
     end
   end

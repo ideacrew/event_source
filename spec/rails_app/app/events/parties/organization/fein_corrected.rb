@@ -4,12 +4,11 @@ module Parties
   module Organization
     class FeinCorrected < EventSource::Event
 
-      publisher_key 'parties.organization_publisher'
-      contract_key 'parties.organization_contract'
-      entity_key 'parties.organization'
+      publisher_path 'parties.organization_publisher'
+      # contract_key 'parties.organization_contract'
+      # entity_key 'parties.organization'
 
       # attribute_keys :hbx_id, :legal_name, :fein, :entity_kind
-
       # TODO: Attribute managment
       # Default behavior is to include all attributes in Envent payload
       # Add ability to map/transform event instance attributes to payload attributes

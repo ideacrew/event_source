@@ -1,21 +1,14 @@
 # frozen_string_literal: true
 
-# require 'dry/events/publisher'
-
 module EventSource
-  # A notification that something has happened in the system
-  # @example
-  # An Event has the following public API
-  #   MyEvent.call(event_key, options)
-  #   event = MyEvnet.new(event_key, options:)
-  #
-  # (attributes:, metadata:, contract_key:)
-  #
-  #   event.valid? # true or false
-  #   event.errors # +> <Dry::Validation::Errors ... >
-  #   event.publish # validate and execute the command
+  # Generate and forwared a notification that something has happened in the system
   class Event
     extend Dry::Initializer
+
+    # @attr_reader [Array<String>] attribute_keys optional list of attributes that must be included in { Payload }
+    # @attr_reader [String] publisher_path namespaced key indicating the class that registers event for publishing
+    # @attr_reader [String] payload attribute/value pairs for the message that accompanies the event
+    attr_reader :attribute_keys, :publisher_path, :payload
 
     HeaderDefaults = {
       version: '3.0',
@@ -25,10 +18,89 @@ module EventSource
       # entity_kind: ''
     }.freeze
 
-    class << self
+    def initialize(options = {})
+      @attribute_keys = klass_var_for(:attribute_keys) || []
+      @payload = {}
 
-      def publisher_key(value = nil)
-        set_instance_variable_for(:publisher_key, value)
+      send(:payload=, options[:attributes] || {})
+
+      _metadata = (options[:metadata] || {}).merge(name: name)
+
+      @publisher_path = klass_var_for(:publisher_path) || nil
+      if @publisher_path.eql?(nil)
+        raise EventSource::Error::PublisherKeyMissing,
+              "add 'publisher_path' to #{self.class.name}"
+      end
+    end
+
+    # Set payload
+    # @overload payload=(payload)
+    #   @param [Hash] payload New payload
+    #   @return [Event] A copy of the event with the provided payload
+    def payload=(values)
+      raise ArgumentError, 'payload must be a hash' unless values.instance_of?(Hash)
+
+      values.symbolize_keys!
+
+      @payload =
+        values.select do |key, _value|
+          attribute_keys.empty? || attribute_keys.include?(key)
+        end
+
+      validate_attribute_presence
+    end
+
+    # Verify this instance is complete and may be published
+    # @return [Boolean]
+    def valid?
+      event_errors.empty?
+    end
+
+    # Send the event instance to its producer so that it may be accessed by subscribers
+    # @raise [EventSource::Error::AttributesInvalid]
+    def publish
+      raise EventSource::Error::AttributesInvalid, @event_errors unless valid?
+
+      publisher_klass = publisher_klass(publisher_path)
+      publisher_klass.publish(self)
+    end
+
+    def publisher_klass(key)
+      key.split('.').map(&:camelize).join('::').constantize
+    end
+
+    def name
+      return @name if defined?(@name)
+      @name = self.class.name.gsub('::', '.').underscore
+    end
+
+    def event_errors
+      @event_errors ||= []
+    end
+
+    # Coerce an event to a hash
+    # @return [Hash]
+    def to_h
+      @payload
+    end
+
+    # Get payload attribute values
+    # @param [String, Symbol] name
+    def [](name)
+      payload[name]
+    end
+
+    # Set payload attribute values
+    def []=(name, value)
+      @payload.merge!({ "#{name}": value })
+      validate_attribute_presence
+      self[name]
+    end
+
+    # Class methods
+    class << self
+      def publisher_path(value = nil)
+        set_instance_variable_for(:publisher_path, value)
       end
 
       def contract_key(value = nil)
@@ -53,86 +125,6 @@ module EventSource
       end
     end
 
-    # @!attribute [r] id
-    # @return [Symbol, String] The event identifier
-    # attr_accessor :attributes
-    attr_reader :attribute_keys,
-                :publisher_key,
-                :publisher_class,
-                :headers,
-                :payload
-
-    def initialize(options = {})
-      @attribute_keys = klass_var_for(:attribute_keys) || []
-
-      @payload = {}
-      send(:payload=, options[:attributes] || {})
-
-      metadata = (options[:metadata] || {}).merge(event_key: event_key)
-      @headers = HeaderDefaults.merge(metadata)
-
-      # @publisher_key = klass_var_for(:publisher_key) || nil
-      # raise EventSource::Error::PublisherKeyMissing, "add 'publisher_key' to #{self.class.name}" if @publisher_key.eql?(nil)
-      # TODO: Verify if needed
-      # @publisher_class = constant_for(@publisher_key)
-    end
-
-    # Set payload
-    # @overload payload=(payload)
-    #   @param [Hash] payload New payload
-    #   @return [Event] A copy of the event with the provided payload
-
-    def payload=(values)
-      raise ArgumentError, 'payload must be a hash' unless values.instance_of?(Hash)
-
-      values.symbolize_keys!
-
-      @payload =
-        values.select do |key, _value|
-          attribute_keys.empty? || attribute_keys.include?(key)
-        end
-
-      validate_attribute_presence
-    end
-
-    # @return [Boolean]
-    def valid?
-      event_errors.empty?
-    end
-
-    def publish
-      raise EventSource::Error::AttributesInvalid, @event_errors unless valid?
-      # EventSource.adapter.enqueue(self)
-      EventSource.adapter.publish(event_key, payload)
-    end
-
-    def event_key
-      return @event_key if defined? @event_key
-      @event_key = self.class.name.gsub('::', '.').underscore
-    end
-
-    def event_errors
-      @event_errors ||= []
-    end
-
-    # Coerce an event to a hash
-    # @return [Hash]
-    def to_h
-      @payload
-    end
-
-    # Get data from the payload
-    # @param [String, Symbol] name
-    def [](name)
-      payload[name]
-    end
-
-    def []=(name, value)
-      @payload.merge!({ "#{name}": value })
-      validate_attribute_presence
-      self[name]
-    end
-
     private
 
     def validate_attribute_presence
@@ -145,7 +137,8 @@ module EventSource
     def constant_for(value)
       constant_name = value.split('.').each(&:upcase!).join('_')
       return constant_name.constantize if Object.const_defined?(constant_name)
-      raise EventSource::Error::ConstantNotDefined, "Constant not defined for: '#{constant_name}'"
+      raise EventSource::Error::ConstantNotDefined,
+            "Constant not defined for: '#{constant_name}'"
     end
 
     def klass_var_for(var_name)

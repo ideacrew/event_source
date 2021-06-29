@@ -4,9 +4,17 @@ require 'dry/inflector'
 require 'concurrent/map'
 
 module EventSource
-  # Publisher mixin to register events and create channels
+  # Mixin that provides a DSL to register and forward {EventSource::Event} messages
   class Publisher < Module
-    include Dry::Equalizer(:id)
+    send(:include, Dry.Equalizer(:protocol, :publisher_key))
+
+    # include Dry.Equalizer(:protocol, :exchange)
+
+    # @attr_reader [Symbol] protocol communication protocol used by this
+    #   publisher (for example: amqp)
+    # @attr_reader [String] exchange name of the Exchange where event
+    #   messages are published
+    attr_reader :protocol, :publisher_key
 
     # Internal publisher registry, which is used to identify them globally
     #
@@ -18,96 +26,106 @@ module EventSource
       @publisher_container ||= Concurrent::Map.new
     end
 
-    attr_reader :id
-
-    def self.[](id)
+    def self.[](exchange_ref)
       # TODO: validate publisher already exists
       # raise EventSource::Error::PublisherAlreadyRegisteredError.new(id) if registry.key?(id)
-      new(id)
+      new(exchange_ref.first[0], exchange_ref.first[1])
     end
 
     # @api private
-    def initialize(id)
+    def initialize(protocol, publisher_key)
       super()
-      @id = id
-      # super
+      @protocol = protocol
+      @publisher_key = publisher_key
     end
 
     def included(base)
+      self.class.publisher_container[base] = {
+        publisher_key: publisher_key,
+        protocol: protocol
+      }
       base.extend(ClassMethods)
-      self.class.publisher_container[id] = base
 
       TracePoint.trace(:end) do |t|
         if base == t.self
-          base.register
+          base.validate
           t.disable
         end
       end
-      super
     end
 
     # methods to register events
     module ClassMethods
       attr_reader :events
 
-      # def queue_name(name)
-      #   @queue = queue
-      # end
+      # TODO: coordinate server connection name with dev ops
+      def publish(event)
+        event_key = publisher_key if protocol == :http
+        event_key ||= event.name.split('.').last
+
+        publish_operation_name = publish_operation_name_for(event_key)
+
+        logger.debug "Publisher#publish publish_operation_name: #{publish_operation_name}"
+        find_publish_operation_for(publish_operation_name).call(event.payload)
+      end
+
+      def channel_name
+        publisher_key.to_sym
+      end
+
+      def delimiter
+        EventSource.delimiter(protocol)
+      end
 
       def register_event(event_key, options = {})
-        @events = {} unless defined? @events
+        @events = {} unless defined?(@events)
         @events[event_key] = options
         self
       end
 
-      def register
-        # FIXME: .key works only for Ruby 1.9 or later
-        publisher_key = EventSource::Publisher.publisher_container.key(self)
-        events.each do |event_key, options|
-          EventSource.connection.create_channel(publisher_key, event_key, options)
+      # Validates given protocol has publish operation defined for publish operation name
+      def validate
+        return unless events
+
+        events.keys.each do |event_name|
+          publish_operation_name = publish_operation_name_for(event_name)
+          logger.debug "Publisher#validate find publish operation for: #{publish_operation_name}"
+          publish_operation = find_publish_operation_for(publish_operation_name)
+
+          if publish_operation
+            logger.debug "Publisher#validate found publish operation for: #{publish_operation_name}"
+          else
+            logger.error "Publisher#validate unable to find publish operation for: #{publish_operation_name}"
+          end
         end
       end
+
+      def publish_operation_name_for(event_name)
+        publish_operation_name = publisher_key if publisher_key == event_name
+        publish_operation_name || [publisher_key, event_name].join(delimiter)
+      end
+
+      def find_publish_operation_for(publish_operation_name)
+        connection_manager.find_publish_operation(
+          { protocol: protocol, publish_operation_name: publish_operation_name }
+        )
+      end
+
+      def connection_manager
+        EventSource::ConnectionManager.instance
+      end
+
+      def publisher_key
+        EventSource::Publisher.publisher_container[self][:publisher_key]
+      end
+
+      def protocol
+        EventSource::Publisher.publisher_container[self][:protocol]
+      end
+
+      def logger
+        EventSourceLogger.new.logger
+      end
     end
-
-    # For the publisher_root directory and all its subdirectories, find each Publisher (file names that match: '*_publisher.rb'),
-    # and using its file name instantiante an instance of the Publisher class and asign it to constant
-    # @param [Pathname] publisher_root
-    # @example
-    #   File: organization_publisher.rb => ORGANIZATION_PUBLISHER = OrganizationPublisher.new
-    #   File: parties/organization_publisher.rb => PARTIES_ORGANIZATION_PUBLISHER = Parties::OrganizationPublisher.new
-    # def self.register_publishers(publisher_root = Pathname(__FILE__).dirname, engine_prefix = nil)
-    #   Dir[publisher_root.join('**', '*_publisher.rb')].each do |file|
-    #     # Create a ChannelItem for each publisher
-    #     #  - Create publish operation for each register event
-    #     #   - Message (??)
-    #     #
-    #     #  publish1
-    #     #  publish2
-    #     #  subscribe
-
-    #     # relative_path = file.match(/^#{publisher_root}\/(.*)\.rb/)[1]
-    #     # publisher_constant_name = publisher_constant_for(relative_path, engine_prefix)
-    #     # publisher_klass_name = publisher_klass_for(relative_path, engine_prefix)
-
-    #     # Object.const_set(publisher_constant_name, publisher_klass_name.new)
-    #     # EventSource::Logger.info "Initialized Publisher: #{constant_name} = #{klass_name}"
-    #   end
-    # end
-
-    # def self.publisher_constant_for(relative_path, engine_prefix = nil)
-    #   if engine_prefix
-    #     [engine_prefix] + relative_path.split('/')
-    #   else
-    #     relative_path.split('/')
-    #   end.reject(&:blank?).join('_').upcase
-    # end
-
-    # def self.publisher_klass_for(relative_path, engine_prefix = nil)
-    #   if engine_prefix
-    #     [engine_prefix, relative_path]
-    #   else
-    #     [relative_path]
-    #   end.map{|ele| EventSource::Inflector.camelize(ele)}.join('::').constantize
-    # end
   end
 end

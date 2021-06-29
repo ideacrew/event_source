@@ -17,13 +17,17 @@ module EventSource
       include ErrorInitalizer
     end
 
-    EventNameUndefined = Class.new(Error)
+    AttributesInvalid = Class.new(Error)
     ConstantNotDefined = Class.new(Error)
+    ContractNotFound = Class.new(Error)
+    EventNameUndefined = Class.new(Error)
+    FileAccessError = Class.new(Error)
+    InvalidChannelsResourceError = Class.new(Error)
+    PublisherAlreadyRegisteredError = Class.new(Error)
     PublisherKeyMissing = Class.new(Error)
     PublisherNotFound = Class.new(Error)
-    ContractNotFound = Class.new(Error)
-    AttributesInvalid = Class.new(Error)
     RegisteredEventNotFound = Class.new(Error)
-    PublisherAlreadyRegisteredError = Class.new(Error)
+    SubscriberNotFound = Class.new(Error)
+    ConnectionNotFound = Class.new(Error)
   end
 end
