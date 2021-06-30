@@ -2,7 +2,7 @@
 
 ### Client Side Certificate Support for HTTP
 
-Not yet implemented but is required for FDSH and is considered the next highest priority.
+You may now add client side certificates to HTTP configurations, with optional passwords for the key.  Check out `spec/rails_app/config/initializers/event_source.rb` for an example.
 
 ### SOAP Protocol Support Under HTTP
 
