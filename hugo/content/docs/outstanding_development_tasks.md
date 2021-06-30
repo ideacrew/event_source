@@ -30,7 +30,7 @@ Most issues or missing functionality can be found under [AsyncAPI Differences](.
 ## HTTP Support
 
 1. Transport layer security
-   1. client certificate support
+   1. client certificate support - **required for FDSH**
    2. configuration support for acceptance of unofficial server certificates
    3. Basic Authentication/Digest Support
    4. Signed Request/GitHub style digest authentication support

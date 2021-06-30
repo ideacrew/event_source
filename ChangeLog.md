@@ -1,5 +1,9 @@
 ## Version 0.5.3
 
+### Client Side Certificate Support for HTTP
+
+Not yet implemented.
+
 ### SOAP Protocol Support Under HTTP
 
 SOAP is now supported for HTTP publishing.  Make sure you have your message `contentType` configured as 'application/soap+xml' in your asyncapi YAML.
