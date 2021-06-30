@@ -2,7 +2,7 @@
 
 ### Client Side Certificate Support for HTTP
 
-Not yet implemented.
+Not yet implemented but is required for FDSH and is considered the next highest priority.
 
 ### SOAP Protocol Support Under HTTP
 
