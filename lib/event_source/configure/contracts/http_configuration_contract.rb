@@ -13,13 +13,21 @@ module EventSource
           optional(:user_name).value(:string)
           optional(:password).value(:string)
           optional(:call_location).array(:string)
-          optional(:soap_settings).hash
+          optional(:soap).hash
+          optional(:client_certificate).maybe(:hash)
         end
 
-        rule(:soap_settings) do
-          if key && value
+        rule(:soap) do
+          if key? && value
             validation_result = SoapSettingsContract.new.call(value)
             key.failure(text: "invalid soap configuration", errors: validation_result.errors.to_h) unless validation_result.success?
+          end
+        end
+
+        rule(:client_certificate) do
+          if key && value
+            validation_result = ClientCertificateSettingsContract.new.call(value)
+            key.failure(text: "invalid client certificate configuration", errors: validation_result.errors.to_h) unless validation_result.success?
           end
         end
 

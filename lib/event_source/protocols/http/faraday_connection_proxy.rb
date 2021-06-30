@@ -212,10 +212,30 @@ module EventSource
           clean_connection_url = @request_path.blank? ? @connection_uri : @connection_uri.chomp(@request_path)
           http_params = connection_params[:http][:params]
           headers = connection_params[:http][:headers]
+          ssl_options = build_ssl_options
           {
             url: clean_connection_url,
             params: http_params,
             headers: headers
+          }.merge(ssl_options)
+        end
+
+        def build_ssl_options
+          return {} if @server[:client_certificate].blank?
+          client_certificate_options = @server[:client_certificate]
+          client_key_password = client_certificate_options[:client_key_password] || ""
+          client_certificate = OpenSSL::X509::Certificate.new(
+            File.read(
+              client_certificate_options[:client_certificate]
+            )
+          )
+          client_key_binary = File.read(client_certificate_options[:client_key])
+          client_key = OpenSSL::PKey.read(client_key_binary, client_key_password)
+          {
+            ssl: {
+              client_key: client_key,
+              client_cert: client_certificate
+            }
           }
         end
 
@@ -257,7 +277,7 @@ module EventSource
               soap_payload_header: {
                 order: 20,
                 options: {
-                  soap_settings: @server[:soap_settings]
+                  soap_settings: @server[:soap]
                 }
               }
             }
