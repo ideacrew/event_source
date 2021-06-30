@@ -3,22 +3,22 @@
 require 'spec_helper'
 
 RSpec.describe EventSource::Configure::Contracts::ClientCertificateSettingsContract,
-  "given nothing" do
-  
+               "given nothing" do
+
   let(:parameters) { {} }
 
   subject { described_class.new.call(parameters) }
-  
+
   it "is invalid" do
     expect(subject.success?).to be_falsey
   end
 end
 
 RSpec.describe EventSource::Configure::Contracts::ClientCertificateSettingsContract,
-  "given:
+               "given:
     - a client certificate with invalid path
     - a client key with invalid path" do
-  
+
   let(:parameters) do
     {
       client_certificate: "bloogle",
@@ -27,7 +27,7 @@ RSpec.describe EventSource::Configure::Contracts::ClientCertificateSettingsContr
   end
 
   subject { described_class.new.call(parameters) }
-  
+
   it "is invalid" do
     expect(subject.success?).to be_falsey
   end
@@ -46,7 +46,7 @@ RSpec.describe EventSource::Configure::Contracts::ClientCertificateSettingsContr
 end
 
 RSpec.describe EventSource::Configure::Contracts::ClientCertificateSettingsContract,
-  "given:
+               "given:
     - a client certificate with a valid
     - a client key a valid path, needing a password
     - no password" do
@@ -68,7 +68,7 @@ RSpec.describe EventSource::Configure::Contracts::ClientCertificateSettingsContr
       )
     )
   end
-  
+
   let(:parameters) do
     {
       client_certificate: certificate_location,
@@ -77,14 +77,14 @@ RSpec.describe EventSource::Configure::Contracts::ClientCertificateSettingsContr
   end
 
   subject { described_class.new.call(parameters) }
-  
+
   it "is invalid" do
     expect(subject.success?).to be_falsey
   end
 end
 
 RSpec.describe EventSource::Configure::Contracts::ClientCertificateSettingsContract,
-  "given:
+               "given:
     - a client certificate with a valid
     - a client key a valid path, needing a password
     - an incorrect password" do
@@ -106,7 +106,7 @@ RSpec.describe EventSource::Configure::Contracts::ClientCertificateSettingsContr
       )
     )
   end
-  
+
   let(:parameters) do
     {
       client_certificate: certificate_location,
@@ -116,14 +116,14 @@ RSpec.describe EventSource::Configure::Contracts::ClientCertificateSettingsContr
   end
 
   subject { described_class.new.call(parameters) }
-  
+
   it "is invalid" do
     expect(subject.success?).to be_falsey
   end
 end
 
 RSpec.describe EventSource::Configure::Contracts::ClientCertificateSettingsContract,
-  "given:
+               "given:
     - a client certificate with a valid
     - a client key a valid path, needing a password
     - a correct password" do
@@ -145,7 +145,7 @@ RSpec.describe EventSource::Configure::Contracts::ClientCertificateSettingsContr
       )
     )
   end
-  
+
   let(:parameters) do
     {
       client_certificate: certificate_location,
@@ -155,14 +155,14 @@ RSpec.describe EventSource::Configure::Contracts::ClientCertificateSettingsContr
   end
 
   subject { described_class.new.call(parameters) }
-  
+
   it "is valid" do
     expect(subject.success?).to be_truthy
   end
 end
 
 RSpec.describe EventSource::Configure::Contracts::ClientCertificateSettingsContract,
-  "given:
+               "given:
     - a client certificate with a valid
     - a client key a valid path, no password
     - no password" do
@@ -184,7 +184,7 @@ RSpec.describe EventSource::Configure::Contracts::ClientCertificateSettingsContr
       )
     )
   end
-  
+
   let(:parameters) do
     {
       client_certificate: certificate_location,
@@ -193,7 +193,7 @@ RSpec.describe EventSource::Configure::Contracts::ClientCertificateSettingsContr
   end
 
   subject { described_class.new.call(parameters) }
-  
+
   it "is valid" do
     expect(subject.success?).to be_truthy
   end

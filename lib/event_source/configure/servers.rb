@@ -28,7 +28,8 @@ module EventSource
 
     AmqpConfiguration = Struct.new(:protocol, :ref, :host, :vhost, :port, :url, :user_name, :password, :call_location)
 
-    HttpConfiguration = Struct.new(:protocol, :ref, :host, :port, :url, :user_name, :password, :soap_settings, :client_certificate_settings, :call_location) do
+    HttpConfiguration = Struct.new(:protocol, :ref, :host, :port, :url, :user_name, :password, :soap_settings, :client_certificate_settings,
+                                   :call_location) do
       def soap
         s_settings = SoapConfiguration.new
         s_settings.call_location = caller(1)
@@ -56,12 +57,8 @@ module EventSource
         main_hash = attribute_hash.compact
         main_hash.delete(:soap_settings)
         main_hash.delete(:client_certificate_settings)
-        if soap? 
-          main_hash = main_hash.merge({ soap: soap_settings.to_h })
-        end
-        if client_certificate_settings
-          main_hash = main_hash.merge({ client_certificate: client_certificate_settings.to_h })
-        end
+        main_hash = main_hash.merge({ soap: soap_settings.to_h }) if soap?
+        main_hash = main_hash.merge({ client_certificate: client_certificate_settings.to_h }) if client_certificate_settings
         main_hash
       end
     end
