@@ -85,14 +85,9 @@ module EventSource
         def build_connection_for_request(publish_operation, _subscribe_operation, request_content_type, _response_content_type)
           request_middleware_params = construct_request_middleware(publish_operation, request_content_type)
           response_middleware_params = request_content_type.json? ? JsonResponseMiddlewareParamsDefault : ResponseMiddlewareParamsDefault
-          http_params = connection_params[:http][:params]
-          headers = connection_params[:http][:headers]
           adapter = connection_params[:adapter]
-          clean_connection_url = @request_path.blank? ? @connection_uri : @connection_uri.chomp(@request_path)
           Faraday.new(
-            url: clean_connection_url,
-            params: http_params,
-            headers: headers
+            build_faraday_parameters(connection_params)
           ) do |conn|
             request_middleware_params.sort_by do |_k, v|
               v[:order]
@@ -212,6 +207,17 @@ module EventSource
         end
 
         private
+
+        def build_faraday_parameters(connection_params)
+          clean_connection_url = @request_path.blank? ? @connection_uri : @connection_uri.chomp(@request_path)
+          http_params = connection_params[:http][:params]
+          headers = connection_params[:http][:headers]
+          {
+            url: clean_connection_url,
+            params: http_params,
+            headers: headers
+          }
+        end
 
         def parse_request_path
           full_uri = URI(@connection_uri)
