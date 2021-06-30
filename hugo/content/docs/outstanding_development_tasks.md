@@ -22,7 +22,8 @@ Most issues or missing functionality can be found under [AsyncAPI Differences](.
    2. Max retry
    3. Placing messages in an 'error queue' upon reaching max retry
 2. Greylog integration
-3. Worker hosting
+3. Integration with existing/legacy AMQP services
+4. Worker hosting
    1. Fork/Exec standard ruby process hosting
    2. Adjustable worker counts
    3. Worker process identification and resource tracking
