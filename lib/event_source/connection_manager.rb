@@ -28,6 +28,8 @@ module EventSource
     # This resource is a connection configuration object.
     def add_connection(async_api_server)
       client_klass = protocol_klass_for(async_api_server[:protocol])
+      async_api_server[:ref] ||=
+        client_klass.connection_uri_for(async_api_server)
       connection_uri = async_api_server[:ref]
 
       return connections[connection_uri] if connections.key? connection_uri
@@ -54,7 +56,9 @@ module EventSource
       connections.reduce(
         []
       ) do |protocol_connections, (_connection_uri, connection_instance)|
-        protocol_connections << connection_instance if connection_instance.protocol == protocol
+        if connection_instance.protocol == protocol
+          protocol_connections << connection_instance
+        end
         protocol_connections
       end
     end
@@ -139,7 +143,9 @@ module EventSource
     # @return [Array<EventSource::Connection>] registered connections
     def drop_connections_for(protocol)
       connections.each do |connection_uri, connection_instance|
-        drop_connection(connection_uri) if connection_instance.protocol == protocol
+        if connection_instance.protocol == protocol
+          drop_connection(connection_uri)
+        end
       end
     end
 
@@ -161,9 +167,9 @@ module EventSource
     # @return [Class] Protocol Specific Connection Proxy Class
     def protocol_klass_for(protocol)
       case protocol.to_sym
-      when :amqp, :amqps, "amqp", "amqps"
+      when :amqp, :amqps, 'amqp', 'amqps'
         EventSource::Protocols::Amqp::BunnyConnectionProxy
-      when :http, :https, "http", "https"
+      when :http, :https, 'http', 'https'
         EventSource::Protocols::Http::FaradayConnectionProxy
       else
         raise EventSource::Protocols::Amqp::Error::UnknownConnectionProtocolError,
