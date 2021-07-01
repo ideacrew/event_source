@@ -32,14 +32,14 @@ module EventSource
 
         rule(:client_key, :client_key_password) do
           if values[:client_key_password]
-            if File.exist?(value.first)
+            if File.exist?(values[:client_key])
               begin
                 OpenSSL::PKey.read(File.read(values[:client_key]), values[:client_key_password])
               rescue OpenSSL::PKey::PKeyError
                 key.failure(text: "invalid key file or password required")
               end
             end
-          elsif File.exist?(value.first)
+          elsif File.exist?(values[:client_key])
             begin
               OpenSSL::PKey.read(File.read(values[:client_key]), "")
             rescue OpenSSL::PKey::PKeyError

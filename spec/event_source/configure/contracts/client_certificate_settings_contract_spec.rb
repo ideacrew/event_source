@@ -21,8 +21,8 @@ RSpec.describe EventSource::Configure::Contracts::ClientCertificateSettingsContr
 
   let(:parameters) do
     {
-      client_certificate: "bloogle",
-      client_key: "blargle"
+      client_certificate: File.join(File.dirname(__FILE__), "..", "blargle"),
+      client_key: File.join(File.dirname(__FILE__), "..", "bloogle")
     }
   end
 
