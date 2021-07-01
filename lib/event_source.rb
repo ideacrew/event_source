@@ -76,6 +76,13 @@ module EventSource
     # It cleans up your connections and channels and avoids strange
     # behaviour.
     def reconnect_publishers!; end
+
+    def build_async_api_resource(resource)
+      EventSource::AsyncApi::Operations::AsyncApiConf::Create
+        .new
+        .call(resource)
+        .success
+    end
   end
 
   class EventSourceLogger

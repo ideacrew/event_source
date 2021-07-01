@@ -36,43 +36,43 @@ module EventSource
         @server_configurations.configurations.each do |server_conf|
           settings = server_conf.to_h
           settings[:url] = format_urls_for_server_config(settings)
-          settings[:ref] = server_ref(settings)
-
           connection_manager.add_connection(settings)
         end
       end
 
       def validate_connections
-        validation_result = ::EventSource::Configure::Operations::ValidateServerConfigurations.new.call(
-          @server_configurations
-        )
+        validation_result =
+          ::EventSource::Configure::Operations::ValidateServerConfigurations.new
+            .call(@server_configurations)
         return if validation_result.success?
         validation_result.failure.each do |result|
-          formatted_trace = result.first.call_location.first(3).map do |e_line|
-            "    #{e_line}"
-          end.join("\n")
+          formatted_trace =
+            result.first.call_location.first(3).map do |e_line|
+              "    #{e_line}"
+            end.join("\n")
           logger.error "Invalid Server Configuration\n  Errors: #{result.last.to_h}\n  At:\n#{formatted_trace}"
         end
         first_failure = validation_result.failure.first
-        exception = Error::InvalidServerConfigurationException.new("Server configuration invalid: #{first_failure.last.to_h}")
+        exception =
+          Error::InvalidServerConfigurationException.new(
+            "Server configuration invalid: #{first_failure.last.to_h}"
+          )
         exception.set_backtrace first_failure.first.call_location
         raise exception
       end
 
-      def server_ref(settings)
-        settings[:ref].present? ? settings[:ref] : settings[:url]
-      end
-
       def format_urls_for_server_config(settings)
         return settings[:url] if settings[:url]
-        url = ""
+        url = ''
         case settings[:protocol]
-        when :amqp, :amqps, "amqp", "amqps"
-          vhost = settings[:vhost].blank? ? "/" : settings[:vhost]
-          port_part = settings[:port].present? ? [":", settings[:port]].join : ""
+        when :amqp, :amqps, 'amqp', 'amqps'
+          vhost = settings[:vhost].blank? ? '/' : settings[:vhost]
+          port_part =
+            settings[:port].present? ? [':', settings[:port]].join : ''
           url = [settings[:host], port_part, vhost].join
         else
-          port_part = settings[:port].present? ? [":", settings[:port]].join : ""
+          port_part =
+            settings[:port].present? ? [':', settings[:port]].join : ''
           url = [settings[:host], port_part].join
         end
         url = "#{settings[:protocol]}://" + url unless url.match(%r{^\w+://})
@@ -85,7 +85,11 @@ module EventSource
         @async_api_schemas.each do |resource|
           resource.channels.each do |async_api_channel_item|
             if async_api_channel_item.publish.present?
-              process_resource_for(resource.servers, async_api_channel_item.id.to_sym, async_api_channel_item)
+              process_resource_for(
+                resource.servers,
+                async_api_channel_item.id.to_sym,
+                async_api_channel_item
+              )
             end
           end
         end
@@ -94,31 +98,41 @@ module EventSource
           resource.channels.each do |async_api_channel_item|
             next if async_api_channel_item.publish.present?
             next unless async_api_channel_item.subscribe.present?
-            process_resource_for(resource.servers, async_api_channel_item.id.to_sym, async_api_channel_item)
+            process_resource_for(
+              resource.servers,
+              async_api_channel_item.id.to_sym,
+              async_api_channel_item
+            )
           end
         end
       end
 
       def connection_manager
-        return @connection_manager if defined? @connection_manager
+        return @connection_manager if defined?(@connection_manager)
         @connection_manager = EventSource::ConnectionManager.instance
       end
 
-      def process_resource_for(servers, channel_item_key,  async_api_channel_item)
+      def process_resource_for(
+        servers,
+        channel_item_key,
+        async_api_channel_item
+      )
         return unless servers
 
-        matching_server = servers.detect do |s|
-          s.id.to_s == @server_key.to_s
-        end
-        connection =
-          connection_manager.fetch_connection(matching_server)
+        matching_server = servers.detect { |s| s.id.to_s == @server_key.to_s }
+        connection = connection_manager.fetch_connection(matching_server)
 
         unless connection
-          logger.error { "Unable to find connection for #{@server_key} with #{servers}" }
-          raise EventSource::Error::ConnectionNotFound, "unable to find connection for #{@server_key} with #{servers}}"
+          logger.error do
+            "Unable to find connection for #{@server_key} with #{servers}"
+          end
+          raise EventSource::Error::ConnectionNotFound,
+                "unable to find connection for #{@server_key} with #{servers}}"
         end
 
-        logger.info { "Connecting #{connection.connection_uri}" } unless connection.active?
+        unless connection.active?
+          logger.info { "Connecting #{connection.connection_uri}" }
+        end
         connection.start
         logger.info { "Connected to #{connection.connection_uri}" }
 
