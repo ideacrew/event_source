@@ -1,14 +1,11 @@
-# EventSource: Event-enable your applications's domain model
+# EventSource: Event-enable your application's domain model
 
-EventSource simplifies event-driven code development by adding helpers and interfaces that abstract away many of the underlying complexities associated with composing, publishing and subscribing to events - Event Sourcing Lite.
+EventSource simplifies event-driven architecture design by adding helpers and interfaces that abstract away many of the underlying complexities associated with composing, publishing and subscribing to events - Event Sourcing Lite. The gem presents a standards-based DSL for configuring and exchanging event using multiple protocols within an application or between services.
 
-The gem offers a clean interface and default behavior for easily extending a new or existing application with event-driven capabilities. EventSource additionally includes flexibility intended to extend this baseline behavior to support more complex scenarios.
+EventSource supports the following protocols:
 
-EventSource uses plain old ruby objects, operating within the confines of an application's domain model without dependecies on a particilar persistance model. Although it's directed at Rails applications, it doesn't include Rails runtime dependencies (Rspec regressions include Rails test scenarios).
-
-EventSource is built using the versatile [dry-rb Ruby library](https://dry-rb.org/). All that's needed is an environment with a Ruby version that meets dry-rb's gem minimum requrements.
-
-This strategy is intended to make EventSource widely compatible across Active Record and Active Model ORM's and a range of Rails versions.
+1. AMQP using [RabbitMQ](https://rabbitmq.com/) broker
+2. HTTP and HTTP with SOAP extensions
 
 ## Installation
 
@@ -20,17 +17,68 @@ gem 'event_source'
 
 And then execute:
 
-    $ bundle
+```sh
+$ bundle
+```
 
 Or install it yourself as:
 
-    $ gem install event_source
+```sh
+$ gem install event_source
+```
 
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
 To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+
+## Configuration
+
+EventSource's DSL applies the [AsyncAPi 2.0.0](https://www.asyncapi.com/docs/specifications/v2.0.0) specification for configuring the infrastucture environment and exchanging event messages. AsyncAPI components include:
+
+- Servers
+- Channels
+- Operations
+- Protocol-specific bindings at various levels
+
+Using AsyncAPI definitions, EventSource enables your application to join message broker- and Web server- hosted networks, registering as a message producer and/or consumer, performing message publish and subscribe operations.
+
+Following is an abbrevatiated example AsyncAPI YAML configuration file for accessing a service over HTTP protocol:
+
+```yaml
+asyncapi: "2.0.0"
+---
+servers:
+  production:
+    url: http://mitc:3001
+    protocol: http
+    protocolVersion: 0.1.0
+    description: MitC Development Server
+
+channels:
+  /determinations/eval:
+    publish:
+      operationId: /determinations/eval
+      description: HTTP endpoint for MitC eligibility determination requests
+      bindings:
+        http:
+          type: request
+          method: POST
+          headers:
+            Content-Type: application/json
+            Accept: application/json
+    subscribe:
+      operationId: /on/determinations/eval
+      description: EventSource Subscriber that publishes MitC eligibility determination responses
+      bindings:
+        http:
+          type: response
+          method: GET
+          headers:
+            Content-Type: application/json
+            Accept: application/json
+```
 
 ## Usage
 
