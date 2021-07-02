@@ -90,7 +90,9 @@ module EventSource
         unique_key_elements = [app_name]
         unique_key_elements.push(formatted_publisher_key)
 
-        unique_key_elements.push(identifier) unless formatted_publisher_key.gsub(delimiter, '_') == identifier
+        unless formatted_publisher_key.gsub(delimiter, '_') == identifier
+          unique_key_elements.push(identifier)
+        end
         logger.debug "Subscriber#susbcribe Unique_key #{unique_key_elements.join(delimiter)}"
         return unless block_given?
 

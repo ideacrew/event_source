@@ -1,5 +1,9 @@
 ## Version 0.5.3
 
+### Client Side Certificate Support for HTTP
+
+You may now add client side certificates to HTTP configurations, with optional passwords for the key.  Check out `spec/rails_app/config/initializers/event_source.rb` for an example.
+
 ### SOAP Protocol Support Under HTTP
 
 SOAP is now supported for HTTP publishing.  Make sure you have your message `contentType` configured as 'application/soap+xml' in your asyncapi YAML.

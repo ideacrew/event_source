@@ -9,8 +9,7 @@ module EventSource
         # @!attribute [r] type
         # Required. Type of operation. Its value MUST be either :request or :response
         # @return [Types::HttpOperationBindingTypeKind]
-        attribute :type,
-                  Types::OperationBindingTypeKind.meta(omittable: false)
+        attribute :type, Types::OperationBindingTypeKind.meta(omittable: false)
 
         # @!attribute [r] method
         # When type is request, this is the HTTP method, otherwise it MUST be ignored.
@@ -33,6 +32,11 @@ module EventSource
         # Extensions provided with the "x-" syntax.
         # @return [Hash]
         attribute :extensions, Types::Hash.meta(omittable: true)
+
+        # @!attribute [r] headers
+        # A Schema object containing the header definitions.
+        # This schema MUST be of type object and have a properties key.
+        attribute :headers, Types::Hash.meta(omittable: true)
       end
     end
   end

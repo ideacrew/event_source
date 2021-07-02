@@ -66,6 +66,15 @@ EventSource.configure do |config|
     server.http do |http|
       http.ref = "http://aces-qa/some-random-lookup-uri"
       http.url = "http://some_host:6767/connect_me"
+      http.client_certificate do |client_cert|
+        client_cert.client_certificate = File.join(
+          File.dirname(__FILE__), "..", "cert_needs_pass.pem"
+        )
+        client_cert.client_key = File.expand_path(
+          File.join(File.dirname(__FILE__), "..", "key_needs_pass.key")
+        )
+        client_cert.client_key_password = "testpasswd"
+      end
       http.soap do |soap|
         soap.user_name = "aces user name"
         soap.password = "aces password"

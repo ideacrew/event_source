@@ -8,7 +8,7 @@ module EventSource
         # @attr_reader [String] connection_uri String used to connect with HTTP server
         # @attr_reader [String] connection_params Settings used for configuring {::Faraday::Connection}
         # @attr_reader [Faraday::Connection] subject Server Connection instance
-        attr_reader :connection_uri, :connection_params, :subject, :request_path
+        attr_reader :connection_uri, :connection_params, :subject
 
         # AsyncAPI HTTP Bindings Protocol version supported by this client
         ProtocolVersion = '0.1.0'
@@ -78,21 +78,15 @@ module EventSource
           @connection_params = connection_params_for(options)
           @server = async_api_server
           @connection_uri = self.class.connection_uri_for(async_api_server)
-          @request_path = parse_request_path
           @channel_proxies = {}
         end
 
         def build_connection_for_request(publish_operation, _subscribe_operation, request_content_type, _response_content_type)
           request_middleware_params = construct_request_middleware(publish_operation, request_content_type)
           response_middleware_params = request_content_type.json? ? JsonResponseMiddlewareParamsDefault : ResponseMiddlewareParamsDefault
-          http_params = connection_params[:http][:params]
-          headers = connection_params[:http][:headers]
           adapter = connection_params[:adapter]
-          clean_connection_url = @request_path.blank? ? @connection_uri : @connection_uri.chomp(@request_path)
           Faraday.new(
-            url: clean_connection_url,
-            params: http_params,
-            headers: headers
+            build_faraday_parameters(connection_params)
           ) do |conn|
             request_middleware_params.sort_by do |_k, v|
               v[:order]
@@ -213,9 +207,34 @@ module EventSource
 
         private
 
-        def parse_request_path
-          full_uri = URI(@connection_uri)
-          full_uri.path.blank? ? nil : full_uri.path
+        def build_faraday_parameters(connection_params)
+          http_params = connection_params[:http][:params]
+          headers = connection_params[:http][:headers]
+          ssl_options = build_ssl_options
+          {
+            url: @connection_uri,
+            params: http_params,
+            headers: headers
+          }.merge(ssl_options)
+        end
+
+        def build_ssl_options
+          return {} if @server[:client_certificate].blank?
+          client_certificate_options = @server[:client_certificate]
+          client_key_password = client_certificate_options[:client_key_password] || ""
+          client_certificate = OpenSSL::X509::Certificate.new(
+            File.read(
+              client_certificate_options[:client_certificate]
+            )
+          )
+          client_key_binary = File.read(client_certificate_options[:client_key])
+          client_key = OpenSSL::PKey.read(client_key_binary, client_key_password)
+          {
+            ssl: {
+              client_key: client_key,
+              client_cert: client_certificate
+            }
+          }
         end
 
         def connection_params_for(options)
@@ -251,7 +270,7 @@ module EventSource
               soap_payload_header: {
                 order: 20,
                 options: {
-                  soap_settings: @server[:soap_settings]
+                  soap_settings: @server[:soap]
                 }
               }
             }
