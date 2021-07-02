@@ -85,43 +85,42 @@ module EventSource
           subscribe_options
         end
 
-        def resolve_subscriber_routing_keys(channel, operation)
-        end
+        def resolve_subscriber_routing_keys(channel, operation); end
 
-        def register_subscription(subscriber_klass, bindings)
-          consumer_proxy = consumer_proxy_for(bindings)
+        # def register_subscription(subscriber_klass, bindings)
+        #   consumer_proxy = consumer_proxy_for(bindings)
 
-          consumer_proxy.on_delivery do |delivery_info, metadata, payload|
-            route_payload_for(
-              subscriber_klass,
-              delivery_info,
-              metadata,
-              payload
-            )
-          end
+        #   consumer_proxy.on_delivery do |delivery_info, metadata, payload|
+        #     route_payload_for(
+        #       subscriber_klass,
+        #       delivery_info,
+        #       metadata,
+        #       payload
+        #     )
+        #   end
 
-          subscribe_consumer(consumer_proxy)
-        end
+        #   subscribe_consumer(consumer_proxy)
+        # end
 
-        def subscribe_consumer(consumer_proxy)
-          @subject.subscribe_with(consumer_proxy)
-          @consumers.push(consumer_proxy)
-        end
+        # def subscribe_consumer(consumer_proxy)
+        #   @subject.subscribe_with(consumer_proxy)
+        #   @consumers.push(consumer_proxy)
+        # end
 
-        def consumer_proxy_for(bindings)
-          operation_bindings = convert_to_consumer_options(bindings[:amqp])
+        # def consumer_proxy_for(bindings)
+        #   operation_bindings = convert_to_consumer_options(bindings[:amqp])
 
-          logger.debug 'consumer proxy options:'
-          logger.debug operation_bindings.inspect
+        #   logger.debug 'consumer proxy options:'
+        #   logger.debug operation_bindings.inspect
 
-          BunnyConsumerProxy.new(
-            @subject.channel,
-            @subject,
-            '',
-            operation_bindings[:no_ack],
-            operation_bindings[:exclusive]
-          )
-        end
+        #   BunnyConsumerProxy.new(
+        #     @subject.channel,
+        #     @subject,
+        #     '',
+        #     operation_bindings[:no_ack],
+        #     operation_bindings[:exclusive]
+        #   )
+        # end
 
         def route_payload_for(
           subscriber_klass,
@@ -184,7 +183,7 @@ module EventSource
         def channel_item_queue_bindings_for(bindings)
           result =
             EventSource::Protocols::Amqp::Contracts::ChannelBindingContract.new
-                                                                           .call(bindings)
+              .call(bindings)
           if result.success?
             result.values[:amqp][:queue]
           else

@@ -48,7 +48,7 @@ module EventSource
         # Construct and subscribe a consumer_proxy with the queue
         # @param [Object] subscriber_klass Subscriber class
         # @return [Queue] Queue instance
-        def register_subscription(subscriber_klass, _options)
+        def subscribe(subscriber_klass, _options)
           unique_key = [app_name, formatted_exchange_name].join(delimiter)
           logger.debug "FaradayQueueProxy#register_subscription Subscriber Class #{subscriber_klass}"
           logger.debug "FaradayQueueProxy#register_subscription Unique_key #{unique_key}"
