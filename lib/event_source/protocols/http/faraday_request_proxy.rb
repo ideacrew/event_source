@@ -106,8 +106,7 @@ module EventSource
         end
 
         def request_path
-          connection_request_path = connection_proxy.request_path
-          connection_request_path.blank? ? channel_proxy.name : connection_request_path
+          channel_proxy.name
         end
 
         def faraday_request_for(bindings)
