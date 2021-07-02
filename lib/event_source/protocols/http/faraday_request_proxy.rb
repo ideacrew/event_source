@@ -49,8 +49,16 @@ module EventSource
           @name = channel_proxy.name
           @channel_item = async_api_channel_item
           request_bindings = async_api_channel_item.publish.bindings.http
-          @request_content_type = EventSource::ContentTypeResolver.new("application/json", @channel_item.publish)
-          @response_content_type = EventSource::ContentTypeResolver.new("application/json", @channel_item.subscribe)
+          @request_content_type =
+            EventSource::ContentTypeResolver.new(
+              'application/json',
+              @channel_item.publish
+            )
+          @response_content_type =
+            EventSource::ContentTypeResolver.new(
+              'application/json',
+              @channel_item.subscribe
+            )
           @subject = faraday_request_for(request_bindings)
         end
 
@@ -68,10 +76,13 @@ module EventSource
         def publish(payload: nil, publish_bindings: {})
           faraday_publish_bindings = sanitize_bindings(publish_bindings)
           text_payload = nil
-          text_payload = (@request_content_type.json? ? payload.to_json : payload) if payload
-          text_payload ||= ""
+          text_payload =
+            (@request_content_type.json? ? payload.to_json : payload) if payload
+          text_payload ||= ''
           @subject.body = text_payload
-          @subject.headers.update(faraday_publish_bindings[:headers]) if faraday_publish_bindings[:headers]
+          if faraday_publish_bindings[:headers]
+            @subject.headers.update(faraday_publish_bindings[:headers])
+          end
           logger.debug "FaradayExchange#publish  connection: #{connection.inspect}"
           logger.debug "FaradayExchange#publish  processing request with headers: #{@subject.headers} body: #{@subject.body}"
 
@@ -80,12 +91,17 @@ module EventSource
           logger.debug "Executed Faraday request...response: #{response.status}"
 
           payload_correlation_id = nil
-          payload_correlation_id = JSON.parse(text_payload)['CorrelationID'] if @request_content_type.json? && payload
-          response.headers.merge!('CorrelationID' => (payload_correlation_id || generate_correlation_id))
+          payload_correlation_id =
+            JSON.parse(text_payload)['CorrelationID'] if @request_content_type
+            .json? && payload
+          response.headers.merge!(
+            'CorrelationID' =>
+              (payload_correlation_id || generate_correlation_id)
+          )
           logger.debug "FaradayRequest#publish  response headers: #{response.headers}"
 
           @channel_proxy.enqueue(response)
-          logger.debug "FaradayRequest#publish response enqueued."
+          logger.debug 'FaradayRequest#publish response enqueued.'
           response
         end
 
@@ -111,7 +127,13 @@ module EventSource
 
         def faraday_request_for(bindings)
           method = bindings ? bindings[:method].downcase.to_sym : :get
-          @connection = connection_proxy.build_connection_for_request(nil, nil, @request_content_type, @response_content_type)
+          @connection =
+            connection_proxy.build_connection_for_request(
+              nil,
+              nil,
+              @request_content_type,
+              @response_content_type
+            )
           request =
             @connection.build_request(method) do |req|
               req.path = request_path.to_s
@@ -125,7 +147,8 @@ module EventSource
           return {} unless bindings.present?
           options = bindings[:http] || {}
           operation_bindings = {}
-          operation_bindings[:headers] = options[:headers] if options[:headers]
+          operation_bindings[:headers] = options[:headers] if options
+            .respond_to?(:headers)
           operation_bindings
         end
       end
