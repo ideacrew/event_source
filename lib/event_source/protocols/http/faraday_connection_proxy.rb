@@ -8,7 +8,7 @@ module EventSource
         # @attr_reader [String] connection_uri String used to connect with HTTP server
         # @attr_reader [String] connection_params Settings used for configuring {::Faraday::Connection}
         # @attr_reader [Faraday::Connection] subject Server Connection instance
-        attr_reader :connection_uri, :connection_params, :subject, :request_path
+        attr_reader :connection_uri, :connection_params, :subject
 
         # AsyncAPI HTTP Bindings Protocol version supported by this client
         ProtocolVersion = '0.1.0'
@@ -78,7 +78,6 @@ module EventSource
           @connection_params = connection_params_for(options)
           @server = async_api_server
           @connection_uri = self.class.connection_uri_for(async_api_server)
-          @request_path = parse_request_path
           @channel_proxies = {}
         end
 
@@ -209,12 +208,11 @@ module EventSource
         private
 
         def build_faraday_parameters(connection_params)
-          clean_connection_url = @request_path.blank? ? @connection_uri : @connection_uri.chomp(@request_path)
           http_params = connection_params[:http][:params]
           headers = connection_params[:http][:headers]
           ssl_options = build_ssl_options
           {
-            url: clean_connection_url,
+            url: @connection_uri,
             params: http_params,
             headers: headers
           }.merge(ssl_options)
@@ -237,11 +235,6 @@ module EventSource
               client_cert: client_certificate
             }
           }
-        end
-
-        def parse_request_path
-          full_uri = URI(@connection_uri)
-          full_uri.path.blank? ? nil : full_uri.path
         end
 
         def connection_params_for(options)

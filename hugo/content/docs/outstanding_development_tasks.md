@@ -21,9 +21,10 @@ Most issues or missing functionality can be found under [AsyncAPI Differences](.
    1. Timed retry
    2. Max retry
    3. Placing messages in an 'error queue' upon reaching max retry
-2. Greylog integration
-3. Integration with existing/legacy AMQP services
-4. Worker hosting
+2. Event multicast - multiple subscriptions to the same event across multiple applications, each getting their own copy of the message
+3. Greylog integration
+4. Integration with existing/legacy AMQP services
+5. Worker hosting
    1. Fork/Exec standard ruby process hosting
    2. Adjustable worker counts
    3. Worker process identification and resource tracking
