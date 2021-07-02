@@ -51,7 +51,8 @@ module EventSource
 
         # Bind this Queue to the Exchange
         def bind_exchange(exchange_name, async_api_subscribe_operation)
-          operation_bindings = async_api_subscribe_operation.bindings.amqp || {}
+          operation_bindings =
+            async_api_subscribe_operation.bindings.amqp.symbolize_keys || {}
           channel_proxy.bind_queue(
             @subject.name,
             exchange_name,
