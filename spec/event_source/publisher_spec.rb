@@ -43,15 +43,18 @@ RSpec.describe EventSource::Publisher do
 
       context 'when publish operation not found' do
 
+        let(:operation_not_found_msg) { "#{publisher}#validate unable to find publish operation for: #{params[:publish_operation_name]}" }
+
         before do
           allow(connection_manager).to receive(:find_publish_operation).with(params).and_return(nil)
         end
+
 
         it 'should log error message' do
           publisher.validate
 
           expect(@log_output.readline).to match(/Publisher#validate find publish operation for: #{params[:publish_operation_name]}/)
-          expect(@log_output.readline).to match(/Publisher#validate unable to find publish operation for: #{params[:publish_operation_name]}/)
+          expect(@log_output.readlines.any?{|message| message.match(/#{operation_not_found_msg}/)}).to be_truthy
         end
       end
     end

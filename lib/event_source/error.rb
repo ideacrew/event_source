@@ -29,7 +29,7 @@ module EventSource
     RegisteredEventNotFound = Class.new(Error)
     SubscriberNotFound = Class.new(Error)
     ConnectionNotFound = Class.new(Error)
-
-    InvalidServerConfigurationException = Class.new(RuntimeError)
+    ServerConfigurationNotFound = Class.new(Error)
+    ServerConfigurationInvalid = Class.new(Error)
   end
 end

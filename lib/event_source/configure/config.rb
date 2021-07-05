@@ -50,11 +50,11 @@ module EventSource
             result.first.call_location.first(3).map do |e_line|
               "    #{e_line}"
             end.join("\n")
-          logger.error "Invalid Server Configuration\n  Errors: #{result.last.to_h}\n  At:\n#{formatted_trace}"
+          logger.error "Server Configuration Invalid\n  Errors: #{result.last.to_h}\n  At:\n#{formatted_trace}"
         end
         first_failure = validation_result.failure.first
         exception =
-          Error::InvalidServerConfigurationException.new(
+          Error::ServerConfigurationInvalid.new(
             "Server configuration invalid: #{first_failure.last.to_h}"
           )
         exception.set_backtrace first_failure.first.call_location
@@ -120,6 +120,14 @@ module EventSource
         return unless servers
 
         matching_server = servers.detect { |s| s.id.to_s == @server_key.to_s }
+        unless matching_server
+          logger.error do
+            "Unable to find server configuration for #{@server_key}"
+          end
+          raise EventSource::Error::ServerConfigurationNotFound,
+                "unable to find server configuration for #{@server_key}"
+        end
+
         connection = connection_manager.fetch_connection(matching_server)
 
         unless connection

@@ -85,8 +85,15 @@ module EventSource
         publisher_key.to_sym
       end
 
-      def subscribe(queue_name, &block)
-        identifier = queue_name.to_s.match(/^on_(.*)/)[1]
+      def subscribe(subscription_name, &block)
+        unless subscription_name.to_s.match?(/^on_(.*)/)
+          logger.error do
+            "\n ********\n Subscription Error: Invalid subscription name passed. Do you mean?: on_#{formatted_publisher_key}\n ********"
+          end
+          return
+        end
+  
+        identifier = subscription_name.to_s.match(/^on_(.*)/)[1]
         unique_key_elements = [app_name]
         unique_key_elements.push(formatted_publisher_key)
 
