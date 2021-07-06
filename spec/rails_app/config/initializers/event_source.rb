@@ -64,8 +64,8 @@ EventSource.configure do |config|
     end
 
     server.http do |http|
-      http.ref = "http://aces-qa/some-random-lookup-uri"
-      http.url = "http://some_host:6767/connect_me"
+      http.ref = "https://impl.hub.cms.gov/Imp1"
+      http.url = "https://impl.hub.cms.gov/Imp1"
       http.client_certificate do |client_cert|
         client_cert.client_certificate = File.join(
           File.dirname(__FILE__), "..", "cert_needs_pass.pem"
