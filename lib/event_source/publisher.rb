@@ -59,14 +59,14 @@ module EventSource
       attr_reader :events
 
       # TODO: coordinate server connection name with dev ops
-      def publish(event)
+      def publish(event, properties: {})
         event_key = publisher_key if protocol == :http
         event_key ||= event.name.split('.').last
 
         publish_operation_name = publish_operation_name_for(event_key)
 
         logger.debug "Publisher#publish publish_operation_name: #{publish_operation_name}"
-        find_publish_operation_for(publish_operation_name).call(event.payload)
+        find_publish_operation_for(publish_operation_name).call(event.payload, properties)
       end
 
       def channel_name

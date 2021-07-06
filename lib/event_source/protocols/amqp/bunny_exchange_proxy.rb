@@ -41,8 +41,8 @@ module EventSource
         # Publish a message to this Exchange
         # @param [Mixed] payload the message content
         # @param [Hash] publish_bindings
-        def publish(payload:, publish_bindings:)
-          bunny_publish_bindings = sanitize_bindings((publish_bindings || {}).to_h)
+        def publish(payload:, publish_bindings:, properties: {})
+          bunny_publish_bindings = sanitize_bindings((publish_bindings || {}).to_h.merge(properties))
           logger.debug "BunnyExchange#publish  publishing message with bindings: #{bunny_publish_bindings.inspect}"
           @subject.publish(payload.to_json, bunny_publish_bindings)
           logger.debug "BunnyExchange#publish  published message: #{payload}"
