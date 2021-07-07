@@ -73,7 +73,7 @@ module EventSource
         # @param [Mixed] payload request content
         # @param [Hash] publish_bindings AsyncAPI HTTP message bindings
         # @return [Faraday::Response] response
-        def publish(payload: nil, publish_bindings: {}, properties: {})
+        def publish(payload: nil, publish_bindings: {})
           faraday_publish_bindings = sanitize_bindings(publish_bindings)
           text_payload = nil
           text_payload =

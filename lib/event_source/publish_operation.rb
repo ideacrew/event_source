@@ -25,11 +25,10 @@ module EventSource
     # Publish an {EventSource::Event} message
     # @example
     #   #publish("Message", :headers => { })
-    def call(args, properties: {})
+    def call(args)
       @subject.publish(
         payload: args,
-        publish_bindings: @async_api_publish_operation[:bindings],
-        properties: properties
+        publish_bindings: @async_api_publish_operation[:bindings]
       )
     end
   end
