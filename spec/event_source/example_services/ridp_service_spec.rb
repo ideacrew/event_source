@@ -50,7 +50,7 @@ RSpec.describe "An example service for RIDP" do
   end
 
   before :each do
-    stub_request(:post, "https://impl.hub.cms.gov/RIDPService").with(
+    stub_request(:post, "https://impl.hub.cms.gov/Imp1/RIDPService").with(
       headers: {
         'Accept'=>'*/*',
         'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
