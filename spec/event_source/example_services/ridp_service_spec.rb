@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe "An example service for ACES" do
+RSpec.describe "An example service for RIDP" do
   let(:async_api_file) do
     Pathname.pwd.join(
       'spec',
@@ -52,7 +52,8 @@ RSpec.describe "An example service for ACES" do
   before :each do
     stub_request(:post, "https://impl.hub.cms.gov/RIDPService").with(
       headers: {
-        'Expect' => '',
+        'Accept'=>'*/*',
+        'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
         'User-Agent' => 'Faraday v1.4.2'
       }
     ).with do |request|

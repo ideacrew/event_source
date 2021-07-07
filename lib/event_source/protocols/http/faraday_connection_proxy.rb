@@ -100,10 +100,11 @@ module EventSource
               conn.response middleware.to_sym, value[:options]
             end
 
+            # conn.adapter :http
             # last middleware must be adapter
-            adapter.each_pair do |component, options|
-              conn.adapter component.to_s.to_sym, options || {}
-            end
+            # adapter.each_pair do |component, options|
+            #   conn.adapter component.to_s.to_sym, options || {}
+            # end
           end
         end
 
