@@ -76,10 +76,14 @@ RSpec.describe EventSource::Protocols::Http::FaradayRequestProxy do
       publish_operation[:bindings][:http][:method].downcase.to_sym
     end
 
+    let(:request_path) {
+      'repos/thoughtbot/factory_girl/contributors'
+    }
+
     it 'should create request' do
       expect(request_proxy.subject).to be_a Faraday::Request
       expect(request_proxy.http_method).to eq request_method
-      expect(request_proxy.path).to eq channel_key
+      expect(request_proxy.path).to eq request_path
     end
 
     it 'should return expected response' do

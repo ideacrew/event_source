@@ -75,16 +75,19 @@ module EventSource
         def initialize(async_api_server, options = {})
           @protocol_version = ProtocolVersion
           @client_version = ClientVersion
-          @connection_params = connection_params_for(options)
           @server = async_api_server
+          @connection_params = connection_params_for(options)
           @connection_uri = self.class.connection_uri_for(async_api_server)
           @channel_proxies = {}
+
+          @subject = build_connection
         end
 
-        def build_connection_for_request(publish_operation, _subscribe_operation, request_content_type, _response_content_type)
-          request_middleware_params = construct_request_middleware(publish_operation, request_content_type)
-          response_middleware_params = request_content_type.json? ? JsonResponseMiddlewareParamsDefault : ResponseMiddlewareParamsDefault
-          adapter = connection_params[:adapter]
+        def build_connection
+          request_middleware_params = construct_request_middleware
+          response_middleware_params = connection_params[:response_middleware_params]
+          # adapter = connection_params[:adapter]
+
           Faraday.new(
             build_faraday_parameters(connection_params)
           ) do |conn|
@@ -242,12 +245,15 @@ module EventSource
           request_middleware_params =
             options[:request_middleware_params] ||
             RequestMiddlewareParamsDefault
-          response_middleware_params =
-            options[:response_middleware_params] ||
-            ResponseMiddlewareParamsDefault
+          response_middleware_params = options[:response_middleware_params]
+
+          response_middleware_params ||=
+            json_request? ? JsonResponseMiddlewareParamsDefault : ResponseMiddlewareParamsDefault
 
           adapter = AdapterDefaults.merge(options[:adapter] || {})
           http = HttpDefaults.merge(options[:http] || {})
+
+          options[:content_type]
 
           {
             request_middleware_params: request_middleware_params,
@@ -256,8 +262,8 @@ module EventSource
           }.merge http
         end
 
-        def construct_request_middleware(_publish_operation, request_content_type)
-          if request_content_type.soap?
+        def construct_request_middleware
+          if soap_request?
             {
               retry: {
                 order: 10,
@@ -276,7 +282,26 @@ module EventSource
               }
             }
           else
-            RequestMiddlewareParamsDefault
+            connection_params[:request_middleware_params]
+          end
+        end
+
+        def json_request?
+          request_content_type == :json
+        end
+
+        def soap_request?
+          request_content_type == :soap
+        end
+
+        def request_content_type
+          case @server[:default_content_type]
+          when 'application/json';
+            :json
+          when 'application/soap+xml'
+            :soap
+          when 'text/xml'
+            :xml
           end
         end
       end

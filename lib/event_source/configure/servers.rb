@@ -26,10 +26,10 @@ module EventSource
       end
     end
 
-    AmqpConfiguration = Struct.new(:protocol, :ref, :host, :vhost, :port, :url, :user_name, :password, :call_location)
+    AmqpConfiguration = Struct.new(:protocol, :ref, :host, :vhost, :port, :url, :user_name, :password, :call_location, :default_content_type)
 
     HttpConfiguration = Struct.new(:protocol, :ref, :host, :port, :url, :user_name, :password, :soap_settings, :client_certificate_settings,
-                                   :call_location) do
+                                   :call_location, :default_content_type) do
       def soap
         s_settings = SoapConfiguration.new
         s_settings.call_location = caller(1)
@@ -65,7 +65,7 @@ module EventSource
 
     # Represents a server configuration.
     class Servers
-      attr_reader :configurations
+      attr_reader :default_content_type, :configurations
 
       def initialize
         @configurations = []

@@ -43,6 +43,7 @@ EventSource.configure do |config|
       rabbitmq.url = "amqp://localhost:5672/" # ENV['RABBITMQ_URL']
       rabbitmq.user_name = "" # ENV['RABBITMQ_USERNAME']
       rabbitmq.password = "" # ENV['RABBITMQ_PASSWORD']
+      rabbitmq.default_content_type = 'application/json'
     end
 
     server.amqp do |rabbitmq|
@@ -52,15 +53,18 @@ EventSource.configure do |config|
       rabbitmq.ref = "amqp://localhost:5672/event_source" # ENV['RABBITMQ_URL']
       rabbitmq.user_name = "" # ENV['RABBITMQ_USERNAME']
       rabbitmq.password = "" # ENV['RABBITMQ_PASSWORD']
+      rabbitmq.default_content_type = 'application/json'
     end
 
     server.http do |http|
       http.host = "https://api.github.com"
+      http.default_content_type = 'application/json'
     end
 
     server.http do |http|
       http.host = "http://localhost"
       http.port = "3000"
+      http.default_content_type = 'application/json'
     end
 
     server.http do |http|
@@ -75,6 +79,7 @@ EventSource.configure do |config|
         )
         client_cert.client_key_password = "testpasswd"
       end
+      http.default_content_type = ENV['RIDP_CONTENT_TYPE'] || 'application/soap+xml'
       http.soap do |soap|
         soap.user_name = "aces user name"
         soap.password = "aces password"

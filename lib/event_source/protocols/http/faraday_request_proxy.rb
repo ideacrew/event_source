@@ -117,8 +117,8 @@ module EventSource
 
         private
 
-        def connection_proxy
-          channel_proxy.connection_proxy
+        def connection
+          channel_proxy.connection
         end
 
         def request_path
@@ -127,16 +127,9 @@ module EventSource
 
         def faraday_request_for(bindings)
           method = bindings ? bindings[:method].downcase.to_sym : :get
-          @connection =
-            connection_proxy.build_connection_for_request(
-              nil,
-              nil,
-              @request_content_type,
-              @response_content_type
-            )
           request =
-            @connection.build_request(method) do |req|
-              req.path = request_path.to_s
+            connection.build_request(method) do |req|
+              req.path = request_path.to_s.match(/\/?(.*)/)[1]
             end
 
           logger.info "Created Faraday request #{request}"

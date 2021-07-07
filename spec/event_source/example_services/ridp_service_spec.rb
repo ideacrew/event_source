@@ -56,7 +56,9 @@ RSpec.describe "An example service for RIDP" do
         'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
         'User-Agent' => 'Faraday v1.4.2'
       }
-    ).with do |request|
+    )
+    .with do |request|
+      puts request.body.inspect
       xml = Nokogiri::XML(request.body)
       u_token = xml.at_xpath(
         "/soap:Envelope/soap:Header/wsse:Security/wsse:UsernameToken",
@@ -67,7 +69,8 @@ RSpec.describe "An example service for RIDP" do
         EventSource::Protocols::Http::Soap::XMLNS
       )
       u_token.present? && t_stamp.present?
-    end.to_return(status: 200, body: "", headers: {})
+    end
+    .to_return(status: 200, body: "", headers: {})
   end
 
   it "responds to requests" do
