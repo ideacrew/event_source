@@ -95,4 +95,31 @@ RSpec.describe EventSource::Protocols::Http::FaradayRequestProxy do
       expect(response.headers['Content-Type']).to eq 'application/json'
     end
   end
+
+
+  context 'When custom headers passed' do
+    let(:request_method) do
+      publish_operation[:bindings][:http][:method].downcase.to_sym
+    end
+
+    let(:headers) do
+      {
+        'User-Agent' => "Ridp Service",
+        'Content-Type' => 'application/json'
+      }
+    end
+
+    let(:request_path) {
+      'repos/thoughtbot/factory_girl/contributors'
+    }
+
+    it 'should create request with headers' do
+      channel_struct = EventSource::AsyncApi::ChannelItem.new(channel_item)
+      channel_proxy.add_subscribe_operation(channel_struct)
+      @log_output.readlines
+      request_proxy.publish publish_bindings: publish_operation, headers: headers
+      @log_output.readline
+      expect(@log_output.readline).to match(/#{headers}/)
+    end
+  end
 end

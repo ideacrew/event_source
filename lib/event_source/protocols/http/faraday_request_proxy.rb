@@ -73,9 +73,9 @@ module EventSource
         # @param [Mixed] payload request content
         # @param [Hash] publish_bindings AsyncAPI HTTP message bindings
         # @return [Faraday::Response] response
-        def publish(payload: nil, publish_bindings: {})
+        def publish(payload: nil, publish_bindings: {}, headers: {})
           faraday_publish_bindings = sanitize_bindings(publish_bindings)
-          text_payload = nil
+          faraday_publish_bindings[:headers] = (faraday_publish_bindings[:headers] || {}).merge(headers)
           text_payload =
             (@request_content_type.json? ? payload.to_json : payload) if payload
           text_payload ||= ''
@@ -83,14 +83,22 @@ module EventSource
           if faraday_publish_bindings[:headers]
             @subject.headers.update(faraday_publish_bindings[:headers])
           end
+          logger.debug "Faraday request headers: #{@subject.headers}"
           logger.debug "FaradayExchange#publish  connection: #{connection.inspect}"
           logger.debug "FaradayExchange#publish  processing request with headers: #{@subject.headers} body: #{@subject.body}"
 
-          # @subject.call(payload, faraday_publish_bindings)
           response = connection.builder.build_response(connection, @subject)
           logger.debug "Executed Faraday request...response: #{response.status}"
 
-          payload_correlation_id = nil
+          attach_payload_correlation_id(response, text_payload, payload)
+          logger.debug "FaradayRequest#publish  response headers: #{response.headers}"
+
+          @channel_proxy.enqueue(response)
+          logger.debug 'FaradayRequest#publish response enqueued.'
+          response
+        end
+
+        def attach_payload_correlation_id(response, text_payload, payload)
           payload_correlation_id =
             JSON.parse(text_payload)['CorrelationID'] if @request_content_type
             .json? && payload
@@ -98,11 +106,6 @@ module EventSource
             'CorrelationID' =>
               (payload_correlation_id || generate_correlation_id)
           )
-          logger.debug "FaradayRequest#publish  response headers: #{response.headers}"
-
-          @channel_proxy.enqueue(response)
-          logger.debug 'FaradayRequest#publish response enqueued.'
-          response
         end
 
         def generate_correlation_id

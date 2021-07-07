@@ -59,23 +59,56 @@ RSpec.describe EventSource::PublishOperation do
   end
   # after { connection.stop if connection.active?}
 
+  let(:subscriber_channel) do
+    connection.channels[:'on_polypress.magi_medicaid.mitc.eligibilities']
+  end
+
+  let(:publisher_name) do
+    channel.publish_operations.values.first.name
+  end
+
+  let(:channel) do
+    connection.channels.values.first
+  end
+
+  let(:publish_operation) do
+    connection.find_publish_operation_by_name(publisher_name)
+  end
+
+  let(:greeting) { 'hello world!' }
+
+  context 'when headers passed with correlation id' do
+    let(:input_headers) do
+      {
+        :venue => "Stockholm",
+        :true_field   => true,
+        :false_field  => false,
+        :correlation_id => "36126121212"
+      }
+    end
+
+    let(:bunny_formatted_options) do
+      {
+        :correlation_id => "36126121212",
+        headers: 
+        {
+          :venue => "Stockholm",
+          :true_field   => true,
+          :false_field  => false,
+        }
+      }
+    end
+
+    let(:expected_log_message) { "#{bunny_formatted_options.inspect}" }
+
+    it "publish payload along with headers" do
+      @log_output.readlines
+      publish_operation.call({message: greeting}, {headers: input_headers})
+      expect(@log_output.readline).to match(/#{expected_log_message}/)
+    end
+  end
+
   context 'when valid asyncapi configurations passed' do
-    let(:subscriber_channel) do
-      connection.channels[:'on_polypress.magi_medicaid.mitc.eligibilities']
-    end
-    let(:publisher_name) do
-      channel.publish_operations.values.first.name
-    end
-
-    let(:channel) do
-      connection.channels.values.first
-    end
-
-    let(:publish_operation) do
-      connection.find_publish_operation_by_name(publisher_name)
-    end
-
-    let(:greeting) { 'hello world!' }
 
     it 'should set exchanges and queues' do
       expect(connection.channels).to be_present

@@ -62,11 +62,11 @@ module EventSource
       def publish(event)
         event_key = publisher_key if protocol == :http
         event_key ||= event.name.split('.').last
-
         publish_operation_name = publish_operation_name_for(event_key)
 
         logger.debug "Publisher#publish publish_operation_name: #{publish_operation_name}"
-        find_publish_operation_for(publish_operation_name).call(event.payload)
+        publish_operation = find_publish_operation_for(publish_operation_name)
+        publish_operation.call(event.payload, {headers: event.headers})
       end
 
       def channel_name

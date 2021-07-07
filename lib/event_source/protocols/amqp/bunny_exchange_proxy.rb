@@ -41,8 +41,12 @@ module EventSource
         # Publish a message to this Exchange
         # @param [Mixed] payload the message content
         # @param [Hash] publish_bindings
-        def publish(payload:, publish_bindings:)
+        # @param [Hash] headers
+        def publish(payload:, publish_bindings:, headers: {})
           bunny_publish_bindings = sanitize_bindings((publish_bindings || {}).to_h)
+          bunny_publish_bindings[:correlation_id] = headers.delete(:correlation_id) if headers[:correlation_id]
+          bunny_publish_bindings[:headers] = headers unless headers.empty?
+
           logger.debug "BunnyExchange#publish  publishing message with bindings: #{bunny_publish_bindings.inspect}"
           @subject.publish(payload.to_json, bunny_publish_bindings)
           logger.debug "BunnyExchange#publish  published message: #{payload}"

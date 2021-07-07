@@ -31,12 +31,8 @@ module EventSource
           recover_from_connection_close: true, # Bunny will try to recover from Server-initiated connection.close
           continuation_timeout: 4_000, # timeout in milliseconds for client operations that expect a response
           # logger: EventSource::Logging,
-          frame_max: 131_072 # max permissible size in bytes of a frame. Larger value may improve throughput; smaller value may improve latency
-        }.freeze
-
-        ProtocolOptionDefaults = {
-          heartbeat: :server, # will use RabbitMQ setting
-          frame_max: 131_072
+          frame_max: 131_072, # max permissible size in bytes of a frame. Larger value may improve throughput; smaller value may improve latency
+          heartbeat: :server # will use RabbitMQ setting
         }.freeze
 
         OptionDefaults = {
