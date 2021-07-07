@@ -287,11 +287,11 @@ module EventSource
         end
 
         def json_request?
-          request_content_type == :json
+          request_content_type.to_s == 'json'
         end
 
         def soap_request?
-          request_content_type == :soap
+          request_content_type.to_s == 'soap'
         end
 
         def request_content_type
