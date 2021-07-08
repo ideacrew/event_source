@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 require 'event_source/protocols/amqp_protocol'
+require 'pry'
 
 RSpec.describe EventSource::PublishOperation do
   let(:connection_manager) { EventSource::ConnectionManager.instance }
@@ -88,15 +89,11 @@ RSpec.describe EventSource::PublishOperation do
     end
 
     let(:bunny_formatted_options) do
-      {
-        :correlation_id => "36126121212",
-        headers: 
         {
           :venue => "Stockholm",
           :true_field   => true,
           :false_field  => false,
         }
-      }
     end
 
     let(:expected_log_message) { "#{bunny_formatted_options.inspect}" }
