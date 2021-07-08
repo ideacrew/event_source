@@ -39,19 +39,13 @@ module EventSource
     def payload=(values)
       raise ArgumentError, 'payload must be a hash' unless values.instance_of?(Hash)
 
-      values.symbolize_keys!
-
-      @payload =
-        values.select do |key, _value|
-          attribute_keys.empty? || attribute_keys.include?(key)
-        end
-
-      validate_attribute_presence
+      @payload = values
     end
 
     def headers=(values)
       raise ArgumentError, 'headers must be a hash' unless values.instance_of?(Hash)
-      @headers = values.symbolize_keys
+
+      @headers = values
     end
 
     # Verify this instance is complete and may be published
