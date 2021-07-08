@@ -2,7 +2,6 @@
 
 require 'spec_helper'
 require 'event_source/protocols/amqp_protocol'
-require 'pry'
 
 RSpec.describe EventSource::PublishOperation do
   let(:connection_manager) { EventSource::ConnectionManager.instance }
