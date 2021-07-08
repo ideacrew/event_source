@@ -81,7 +81,7 @@ module EventSource
         #   bcc: ['external.audit']
         # @return [Hash] sanitized Bunny/RabitMQ bindings
         def sanitize_bindings(bindings)
-          options = bindings[:amqp] || {}
+          options = bindings[:amqp]&.deep_symbolize_keys || {}
           operation_bindings = options.slice(
             :type, :content_type, :correlation_id, :correlation_id,
             :priority, :message_id, :app_id, :expiration, :mandatory, :routing_key
