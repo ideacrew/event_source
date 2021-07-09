@@ -103,6 +103,8 @@ module EventSource
               conn.response middleware.to_sym, value[:options]
             end
 
+            conn.response :logger, nil, { headers: true, bodies: true, log_level: :error }
+
             # conn.adapter :http
             # last middleware must be adapter
             # adapter.each_pair do |component, options|
