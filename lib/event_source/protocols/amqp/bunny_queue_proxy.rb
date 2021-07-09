@@ -80,6 +80,7 @@ module EventSource
         end
 
         def convert_to_subscribe_options(options)
+          options.symbolize_keys!
           subscribe_options = options.slice(:exclusive, :on_cancellation)
           subscribe_options[:manual_ack] = options[:ack]
           subscribe_options[:block] = false
