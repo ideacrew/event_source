@@ -141,7 +141,7 @@ module EventSource
 
         def sanitize_bindings(bindings)
           return {} unless bindings.present?
-          options = bindings[:http]&.to_h&.symbolize_keys || {}
+          options = bindings[:http] || {}
           operation_bindings = {}
           operation_bindings[:headers] = options[:headers] if options
             .respond_to?(:headers)
