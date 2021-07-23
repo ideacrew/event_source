@@ -132,10 +132,10 @@ module EventSource
 
         unless connection
           logger.error do
-            "Unable to find connection for #{@server_key} with #{servers}"
+            "Unable to find connection for #{@server_key} with servers: #{servers}, connections: #{connection_manager.connections.keys}"
           end
           raise EventSource::Error::ConnectionNotFound,
-                "unable to find connection for #{@server_key} with #{servers}}"
+                "unable to find connection for #{@server_key} with #{servers}"
         end
 
         unless connection.active?
