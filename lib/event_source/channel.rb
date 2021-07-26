@@ -99,12 +99,14 @@ module EventSource
         @channel_proxy.add_subscribe_operation(async_api_channel_item)
 
       operation_id = async_api_channel_item.subscribe.operationId
+      logger.info "Adding Subscribe Operation:  #{operation_id}"
       @subscribe_operations[operation_id] =
         EventSource::SubscribeOperation.new(
           self,
           subscribe_proxy,
           async_api_channel_item.subscribe
         )
+      logger.info "  Subscribe Operation Added: #{operation_id}"
     end
   end
 end
