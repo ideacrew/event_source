@@ -8,6 +8,10 @@ module EventSource
     # Variable substitution can be used so that some details, for example usernames and passwords,
     # can be injected by code generation tools.
     class Server < Dry::Struct
+      transform_keys(&:to_sym)
+
+      attribute :id, Types::String.meta(omittable: false)
+
       # @!attribute [r] url
       # URL to the target host (required). Variable substitutions will be made when a variable is
       # enclosed in braces ({}).
@@ -40,7 +44,7 @@ module EventSource
       # @!attribute [r] security
       # A declaration of which security mechanisms can be used with this server
       # @return [SecurityScheme]
-      attribute :security, SecurityScheme.meta(omittable: true)
+      attribute :security, Types::Array.of(Types::Hash).meta(omittable: true)
 
       # @!attribute [r] bindings
       # A free-form map where the keys describe the name of the protocol and the values describe

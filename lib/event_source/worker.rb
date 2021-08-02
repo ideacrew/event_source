@@ -6,10 +6,17 @@ module EventSource
     extend EventSource::Logging
     include EventSource::Logging
 
-    # @attr_reader [EventSource::Queue] queue the queue isntance assigned to this worker
+    # @attr_reader [EventSource::Queue] queue queue that this worker will use to
+    #   manage and access event messages
     # @attr_reader [array<Thread>] threads process threads managed by this worker
     attr_reader :queue_proxy, :threads
 
+    # Start the Worker
+    # @param [Hash] config the options to start a worker instance
+    # @option config [Integer] :num_threads the max number of threads this worker may
+    #   spawn. This valus should not exceed the number of cpu cores on the host
+    # @param [Hash] queue_proxy the queue instance that this worker will use to
+    #   manage and access event messages
     def self.start(config, queue_proxy)
       num_threads = config[:num_threads]
       logger.info(
@@ -21,13 +28,14 @@ module EventSource
       instance
     end
 
-    # @param queue [EventSource::Queue] queue used to organize and dispatch actions
+    # @param [Hash] queue_proxy the queue instance that this worker will use to
+    #   manage and access event messages
     def initialize(queue_proxy)
       @threads = []
       @queue_proxy = queue_proxy
     end
 
-    # Add an action to the queue for processing
+    # Add a action to the queue for processing
     # @return [EventSource::Queue]
     def enqueue(payload)
       logger.debug("On Queue: #{queue_proxy.name}, enqueue payload: #{payload}")
@@ -72,6 +80,7 @@ module EventSource
     #   true
     # end
 
+    # Spawn thread and process queued action
     def spawn_threads(num_threads)
       logger.info("Spawn Threads #{num_threads}")
       num_threads.times do
@@ -106,6 +115,7 @@ module EventSource
       true
     end
 
+    # Flag indicating whether this worker is accepting new actions
     def active?
       !queue_proxy.closed?
     end

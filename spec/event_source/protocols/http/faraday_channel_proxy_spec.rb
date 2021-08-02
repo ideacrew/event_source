@@ -66,17 +66,23 @@ RSpec.describe EventSource::Protocols::Http::FaradayChannelProxy do
 
   let(:channel_item) do
     {
+      id: "a channel id",
       publish: publish_operation,
       subscribe: subscribe_operation,
       bindings: {}
     }
   end
 
+  let(:channel_struct) do
+    EventSource::AsyncApi::ChannelItem.new(channel_item)
+  end
+
   before { connection.connect unless connection.active? }
   after { connection.disconnect if connection.active? }
 
   let(:channel_proxy) do
-    described_class.new(connection, channel_id, channel_item)
+
+    described_class.new(client, channel_id, channel_struct)
   end
 
   context 'Adapter pattern methods are present' do
@@ -90,9 +96,9 @@ RSpec.describe EventSource::Protocols::Http::FaradayChannelProxy do
   context '.add_publish_operation' do
     context 'When a connection and channel item passted' do
       it 'should create request and add it to publish operations' do
-        publish_op = channel_proxy.add_publish_operation(channel_item)
-        channel_proxy.add_subscribe_operation(channel_item)
-        publish_op.publish(payload: {test: 'Hello world!!!'}.to_json)
+        publish_op = channel_proxy.add_publish_operation(channel_struct)
+        channel_proxy.add_subscribe_operation(channel_struct)
+        publish_op.publish(payload: { test: 'Hello world!!!' }.to_json)
         expect(channel_proxy.publish_operations).to be_present
       end
     end
@@ -101,13 +107,13 @@ RSpec.describe EventSource::Protocols::Http::FaradayChannelProxy do
   context '.add_subscribe_operation' do
     context 'When a connection and channel item passted' do
       it 'should create queue and add it to subscribe operations' do
-        channel_proxy.add_subscribe_operation(channel_item)
+        channel_proxy.add_subscribe_operation(channel_struct)
         expect(channel_proxy.subscribe_operations).to be_present
       end
 
       it 'should create worker' do
         expect(channel_proxy.worker).to be_nil
-        channel_proxy.add_subscribe_operation(channel_item)
+        channel_proxy.add_subscribe_operation(channel_struct)
         expect(channel_proxy.worker).to be_a EventSource::Worker
       end
     end

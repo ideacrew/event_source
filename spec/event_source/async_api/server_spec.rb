@@ -39,7 +39,7 @@ RSpec.describe EventSource::AsyncApi::Server do
   end
   let(:variables) { [port, user, password] }
 
-  let(:required_params) { { url: url, protocol: protocol } }
+  let(:required_params) { { id: "server id", url: url, protocol: protocol } }
   let(:optional_params) do
     {
       protocol_version: protocol_version,

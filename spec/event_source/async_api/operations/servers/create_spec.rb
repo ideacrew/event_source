@@ -13,7 +13,7 @@ RSpec.describe EventSource::AsyncApi::Operations::Servers::Create do
 
   # let(:security_scheme)   { { type: :user_password, description: "simple authentication" } }
 
-  let(:required_params) { { url: url, protocol: protocol } }
+  let(:required_params) { { id: "server id", url: url, protocol: protocol } }
   let(:optional_params) do
     {
       protocol_version: protocol_version,

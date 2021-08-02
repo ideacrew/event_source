@@ -26,7 +26,7 @@ module EventSource
         def initialize(channel_proxy, async_api_channel_item)
           @channel_proxy = channel_proxy
           @exchange_name = channel_proxy.name
-          queue_bindings = async_api_channel_item[:subscribe][:bindings][:http]
+          queue_bindings = async_api_channel_item.subscribe.bindings.http
           @subject = faraday_queue_for(queue_bindings)
         end
 
@@ -47,10 +47,8 @@ module EventSource
 
         # Construct and subscribe a consumer_proxy with the queue
         # @param [Object] subscriber_klass Subscriber class
-        # @param [Hash] _options Subscribe operation bindings
-        # @param [Proc] block Code block to execute when event is received
         # @return [Queue] Queue instance
-        def register_subscription(subscriber_klass, _options)
+        def subscribe(subscriber_klass, _options)
           unique_key = [app_name, formatted_exchange_name].join(delimiter)
           logger.debug "FaradayQueueProxy#register_subscription Subscriber Class #{subscriber_klass}"
           logger.debug "FaradayQueueProxy#register_subscription Unique_key #{unique_key}"

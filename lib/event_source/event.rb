@@ -8,7 +8,7 @@ module EventSource
     # @attr_reader [Array<String>] attribute_keys optional list of attributes that must be included in { Payload }
     # @attr_reader [String] publisher_path namespaced key indicating the class that registers event for publishing
     # @attr_reader [String] payload attribute/value pairs for the message that accompanies the event
-    attr_reader :attribute_keys, :publisher_path, :payload
+    attr_reader :attribute_keys, :publisher_path, :payload, :headers, :metadata
 
     HeaderDefaults = {
       version: '3.0',
@@ -23,8 +23,7 @@ module EventSource
       @payload = {}
 
       send(:payload=, options[:attributes] || {})
-
-      _metadata = (options[:metadata] || {}).merge(name: name)
+      send(:headers=, options[:headers] || {})
 
       @publisher_path = klass_var_for(:publisher_path) || nil
       if @publisher_path.eql?(nil)
@@ -40,14 +39,13 @@ module EventSource
     def payload=(values)
       raise ArgumentError, 'payload must be a hash' unless values.instance_of?(Hash)
 
-      values.symbolize_keys!
+      @payload = values
+    end
 
-      @payload =
-        values.select do |key, _value|
-          attribute_keys.empty? || attribute_keys.include?(key)
-        end
+    def headers=(values)
+      raise ArgumentError, 'headers must be a hash' unless values.instance_of?(Hash)
 
-      validate_attribute_presence
+      @headers = values
     end
 
     # Verify this instance is complete and may be published

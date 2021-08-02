@@ -62,11 +62,11 @@ module EventSource
       def publish(event)
         event_key = publisher_key if protocol == :http
         event_key ||= event.name.split('.').last
-
         publish_operation_name = publish_operation_name_for(event_key)
 
         logger.debug "Publisher#publish publish_operation_name: #{publish_operation_name}"
-        find_publish_operation_for(publish_operation_name).call(event.payload)
+        publish_operation = find_publish_operation_for(publish_operation_name)
+        publish_operation.call(event.payload, {headers: event.headers})
       end
 
       def channel_name
@@ -87,15 +87,16 @@ module EventSource
       def validate
         return unless events
 
-        events.keys.each do |event_name|
+        events.each_key do |event_name|
           publish_operation_name = publish_operation_name_for(event_name)
-          logger.debug "Publisher#validate find publish operation for: #{publish_operation_name}"
+
+          logger.debug "#{self}#validate find publish operation for: #{publish_operation_name}"
           publish_operation = find_publish_operation_for(publish_operation_name)
 
           if publish_operation
-            logger.debug "Publisher#validate found publish operation for: #{publish_operation_name}"
+            logger.debug "#{self}#validate found publish operation for: #{publish_operation_name}"
           else
-            logger.error "Publisher#validate unable to find publish operation for: #{publish_operation_name}"
+            logger.error "\n *******\n #{self}#validate unable to find publish operation for: #{publish_operation_name}\n *******"
           end
         end
       end
@@ -106,9 +107,9 @@ module EventSource
       end
 
       def find_publish_operation_for(publish_operation_name)
-        connection_manager.find_publish_operation(
-          { protocol: protocol, publish_operation_name: publish_operation_name }
-        )
+        connection_manager.find_publish_operation({
+                                                    protocol: protocol, publish_operation_name: publish_operation_name
+                                                  })
       end
 
       def connection_manager

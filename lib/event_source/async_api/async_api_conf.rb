@@ -10,6 +10,8 @@ module EventSource
     # of different programming languages as long as they support the selected protocol. An application must also use
     # a protocol supported by the {Server} in order to connect and exchange {Message Messages}.
     class AsyncApiConf < Dry::Struct
+      transform_keys(&:to_sym)
+
       # @!attribute [r] asyncapi
       # AsyncAPI spec version being used (required)
       # @return [String]
@@ -28,13 +30,13 @@ module EventSource
       # @!attribute [r] servers
       # connection details of servers
       # @return [Array<Server>]
-      # attribute :servers, Types::Array.of(Server).meta(omittable: true)
-      attribute :servers, Types::Hash.meta(omittable: false)
+      attribute :servers, Types::Array.of(Server).meta(omittable: true)
+      # attribute :servers, Types::Hash.meta(omittable: false)
 
       # @!attribute [r] channels
       # available channels and messages for API (required)
-      # @return [Array<Channel>]
-      attribute :channels, Types::Hash.meta(omittable: false) # Channels.meta(omittable: false)
+      # @return [Array<ChannelItem>]
+      attribute :channels, Types::Array.of(ChannelItem).meta(omittable: false)
 
       # @!attribute [r] components
       # container for schemas for the specification

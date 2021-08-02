@@ -1,25 +1,36 @@
-+++
-title = "Event Source"
+<!-- prettier_ignore_start -->
 
 +++
+title = "Welcome"
+linkTitle = "Welcome"
+
++++
+
+<!-- prettier_ignore_end -->
 
 <!-- Hero section -->
-{{<blocks/cover title="Event Source" image_anchor="center" height="full" color="dark">}}
+
+{{< blocks/cover title="EventSource" image_anchor="top" height="full" color="dark" >}}
+
 <div class="mx-auto">
-  <p class="lead mt-5">
-    Event Source provides event capabilities for OpenHBX projects.
-  </p>
-  <a
-    class="btn btn-lg btn-primary mr-3 mb-4"
-    href="/docs/"
-  >
-    Get Started <i class="fas fa-arrow-alt-circle-right ml-2"></i>
-  </a>
-  <a
-    class="btn btn-lg btn-secondary mr-3 mb-4"
-    href="https://github.com/ideacrew/event_source"
-  >
-    Github <i class="fas fa-pencil-alt ml-2"></i>
-  </a>
+	<a class="btn btn-lg btn-primary mr-3 mb-4" href="{{< relref "docs/v0.5.3" >}}">
+		Documentation <i class="fas fa-arrow-alt-circle-right ml-2"></i>
+	</a>
+  <a class="btn btn-lg btn-secondary mr-3 mb-4" href="https://github.com/ideacrew/event_source" >
+		Code on Github <i class="fab fa-github ml-2 "></i>
+	</a>
+	<p class="lead mt-5">Event-enable your application's domain model</p>
+	{{< blocks/link-down color="info" >}}
 </div>
-{{</blocks/cover>}}
+
+{{< /blocks/cover >}}
+
+{{% blocks/feature icon="fa-lightbulb" title="New chair metrics!" %}}
+The Goldydocs UI now shows chair size metrics by default.
+
+Please follow this space for updates!
+{{% /blocks/feature %}}
+
+{{% blocks/feature icon="fab fa-github" title="Contributions welcome!" url="https://github.com/google/docsy-example" %}}
+We do a [Pull Request](https://github.com/google/docsy-example/pulls) contributions workflow on **GitHub**. New users are always welcome!
+{{% /blocks/feature %}}

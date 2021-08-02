@@ -29,7 +29,7 @@ module EventSource
             Try do
               paths.collect do |path|
                 result = LoadPath.new.call(path: path)
-                result&.value!&.deep_symbolize_keys
+                result&.value!
               end
             end.to_result
           end

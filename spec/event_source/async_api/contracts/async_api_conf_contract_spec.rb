@@ -10,7 +10,7 @@ RSpec.describe EventSource::AsyncApi::Contracts::AsyncApiConfContract do
   let(:channel_id)    { "email_notices" }
   let(:publish_operation) do
     {
-      operation_id: "on_crm_sugarcrm_contacts_contact_created",
+      operationId: "on_crm_sugarcrm_contacts_contact_created",
       summary: "SugarCRM Contact Created",
       message: {
         "$ref": "#/components/messages/crm_sugar_crm_contacts_contact_created_event",
@@ -22,7 +22,7 @@ RSpec.describe EventSource::AsyncApi::Contracts::AsyncApiConfContract do
 
   let(:subscribe_operation) do
     {
-      operation_id: "crm_sugarcrm_contacts_contact_created",
+      operationId: "crm_sugarcrm_contacts_contact_created",
       summary: "SugarCRM Contact Created",
       message: {
         "$ref": "#/components/messages/crm_sugar_crm_contacts_contact_created_event",
@@ -48,6 +48,15 @@ RSpec.describe EventSource::AsyncApi::Contracts::AsyncApiConfContract do
   let(:required_params) { { asyncapi: asyncapi, info: info, servers: servers, channels: channels } }
   let(:optional_params) { { id: id, servers: servers, components: components, tags: tags, external_docs: external_docs } }
   let(:all_params)      { required_params.merge(optional_params) }
+
+  let(:expected_required_params) do
+    required_params.merge({ channels: [channel_item.merge({ id: channel_id })], servers: [] })
+  end
+
+  let(:expected_all_params) do
+    required_params.merge(optional_params).merge({ servers: [], channels: [channel_item.merge({ id: channel_id })] })
+  end
+
   context "Given gapped or invalid parameters" do
     context "and parameters are empty" do
       it { expect(subject.call({}).success?).to be_falsey }
@@ -72,12 +81,12 @@ RSpec.describe EventSource::AsyncApi::Contracts::AsyncApiConfContract do
   context "Given valid parameters" do
     context "and required parameters only" do
       it { expect(subject.call(required_params).success?).to be_truthy }
-      it { expect(subject.call(required_params).to_h).to eq required_params }
+      it { expect(subject.call(required_params).to_h).to eq expected_required_params }
     end
     context "and required and optional parameters" do
 
       it { expect(subject.call(all_params).success?).to be_truthy }
-      it { expect(subject.call(all_params).to_h).to eq all_params }
+      it { expect(subject.call(all_params).to_h).to eq expected_all_params }
     end
   end
 end

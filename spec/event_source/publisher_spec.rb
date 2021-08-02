@@ -18,10 +18,10 @@ RSpec.describe EventSource::Publisher do
     let(:publisher) { Publishers::ExamplePublisher }
     let(:connection_manager) { EventSource::ConnectionManager.instance }
     let(:operation) { double }
-    let(:events) { {:determine_aqhp_eligible => double} }
-    let(:params) { {protocol: :amqp, publish_operation_name:  "polypress.document_publisher.determine_aqhp_eligible"} }
+    let(:events) { { :determine_aqhp_eligible => double } }
+    let(:params) { { protocol: :amqp, publish_operation_name:  "polypress.document_publisher.determine_aqhp_eligible" } }
 
-    context 'log messages' do 
+    context 'log messages' do
       before do
         allow(publisher).to receive(:protocol).and_return(:amqp)
         allow(publisher).to receive(:events).and_return(events)
@@ -32,7 +32,7 @@ RSpec.describe EventSource::Publisher do
         before do
           allow(connection_manager).to receive(:find_publish_operation).with(params).and_return(operation)
         end
-        
+
         it 'should log success messages' do
           publisher.validate
 
@@ -43,16 +43,19 @@ RSpec.describe EventSource::Publisher do
 
       context 'when publish operation not found' do
 
-        before do 
+        let(:operation_not_found_msg) { "#{publisher}#validate unable to find publish operation for: #{params[:publish_operation_name]}" }
+
+        before do
           allow(connection_manager).to receive(:find_publish_operation).with(params).and_return(nil)
         end
-        
+
+
         it 'should log error message' do
           publisher.validate
 
           expect(@log_output.readline).to match(/Publisher#validate find publish operation for: #{params[:publish_operation_name]}/)
-          expect(@log_output.readline).to match(/Publisher#validate unable to find publish operation for: #{params[:publish_operation_name]}/)
-         end
+          expect(@log_output.readlines.any?{|message| message.match(/#{operation_not_found_msg}/)}).to be_truthy
+        end
       end
     end
   end

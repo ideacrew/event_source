@@ -28,6 +28,10 @@ module EventSource
     require_relative 'message'
     require_relative 'operation_trait'
     require_relative 'operation'
+    require_relative 'publish_bindings'
+    require_relative 'subscribe_bindings'
+    require_relative 'publish_operation'
+    require_relative 'subscribe_operation'
     require_relative 'channel_binding'
     require_relative 'channel_item'
     require_relative 'channels'
@@ -37,11 +41,7 @@ module EventSource
     require_relative 'server_binding'
     require_relative 'server'
     require_relative 'async_api_conf'
-    require_relative 'contracts/contract'
-    require_relative 'operations/async_api_conf/load_path'
-    require_relative 'operations/async_api_conf/load'
-
-    Gem.find_files('event_source/async_api/contracts/**/*.rb').sort.each { |f| require(f) }
-    Gem.find_files('event_source/async_api/operations/**/*.rb').sort.each { |f| require(f) }
+    require_relative 'contracts'
+    require_relative 'operations'
   end
 end

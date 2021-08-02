@@ -18,10 +18,11 @@ require 'event_source/inflector'
 require 'event_source/logging'
 require 'event_source/uris/uri'
 require 'event_source/types'
+require 'event_source/content_type_resolver'
 require 'event_source/async_api/types'
 require 'event_source/async_api/async_api'
 require 'event_source/railtie' if defined?(Rails)
-require 'event_source/configure/config'
+require 'event_source/configure'
 require 'event_source/connection'
 require 'event_source/connection_manager'
 require 'event_source/channel'
@@ -43,11 +44,7 @@ module EventSource
       'no operation'
     end
   end
-
-  Inflector = Dry::Inflector.new
-
   class << self
-
     extend Forwardable
 
     def_delegators :config,
@@ -74,10 +71,21 @@ module EventSource
     def config
       @config ||= EventSource::Configure::Config.new
     end
+
+    # Call this method on fork of a rails app you are working in.
+    # It cleans up your connections and channels and avoids strange
+    # behaviour.
+    def reconnect_publishers!; end
+
+    def build_async_api_resource(resource)
+      EventSource::AsyncApi::Operations::AsyncApiConf::Create
+        .new
+        .call(resource)
+        .success
+    end
   end
 
   class EventSourceLogger
     include EventSource::Logging
-    
   end
 end

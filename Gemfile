@@ -11,4 +11,5 @@ group :development, :test do
   gem "pry",        platform: :mri, require: false
   gem "pry-byebug", platform: :mri, require: false
   gem 'rubocop', '1.10.0'
+  gem 'yard'
 end

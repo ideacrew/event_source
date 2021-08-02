@@ -5,6 +5,8 @@ module EventSource
     module Amqp
       # AMQP protocol-specific information about the channel
       class ChannelBinding < Dry::Struct
+        transform_keys(&:to_sym)
+
         # @!attribute [r] is
         # Defines what type of channel is it. Can be either queue or routingKey (default).
         # @return [EventSource::AsyncApi::Types::ChannelTypeKind]

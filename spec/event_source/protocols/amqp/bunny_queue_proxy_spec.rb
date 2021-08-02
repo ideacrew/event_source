@@ -25,7 +25,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyQueueProxy do
   let(:channel_id) { 'crm_contact_created' }
   let(:publish_operation) do
     {
-      operation_id: 'on_crm_sugarcrm_contacts_contact_created',
+      operationId: 'on_crm_sugarcrm_contacts_contact_created',
       summary: 'SugarCRM Contact Created',
       message: {
         "$ref":
@@ -51,7 +51,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyQueueProxy do
 
   let(:subscribe_operation) do
     {
-      operation_id: 'crm_sugarcrm_contacts_contact_created',
+      operationId: 'crm_sugarcrm_contacts_contact_created',
       summary: 'SugarCRM Contact Created',
       bindings: {
         amqp: {
@@ -86,16 +86,30 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyQueueProxy do
   end
 
   let(:async_api_publish_channel_item) do
-    { publish: publish_operation, bindings: channel_bindings }
+    {
+      id: 'publish channel id',
+      publish: publish_operation,
+      bindings: channel_bindings
+    }
   end
 
   let(:async_api_subscribe_channel_item) do
-    { subscribe: subscribe_operation, bindings: channel_bindings }
+    {
+      id: 'subscribe channel id',
+      subscribe: subscribe_operation,
+      bindings: channel_bindings
+    }
   end
 
-  let(:channel) do
-    connection.add_channel(channel_id, async_api_publish_channel_item)
+  let(:subscribe_channel_struct) do
+    EventSource::AsyncApi::ChannelItem.new(async_api_subscribe_channel_item)
   end
+
+  let(:publish_channel_struct) do
+    EventSource::AsyncApi::ChannelItem.new(async_api_publish_channel_item)
+  end
+
+  let(:channel) { connection.add_channel(channel_id, publish_channel_struct) }
   let(:channel_proxy) { channel.channel_proxy }
 
   let(:proc_to_execute) do
@@ -108,9 +122,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyQueueProxy do
     end
   end
 
-  subject do
-    described_class.new(channel_proxy, async_api_subscribe_channel_item)
-  end
+  subject { described_class.new(channel_proxy, subscribe_channel_struct) }
 
   before { connection.start unless connection.active? }
   after { connection.disconnect if connection.active? }
@@ -120,7 +132,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyQueueProxy do
       it 'should execute the block' do
         subject
         expect(subject.consumer_count).to eq 0
-        subject.register_subscription(
+        subject.subscribe(
           'SubscriberClass',
           subscribe_operation[:bindings],
           &proc_to_execute

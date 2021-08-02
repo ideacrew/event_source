@@ -1,5 +1,5 @@
 {
-  "name": "aca_entities-docsite",
+  "name": "event_source-docsite",
   "version": "1.0.0",
   "devDependencies": {
     "autoprefixer": "^10.2.3",

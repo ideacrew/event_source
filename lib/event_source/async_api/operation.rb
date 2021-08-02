@@ -6,13 +6,15 @@ module EventSource
     # a place to document how and why messages are sent and received. For example, an operation
     # might describe a chat application use case where a user sends a text message to a group
     class Operation < Dry::Struct
+      transform_keys(&:to_sym)
+
       # @!attribute [r] operation_id
       # Unique string used to identify the operation. The id MUST be unique among all operations
       # described in the API. The operationId value is case-sensitive. Tools and libraries MAY use
       # the operationId to uniquely identify an operation, therefore, it is RECOMMENDED to follow
       # common programming naming conventions
       # @return [String]
-      attribute :operation_id, Types::Symbol.meta(omittable: true)
+      attribute :operationId, Types::OperationNameType.meta(omittable: true)
 
       # @!attribute [r] summary
       # Short summary of what the operation is about
@@ -41,12 +43,6 @@ module EventSource
                   .of(EventSource::AsyncApi::ExternalDocumentation)
                   .meta(omittable: true)
 
-      # @!attribute [r] bindings
-      # Map where the keys describe the name of the protocol and the values describe protocol-specific
-      # definitions for the operation.
-      # @return [Hash]
-      attribute :bindings, Types::Hash.meta(omittable: true)
-
       # @!attribute [r] traits
       # A list of traits to apply to the operation object. Traits MUST be merged into the operation
       # object using the JSON Merge Patch algorithm in the same order they are defined here
@@ -61,7 +57,7 @@ module EventSource
       # allowed here to specify multiple messages, however, a message MUST be valid only against one of
       # the referenced message objects
       # @return [EventSource::AsyncApi::Message]
-      attribute :message, EventSource::AsyncApi::Message.meta(omittable: true)
+      attribute :message, Types::Hash.meta(omittable: true) # EventSource::AsyncApi::Message.meta(omittable: true)
     end
   end
 end

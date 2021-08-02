@@ -41,10 +41,14 @@ module EventSource
         # Publish a message to this Exchange
         # @param [Mixed] payload the message content
         # @param [Hash] publish_bindings
-        def publish(payload:, publish_bindings:)
-          bunny_publish_bindings = sanitize_bindings(publish_bindings || {})
+        # @param [Hash] headers
+        def publish(payload:, publish_bindings:, headers: {})
+          bunny_publish_bindings = sanitize_bindings((publish_bindings || {}).to_h)
+          bunny_publish_bindings[:correlation_id] = headers.delete(:correlation_id) if headers[:correlation_id]
+          bunny_publish_bindings[:headers] = headers unless headers.empty?
+
           logger.debug "BunnyExchange#publish  publishing message with bindings: #{bunny_publish_bindings.inspect}"
-          @subject.publish(payload, bunny_publish_bindings)
+          @subject.publish(payload.to_json, bunny_publish_bindings)
           logger.debug "BunnyExchange#publish  published message: #{payload}"
           logger.debug "BunnyExchange#publish  published message to exchange: #{@subject.name}"
         end
@@ -77,7 +81,7 @@ module EventSource
         #   bcc: ['external.audit']
         # @return [Hash] sanitized Bunny/RabitMQ bindings
         def sanitize_bindings(bindings)
-          options = bindings[:amqp]
+          options = bindings[:amqp]&.symbolize_keys || {}
           operation_bindings = options.slice(
             :type, :content_type, :correlation_id, :correlation_id,
             :priority, :message_id, :app_id, :expiration, :mandatory, :routing_key

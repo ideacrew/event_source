@@ -1,3 +1,54 @@
+## Version 0.5.3
+
+### Client Side Certificate Support for HTTP
+
+You may now add client side certificates to HTTP configurations, with optional passwords for the key.  Check out `spec/rails_app/config/initializers/event_source.rb` for an example.
+
+### SOAP Protocol Support Under HTTP
+
+SOAP is now supported for HTTP publishing.  Make sure you have your message `contentType` configured as 'application/soap+xml' in your asyncapi YAML.
+
+SOAP configuration is done by devops in the server block for the HTTP protocol.  Check out `spec/rails_app/config/initializers/event_source.rb` for an example.
+
+### Extended Protocol Bindings for Operations
+
+Protocol Bindings for Operations have been moved to a Dry::Struct.  This is currently implemented only for HTTP, AMQP bindings are still treated as a hash.
+
+### Difference Documentation
+
+In areas where we differ from the AsyncAPI spec, I have introduced documentation identifying the differences.  It can currently be found in `hugo/content/docs/async_api_differences.md`.
+
+### Thread Safety and Worker Pools/Hosts - but not yet
+
+AMQP workers need some love around worker process hosting - planned for next release.
+
+### Improved Single-Location Connection Configuration for DevOps
+
+Connection redirection is complete.
+
+If you would like to have a 'placeholder' URL in the yaml, and put the 'real' url in the ruby configuration file, set the server `ref` value to the URL in the yaml and make the host, url, port, or other values what you want them to be for the 'real' server:
+
+Async API YAML:
+```yaml
+servers:
+  production:
+    url: http://aces-qa/some-random-lookup-uri
+    protocol: http
+    description: ACES QA Server
+```
+
+ruby configuration file:
+```ruby
+    server.http do |http|
+      http.ref = "http://aces-qa/some-random-lookup-uri"
+      http.url = "http://localhost:6767/"
+    end
+```
+
+### File Loading
+
+Correct file loading in AsyncApi namespace to use idiomatic ruby conventions and avoid unpredictable gem search paths when requiring files within the library.
+
 ## Changes between EventSource 0.4.0 and 0.5.0 (June 3, 2021)
 
 ### Added support for HTTP protocol
