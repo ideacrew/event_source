@@ -180,3 +180,29 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyConnectionProxy do
     end
   end
 end
+
+RSpec.describe EventSource::Protocols::Amqp::BunnyConnectionProxy, "given a url with non-default credentials" do
+  let(:username) { "A USERNAME" }
+  let(:password) { "A PASSWORD!" }
+
+  # rubocop:disable Lint/UriEscapeUnescape
+  let(:connection_url) do
+    "amqp://#{URI.escape(username)}:#{URI.escape(password)}@localhost:5672"
+  end
+  # rubocop:enable Lint/UriEscapeUnescape
+
+  let(:server) do
+    {
+      url: connection_url
+    }
+  end
+
+  let(:connection_params) do
+    EventSource::Protocols::Amqp::BunnyConnectionProxy.connection_params_for(server)
+  end
+
+  it "correctly sets the username and password" do
+    expect(connection_params[:username]).to eq username
+    expect(connection_params[:password]).to eq password
+  end
+end

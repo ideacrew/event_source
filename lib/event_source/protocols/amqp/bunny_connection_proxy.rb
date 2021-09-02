@@ -45,10 +45,12 @@ module EventSource
         ConnectDefaults = {
           host: 'localhost',
           port: 5672, # (Integer) - default: 5672 - Port RabbitMQ listens on
-          tls: false,
           username: 'guest',
           password: 'guest',
-          vhost: 'event_source' # '/event_source' # (String) - default: "/" - Virtual host to use
+          heartbeat: 5,
+          vhost: 'event_source', # '/event_source' # (String) - default: "/" - Virtual host to use
+          ssl: false,
+          auth_mechanism: 'PLAIN'
         }.freeze
 
         # @param [Hash] server {EventSource::AsyncApi::Server} configuration
@@ -154,15 +156,8 @@ module EventSource
           # Build protocol-appropriate URL for the specified server
           def connection_params_for(server)
             params = parse_url(server)
-
-            params.merge(
-              ssl: false,
-              auth_mechanism: 'PLAIN',
-              user: 'guest',
-              pass: 'guest',
-              heartbeat: 5, # will use RabbitMQ setting
-              frame_max: 131_072
-            )
+            connection_params = params.merge(connection_credentials_from_server(server))
+            ConnectDefaults.merge(connection_params)
           end
 
           def connection_uri_for(server)
@@ -179,6 +174,19 @@ module EventSource
             end
           end
 
+          # rubocop:disable Lint/UriEscapeUnescape
+          def connection_credentials_from_server(server)
+            url = server[:url]
+            if URI(url)
+              amqp_url = URI.parse(url)
+              return {} unless amqp_url.userinfo
+              { username: URI.unescape(amqp_url.user), password: URI.unescape(amqp_url.password) }
+            else
+              {}
+            end
+          end
+          # rubocop:enable Lint/UriEscapeUnescape
+
           def parse_url(server)
             url = server[:url]
             if URI(url)
@@ -190,7 +198,6 @@ module EventSource
               port = server[:port] || ConnectDefaults[:port]
             end
             vhost = vhost_for(server)
-
             { host: host, port: port, vhost: vhost }
           end
 
