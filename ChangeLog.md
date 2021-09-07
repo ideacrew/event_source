@@ -1,3 +1,7 @@
+## Version 0.5.4
+
+Correct support of usernames and passwords in AMQP connections.
+
 ## Version 0.5.3
 
 ### Client Side Certificate Support for HTTP
