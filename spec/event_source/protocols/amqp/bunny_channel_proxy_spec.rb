@@ -166,6 +166,10 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyChannelProxy do
     it 'should respond to all the DSL methods' do
       expect(channel_proxy).to respond_to(*adapter_methods)
     end
+
+    it 'should set prefetch_count to 1' do
+      expect(channel_proxy.prefetch_count).to eq(1)
+    end
   end
 
   it 'should automatically recover from an unexpected closed channel'
