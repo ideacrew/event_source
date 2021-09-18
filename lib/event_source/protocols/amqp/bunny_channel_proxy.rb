@@ -38,8 +38,6 @@ module EventSource
           # @subject.prefetch(1) # Limit number of messages received by consumer at a time before ack or nack previous message.
           # @subject.basic_qos(1, false)
           @subject.open
-          @subject.prefetch(1)
-          @subject
         end
 
         def subject
