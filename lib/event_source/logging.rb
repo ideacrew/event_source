@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'logging'
+require_relative "logging/filtered_rolling_file_appender"
+require_relative "logging/filtered_stdout_appender"
 
 module EventSource
   # Module for logging
@@ -17,11 +19,11 @@ module EventSource
           )
 
         # # only show "info" or higher messages on STDOUT using the Basic layout
-        ::Logging.appenders.stdout(level: :info, layout: layout)
+        ::Logging.appenders.filtered_stdout(level: :info, layout: layout)
 
         Dir.mkdir('log') unless File.directory?('log')
         # # send all log events to the development log (including debug) as JSON
-        ::Logging.appenders.rolling_file(
+        ::Logging.appenders.filtered_rolling_file(
           'log/event_source.log',
           age: 'daily',
           level: :debug,
@@ -29,7 +31,7 @@ module EventSource
           layout: ::Logging.layouts.json
         )
 
-        logger_instance.add_appenders 'stdout', 'log/event_source.log'
+        logger_instance.add_appenders 'filteredstdoutappender', 'log/event_source.log'
       end
       logger_instance
     end
