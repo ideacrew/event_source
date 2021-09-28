@@ -56,6 +56,16 @@ EventSource.configure do |config|
       rabbitmq.default_content_type = 'application/json'
     end
 
+    server.amqp do |rabbitmq|
+      rabbitmq.host = "localhost" # ENV['RABBITMQ_HOST']
+      rabbitmq.vhost = "/event_source" # ENV['RABBITMQ_VHOST']
+      rabbitmq.port = "5672" # ENV['RABBITMQ_PORT']
+      rabbitmq.ref = "amqp://rabbitmq:5672/event_source" # ENV['RABBITMQ_URL']
+      rabbitmq.user_name = "" # ENV['RABBITMQ_USERNAME']
+      rabbitmq.password = "" # ENV['RABBITMQ_PASSWORD']
+      rabbitmq.default_content_type = 'application/json'
+    end
+
     server.http do |http|
       http.host = "https://api.github.com"
       http.default_content_type = 'application/json'
