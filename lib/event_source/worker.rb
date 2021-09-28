@@ -92,11 +92,13 @@ module EventSource
             logger.debug "Spawn payload action headers: #{action_payload.headers}"
 
             queue_proxy.actions.each do |action_proc|
-              action_proc.call(
-                action_payload.body,
-                action_payload.status,
-                action_payload.headers
-              )
+              EventSource.threaded.worker_lock.synchronize do
+                action_proc.call(
+                  action_payload.body,
+                  action_payload.status,
+                  action_payload.headers
+                )
+              end
             end
 
             # action_proc, action_payload = wait_for_action

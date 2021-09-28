@@ -149,13 +149,15 @@ module EventSource
           logger.debug "routing_key: #{routing_key}"
           return unless executable
 
-          subscriber_klass.execute_subscribe_for(
-            @subject.channel,
-            delivery_info,
-            metadata,
-            payload,
-            &executable
-          )
+          EventSource.threaded.amqp_consumer_lock.synchronize do
+            subscriber_klass.execute_subscribe_for(
+              @subject.channel,
+              delivery_info,
+              metadata,
+              payload,
+              &executable
+            )
+          end
         end
 
         def respond_to_missing?(name, include_private); end

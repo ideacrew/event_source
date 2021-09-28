@@ -14,6 +14,7 @@ require 'active_support/all' # TODO: Remove ActiveSupport dependency
 
 require 'event_source/version'
 require 'event_source/error'
+require 'event_source/threaded'
 require 'event_source/inflector'
 require 'event_source/logging'
 require 'event_source/uris/uri'
@@ -62,10 +63,19 @@ module EventSource
     end
 
     def initialize!
+      boot_threading!
       load_protocols
       create_connections
       load_async_api_resources
       load_components
+    end
+
+    def boot_threading!
+      @threaded = EventSource::Threaded.new
+    end
+
+    def threaded
+      @threaded
     end
 
     def config
