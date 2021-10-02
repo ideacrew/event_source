@@ -157,7 +157,7 @@ module EventSource
           def connection_params_for(server)
             params = parse_url(server)
             connection_params = params.merge(connection_credentials_from_server(server))
-            ConnectDefaults.merge(connection_params)
+            ConnectDefaults.merge(recovery_configuration_settings).merge(connection_params)
           end
 
           def connection_uri_for(server)
@@ -213,6 +213,15 @@ module EventSource
             end
             vhost = vhost.match(%r{\A/(.+)\Z})[1] if vhost != ('/') && vhost&.match(%r{\A/.+\Z})
             vhost || ConnectDefaults[:vhost]
+          end
+
+          def recovery_configuration_settings
+            recovery_start_proc = Proc.new do
+              Thread.main.raise ::EventSource::Protocols::Amqp::Error::AmqpConnectionFailedException
+            end
+            {
+              recovery_attempt_started: recovery_start_proc
+            }
           end
         end
 
