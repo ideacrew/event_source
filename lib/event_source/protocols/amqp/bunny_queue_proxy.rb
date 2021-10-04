@@ -89,7 +89,7 @@ module EventSource
             end
             while !@channel_proxy.subject.any_consumers? do
               sub_thread.run
-              Thread.yield
+              Thread.pass
               sleep 0.05
             end
           else
