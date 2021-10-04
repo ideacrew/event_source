@@ -34,10 +34,10 @@ module EventSource
         end
 
         def create_channel
-          @subject = Bunny::Channel.new(connection)
+          @subject = connection.create_channel
           # @subject.prefetch(1) # Limit number of messages received by consumer at a time before ack or nack previous message.
           # @subject.basic_qos(1, false)
-          @subject.open
+          # @subject.open
         end
 
         def subject
