@@ -66,7 +66,7 @@ module EventSource
 
         def subscribe(subscriber_klass, bindings)
           options = convert_to_subscribe_options(bindings[:amqp])
-          prefetch = convert_subscriber_prefetch(options)
+          prefetch = convert_subscriber_prefetch(bindings[:amqp])
 
           logger.debug 'Queue#subscribe options:'
           logger.debug options.merge({prefetch: prefetch}).inspect
