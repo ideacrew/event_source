@@ -66,16 +66,41 @@ module EventSource
 
         def subscribe(subscriber_klass, bindings)
           options = convert_to_subscribe_options(bindings[:amqp])
-          logger.debug 'Queue#subscribe options:'
-          logger.debug options.inspect
+          prefetch = convert_subscriber_prefetch(options)
 
-          @subject.subscribe(options) do |delivery_info, metadata, payload|
-            route_payload_for(
-              subscriber_klass,
-              delivery_info,
-              metadata,
-              payload
-            )
+          logger.debug 'Queue#subscribe options:'
+          logger.debug options.merge({prefetch: prefetch}).inspect
+
+          if @channel_proxy.subject.any_consumers?
+             raise "Channel In Use already!"
+          end
+          @channel_proxy.subject.prefetch(prefetch)
+
+          if options[:block]
+            sub_thread = Thread.new do
+              @subject.subscribe(options) do |delivery_info, metadata, payload|
+                route_payload_for(
+                  subscriber_klass,
+                  delivery_info,
+                  metadata,
+                  payload
+                )
+              end
+            end
+            while !@channel_proxy.subject.any_consumers? do
+              sub_thread.run
+              Thread.yield
+              sleep 0.05
+            end
+          else
+            @subject.subscribe(options) do |delivery_info, metadata, payload|
+              route_payload_for(
+                subscriber_klass,
+                delivery_info,
+                metadata,
+                payload
+              )
+            end
           end
         end
 
@@ -83,8 +108,14 @@ module EventSource
           options.symbolize_keys!
           subscribe_options = options.slice(:exclusive, :on_cancellation)
           subscribe_options[:manual_ack] = options[:ack]
-          subscribe_options[:block] = false
+          subscribe_options[:block] = (options[:block].to_s == "true") ? true : false
           subscribe_options
+        end
+
+        def convert_subscriber_prefetch(options)
+          symbolized_options = options.symbolize_keys
+          return 0 if symbolized_options[:prefetch].nil?
+          symbolized_options[:prefetch].to_i
         end
 
         def resolve_subscriber_routing_keys(channel, operation); end
