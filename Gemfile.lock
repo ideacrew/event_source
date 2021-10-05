@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     event_source (0.5.3)
-      bunny (>= 1.7.1)
+      bunny (>= 2.14)
       deep_merge (~> 1.2.0)
       dry-events (~> 0.3)
       dry-inflector (~> 0.2)
@@ -375,4 +375,4 @@ DEPENDENCIES
   yard
 
 BUNDLED WITH
-   2.0.1
+   2.2.14
