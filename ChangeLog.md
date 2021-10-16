@@ -1,3 +1,7 @@
+## 0.5.5
+
+Add support for prefetch count in the configuration
+
 ## Version 0.5.4
 
 Correct support of usernames and passwords in AMQP connections.
@@ -6,21 +10,21 @@ Correct support of usernames and passwords in AMQP connections.
 
 ### Client Side Certificate Support for HTTP
 
-You may now add client side certificates to HTTP configurations, with optional passwords for the key.  Check out `spec/rails_app/config/initializers/event_source.rb` for an example.
+You may now add client side certificates to HTTP configurations, with optional passwords for the key. Check out `spec/rails_app/config/initializers/event_source.rb` for an example.
 
 ### SOAP Protocol Support Under HTTP
 
-SOAP is now supported for HTTP publishing.  Make sure you have your message `contentType` configured as 'application/soap+xml' in your asyncapi YAML.
+SOAP is now supported for HTTP publishing. Make sure you have your message `contentType` configured as 'application/soap+xml' in your asyncapi YAML.
 
-SOAP configuration is done by devops in the server block for the HTTP protocol.  Check out `spec/rails_app/config/initializers/event_source.rb` for an example.
+SOAP configuration is done by devops in the server block for the HTTP protocol. Check out `spec/rails_app/config/initializers/event_source.rb` for an example.
 
 ### Extended Protocol Bindings for Operations
 
-Protocol Bindings for Operations have been moved to a Dry::Struct.  This is currently implemented only for HTTP, AMQP bindings are still treated as a hash.
+Protocol Bindings for Operations have been moved to a Dry::Struct. This is currently implemented only for HTTP, AMQP bindings are still treated as a hash.
 
 ### Difference Documentation
 
-In areas where we differ from the AsyncAPI spec, I have introduced documentation identifying the differences.  It can currently be found in `hugo/content/docs/async_api_differences.md`.
+In areas where we differ from the AsyncAPI spec, I have introduced documentation identifying the differences. It can currently be found in `hugo/content/docs/async_api_differences.md`.
 
 ### Thread Safety and Worker Pools/Hosts - but not yet
 
@@ -33,6 +37,7 @@ Connection redirection is complete.
 If you would like to have a 'placeholder' URL in the yaml, and put the 'real' url in the ruby configuration file, set the server `ref` value to the URL in the yaml and make the host, url, port, or other values what you want them to be for the 'real' server:
 
 Async API YAML:
+
 ```yaml
 servers:
   production:
@@ -42,11 +47,12 @@ servers:
 ```
 
 ruby configuration file:
+
 ```ruby
-    server.http do |http|
-      http.ref = "http://aces-qa/some-random-lookup-uri"
-      http.url = "http://localhost:6767/"
-    end
+server.http do |http|
+  http.ref = 'http://aces-qa/some-random-lookup-uri'
+  http.url = 'http://localhost:6767/'
+end
 ```
 
 ### File Loading

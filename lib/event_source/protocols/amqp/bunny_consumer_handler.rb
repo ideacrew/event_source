@@ -3,6 +3,7 @@
 module EventSource
   module Protocols
     module Amqp
+      # Set up consumer callback that executes dynamic code in subscribe block
       class BunnyConsumerHandler
         attr_reader :subscriber
 
@@ -30,17 +31,18 @@ module EventSource
             &@executable
           )
           callbacks.fetch(:on_success).call
-        rescue StandardError => e
-          callbacks.fetch(:on_failure).call(e.backtrace)
+        rescue StandardError, SystemStackError => e
+          callbacks.fetch(:on_failure).call(e.backtrace.join("\n"))
         end
 
         def callbacks
           {
-            on_success:
-              -> { logger.debug 'Subscription executed successfully!!' },
+            on_success: -> do
+              logger.debug 'Consumer processed message: Success'
+            end,
             on_failure:
               lambda do |exception|
-                logger.error "Subscription execution failed due to exception: #{exception}"
+                logger.error "Consumer processed message: Failed with exception: #{exception}"
               end
           }
         end
