@@ -23,9 +23,9 @@ module EventSource
         ClientVersion = Bunny.version
 
         RabbitMqOptionDefaults = {
-          network_recovery_interval: 5.0, # reconnection interval for TCP conection failure
+          network_recovery_interval: 30.0, # reconnection interval for TCP conection failure
           automatic_recovery: true, # Bunny will try to recover from detected TCP connection failures every 5 seconds
-          recovery_attempts: 5, # (Integer) - default: nil - Max number of recovery attempts, nil means forever
+          recovery_attempts: 10, # (Integer) - default: nil - Max number of recovery attempts, nil means forever
           reset_recovery_attempts_after_reconnection: true, # (Integer) - default: true - Should recovery attempt counter be reset after
           # successful reconnection? When set to false, the attempt counter will last through the entire lifetime of the connection object.
           recover_from_connection_close: true, # Bunny will try to recover from Server-initiated connection.close

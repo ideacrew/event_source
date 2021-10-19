@@ -35,7 +35,7 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'bunny', '>= 1.7.1'
+  spec.add_dependency 'bunny', '>= 2.14'
   spec.add_dependency 'deep_merge', '~> 1.2.0'
   spec.add_dependency 'dry-events', '~> 0.3'
   spec.add_dependency 'dry-inflector', '~> 0.2'

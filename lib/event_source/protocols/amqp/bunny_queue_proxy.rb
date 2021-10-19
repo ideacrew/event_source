@@ -66,11 +66,32 @@ module EventSource
 
         def subscribe(subscriber_klass, bindings)
           options = convert_to_subscribe_options(bindings[:amqp])
-          logger.debug 'Queue#subscribe options:'
-          logger.debug options.inspect
+          prefetch = convert_subscriber_prefetch(bindings[:amqp])
 
+          logger.debug 'Queue#subscribe options:'
+          logger.debug options.merge({ prefetch: prefetch }).inspect
+
+          @channel_proxy.subject.prefetch(prefetch)
+
+          if options[:block]
+            spawn_thread(options) { add_consumer(subscriber_klass, options) }
+          else
+            add_consumer(subscriber_klass, options)
+          end
+        end
+
+        def spawn_thread(options)
+          sub_thread = Thread.new { yield }
+          while !@channel_proxy.subject.any_consumers?
+            sub_thread.run
+            Thread.pass
+            sleep 0.05
+          end
+        end
+
+        def add_consumer(subscriber_klass, options)
           @subject.subscribe(options) do |delivery_info, metadata, payload|
-            route_payload_for(
+            on_receive_message(
               subscriber_klass,
               delivery_info,
               metadata,
@@ -83,8 +104,15 @@ module EventSource
           options.symbolize_keys!
           subscribe_options = options.slice(:exclusive, :on_cancellation)
           subscribe_options[:manual_ack] = options[:ack]
-          subscribe_options[:block] = false
+          subscribe_options[:block] =
+            (options[:block].to_s == 'true') ? true : false
           subscribe_options
+        end
+
+        def convert_subscriber_prefetch(options)
+          symbolized_options = options.symbolize_keys
+          return 0 if symbolized_options[:prefetch].nil?
+          symbolized_options[:prefetch].to_i
         end
 
         def resolve_subscriber_routing_keys(channel, operation); end
@@ -93,7 +121,7 @@ module EventSource
         #   consumer_proxy = consumer_proxy_for(bindings)
 
         #   consumer_proxy.on_delivery do |delivery_info, metadata, payload|
-        #     route_payload_for(
+        #     on_receive_message(
         #       subscriber_klass,
         #       delivery_info,
         #       metadata,
@@ -124,7 +152,7 @@ module EventSource
         #   )
         # end
 
-        def route_payload_for(
+        def on_receive_message(
           subscriber_klass,
           delivery_info,
           metadata,
@@ -149,13 +177,23 @@ module EventSource
           logger.debug "routing_key: #{routing_key}"
           return unless executable
 
-          subscriber_klass.execute_subscribe_for(
-            @subject.channel,
-            delivery_info,
-            metadata,
-            payload,
-            &executable
-          )
+          subscriber = subscriber_klass.new
+          subscriber.channel = @subject.channel
+
+          subscription_handler =
+            EventSource::Protocols::Amqp::BunnyConsumerHandler.new(
+              subscriber,
+              delivery_info,
+              metadata,
+              payload,
+              &executable
+            )
+
+          subscription_handler.run
+        rescue Bunny::Exception => e
+          logger.error "Bunny Consumer Error \n  message: #{e.message} \n  backtrace: #{e.backtrace.join("\n")}"
+        ensure
+          subscriber = nil
         end
 
         def respond_to_missing?(name, include_private); end
