@@ -6,7 +6,6 @@ module EventSource
       # Set up consumer callback that executes dynamic code in subscribe block
       class BunnyConsumerHandler
         attr_reader :subscriber
-
         include EventSource::Logging
 
         def initialize(
@@ -31,18 +30,19 @@ module EventSource
             &@executable
           )
           callbacks.fetch(:on_success).call
-        rescue StandardError, SystemStackError => e
-          callbacks.fetch(:on_failure).call(e.backtrace.join("\n"))
+        rescue Exception => e
+          callbacks.fetch(:on_failure).call(e)
+          subscriber.reject(@delivery_info.delivery_tag, false)
         end
 
         def callbacks
           {
             on_success: -> do
-              logger.debug 'Consumer processed message: Success'
+              logger.debug "Consumer processed message. Success\n"
             end,
             on_failure:
               lambda do |exception|
-                logger.error "Consumer processed message: Failed with exception: #{exception}"
+                logger.error "Consumer processed message. Failed and message rejected with exception \n  message: #{exception.message} \n  backtrace: #{exception.backtrace.join("\n")}"
               end
           }
         end

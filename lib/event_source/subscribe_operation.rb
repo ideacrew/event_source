@@ -26,6 +26,8 @@ module EventSource
 
     # Register to receive messages published on this stream
     # @param [Object] subscriber_klass Subscriber class
+    # @return [Bunny::Consumer] when using amqp protocol
+    # @return [FaradayQueueProxy] when using http protocol
     def subscribe(subscriber_klass)
       # subject.register_subscription(subscriber_klass, @async_api_subscribe_operation[:bindings])
       subject.subscribe(

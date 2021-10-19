@@ -156,26 +156,6 @@ module EventSource
         EventSource.delimiter(protocol)
       end
 
-      def execute_subscribe_for(
-        channel,
-        delivery_info,
-        metadata,
-        payload,
-        &executable
-      )
-        subscriber = self.new
-        subscriber.channel = channel
-        subscription_handler =
-          EventSource::Protocols::Amqp::BunnyConsumerHandler.new(
-            subscriber,
-            delivery_info,
-            metadata,
-            payload,
-            &executable
-          )
-        subscription_handler.run
-      end
-
       def logger
         EventSourceLogger.new.logger
       end
