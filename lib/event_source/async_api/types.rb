@@ -13,7 +13,6 @@ module EventSource
 
       # UriKind =
       #   Types.Constructor(::URI) do |val|
-      #     binding.pry
       #     (val.is_a? ::URI) ? val : ::URI.parse(val)
       #   end
       UriKind =
@@ -68,8 +67,8 @@ module EventSource
       Vhost = Types::Coercible::String.default('/')
       ChannelTypeKind =
         Types::Coercible::Symbol
-        .default(:routing_key)
-        .enum(:routing_key, :queue)
+          .default(:routing_key)
+          .enum(:routing_key, :queue)
       ExchangeTypeKind =
         Types::Coercible::Symbol.enum(
           :topic,

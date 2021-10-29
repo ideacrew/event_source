@@ -4,7 +4,6 @@ require 'spec_helper'
 require 'config_helper'
 require 'shared_contexts/amqp/connection.rb'
 require 'shared_contexts/amqp/channel_item.rb'
-require 'pry'
 
 class LogService
   include EventSource::Logging
@@ -15,7 +14,9 @@ module Subscribers
     include ::EventSource::Subscriber[amqp: 'spec.crm_contact_created']
     extend EventSource::Logging
 
-    subscribe(:on_crm_sugarcrm_contacts_contact_created) do |delivery_info, _metadata, response|
+    subscribe(
+      :on_crm_sugarcrm_contacts_contact_created
+    ) do |delivery_info, _metadata, response|
       def method_one(msg)
         method_one(msg)
       end
@@ -75,7 +76,6 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyConsumerHandler do
     end
 
     context 'when stack level too deep exception raised in the subscriber' do
-
       let(:logger) { LogService.new.logger }
 
       let(:add_consumer) do
@@ -89,12 +89,15 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyConsumerHandler do
 
       it 'should reject message after logging exception' do
         expect(bunny_queue.subject.channel).to receive(:reject)
-        operation_to_publish.call("Hello world!!")
+        operation_to_publish.call('Hello world!!')
         sleep 1
 
         match_found = false
         while true
-          match_found = @log_output.readline&.match(/ERROR  EventSource : Consumer processed message. Failed and message rejected with exception/)
+          match_found =
+            @log_output.readline&.match(
+              /ERROR  EventSource : Consumer processed message. Failed and message rejected with exception/
+            )
           break if match_found
         end
 

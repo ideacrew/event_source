@@ -1,3 +1,5 @@
+# CHANGELOG
+
 ## 0.5.5
 
 Add support for prefetch count in the configuration
