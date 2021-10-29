@@ -54,7 +54,7 @@ RSpec.describe "An example service for RIDP" do
       headers: {
         'Accept'=>'*/*',
         'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-        'User-Agent' => 'Faraday v1.4.2'
+        'User-Agent' => 'Faraday v1.4.3'
       }
     )
     .with do |request|

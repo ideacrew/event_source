@@ -38,6 +38,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'addressable', '>= 2.8.0'
   spec.add_dependency 'bunny', '>= 2.14'
   spec.add_dependency 'deep_merge', '~> 1.2.0'
+  spec.add_dependency 'dry-configurable', '0.12.1'
   spec.add_dependency 'dry-events', '~> 0.3'
   spec.add_dependency 'dry-inflector', '~> 0.2'
   spec.add_dependency 'dry-initializer', '~> 3.0'
