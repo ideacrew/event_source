@@ -10,6 +10,6 @@ group :development, :test do
   gem "rspec-rails"
   gem "pry",        platform: :mri, require: false
   gem "pry-byebug", platform: :mri, require: false
-  gem 'rubocop', '1.10.0'
+  gem 'rubocop'
   gem 'yard'
 end
