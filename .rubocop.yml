@@ -16,6 +16,9 @@ Layout/EmptyLinesAroundBlockBody:
 Layout/ExtraSpacing:
   Enabled: false
 
+Layout/MultilineMethodCallIndentation:
+  Enabled: false
+
 Layout/EmptyLinesAroundClassBody:
   Enabled: false
 
