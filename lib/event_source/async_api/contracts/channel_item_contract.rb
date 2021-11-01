@@ -17,8 +17,12 @@ module EventSource
         params do
           required(:id).value(:string)
           optional(:ref).value(:string)
-          optional(:subscribe).value(:hash)
-          optional(:publish).value(:hash)
+          optional(:subscribe).value(
+            EventSource::AsyncApi::Contracts::SubscribeOperationContract.params
+          )
+          optional(:publish).value(
+            EventSource::AsyncApi::Contracts::PublishOperationContract.params
+          )
           optional(:description).value(:string)
           optional(:parameters).value(Types::HashOrNil)
           optional(:bindings).hash { optional(:amqp).maybe(:hash) }
@@ -26,9 +30,14 @@ module EventSource
 
         rule(:subscribe) do
           if key? && value
-            validation_result = SubscribeOperationContract.new.call(value)
+            validation_result =
+              EventSource::AsyncApi::Contracts::SubscribeOperationContract.new
+                .call(value)
             if validation_result&.failure?
-              key.failure(text: 'invalid subscribe operation', error: validation_result.errors.to_h)
+              key.failure(
+                text: 'invalid subscribe operation',
+                error: validation_result.errors.to_h
+              )
             else
               values.data.merge(subscribe: validation_result.values.to_h)
             end
@@ -37,9 +46,14 @@ module EventSource
 
         rule(:publish) do
           if key? && value
-            validation_result = PublishOperationContract.new.call(value)
+            validation_result =
+              EventSource::AsyncApi::Contracts::PublishOperationContract.new
+                .call(value)
             if validation_result&.failure?
-              key.failure(text: 'invalid publish operation', error: validation_result.errors.to_h)
+              key.failure(
+                text: 'invalid publish operation',
+                error: validation_result.errors.to_h
+              )
             else
               values.data.merge(publish: validation_result.values.to_h)
             end
