@@ -25,7 +25,7 @@ module EventSource
         def bunny_exchange_for(bindings)
           puts "***************************************************"
           puts bindings.inspect
-          binding.irb if bindings[:name] == 'x-delayed-message'
+          binding.irb if bindings[:type] == "x-delayed-message"
           puts "+++++++++++++++++++++++++++++++++++++++++++++++++++"
           exchange =
             Bunny::Exchange.new(
