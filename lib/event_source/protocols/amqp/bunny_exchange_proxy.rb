@@ -28,7 +28,7 @@ module EventSource
               channel_proxy.subject,
               bindings[:type],
               bindings[:name],
-              bindings.slice(:durable, :auto_delete, :vhost)
+              bindings.slice(:durable, :auto_delete, :vhost, :'x-delayed-type')
             )
           exchange.on_return do |return_info, properties, content|
             logger.error "Got a returned message: #{content} with return info: #{return_info}, properties: #{properties}"
