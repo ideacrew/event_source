@@ -1,0 +1,13 @@
+# frozen_string_literal: true
+
+<%= "module Publishers" %>
+<% class_path.each_with_index do |path_fragment, index| -%>
+<%= indent("module #{path_fragment.to_s.camelcase}", (index + @indent_offset) * @indentation) %>
+<% end -%>
+<%= indent("# Publish {#{class_name}} events", @class_indent * @indentation) %>
+<%= indent("class #{class_short_name} < EventSource::Event", @class_indent * @indentation) %>
+<%= indent(publisher_params.strip, (@class_indent + 1) * @indentation) %>
+<%= indent(event_declarations.strip, (@class_indent + 1) * @indentation) %>
+<% (0...@class_indent + 1).reverse_each do |index| -%>
+<%= indent('end', index * @indentation) %>
+<% end -%>
