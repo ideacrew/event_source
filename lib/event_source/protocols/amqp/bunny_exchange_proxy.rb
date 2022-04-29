@@ -23,6 +23,8 @@ module EventSource
         end
 
         def bunny_exchange_for(bindings)
+
+          binding.irb if bindings[:name] == 'x-delayed-message'
           exchange =
             Bunny::Exchange.new(
               channel_proxy.subject,
