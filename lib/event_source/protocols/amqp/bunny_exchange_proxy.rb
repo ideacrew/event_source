@@ -23,16 +23,14 @@ module EventSource
         end
 
         def bunny_exchange_for(bindings)
-          puts "***************************************************"
-          puts bindings.inspect
-          binding.irb if bindings[:type] == "x-delayed-message"
-          puts "+++++++++++++++++++++++++++++++++++++++++++++++++++"
+          opts = bindings.slice(:durable, :auto_delete, :vhost)
+          opts[:arguments] = bindings.slice(:'x-delayed-type') if bindings[:'x-delayed-type']
           exchange =
             Bunny::Exchange.new(
               channel_proxy.subject,
               bindings[:type],
               bindings[:name],
-              bindings.slice(:durable, :auto_delete, :vhost, :'x-delayed-type')
+              opts
             )
           exchange.on_return do |return_info, properties, content|
             logger.error "Got a returned message: #{content} with return info: #{return_info}, properties: #{properties}"
