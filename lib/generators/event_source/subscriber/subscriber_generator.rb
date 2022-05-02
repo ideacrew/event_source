@@ -29,10 +29,15 @@ module EventSource
       "include ::EventSource::Subscriber[amqp: '#{operation_name}']\n"
     end
 
+    def all_events_declaration
+      event_global_ref = operation_name.gsub('.', '_')
+      "# subscribe(:on_#{event_global_ref}) { |delivery_info, _metadata, _response| ack(delivery_info.delivery_tag) }\n"
+    end
+
     def event_declarations
       events.reduce('') do |declarations, event|
         declarations +
-          "subscribe(:#{event}) { |delivery_info, _metadata, _response| ack(delivery_info.delivery_tag) }\n"
+          "# subscribe(:on_#{event}) { |delivery_info, _metadata, _response| ack(delivery_info.delivery_tag) }\n"
       end
     end
 
@@ -40,14 +45,7 @@ module EventSource
       template SUBSCRIBER_TEMPLATE_FILENAME, subscriber_filename
     end
 
-    # def create_event_files
-    #   events.map do |event_name|
-    #     pathed_event_name = File.join(class_path, event_name)
-    #     generate "event_source:event #{pathed_event_name} #{class_short_name.camelcase}"
-    #   end
-    # end
-
-    hook_for :test_framework, in: :rspec, as: :subscriber
+    # hook_for :test_framework, in: :rspec, as: :subscriber
 
     private
 
@@ -55,6 +53,7 @@ module EventSource
       File.join(SUBSCRIBER_PATH, class_path, "#{file_name}_subscriber.rb")
     end
 
+    # rubocop:disable Lint/InterpolationCheck
     # Exception class provides the values needed to generate the #example_subscription
     # string interpolation
     class Exception
@@ -70,11 +69,14 @@ module EventSource
     def example_subscription
       payload = '#{payload}'
       exception = Exception.new
+      event_name = events[0]
 
       <<~RUBY.chomp
-        # subscribe(:example_event_name) do |delivery_info, _metadata, response|
+        # Following subscribe dequeues and processes messages that match event name
+        # Event processing is captured in log file
+        # subscribe(:on_#{event_name}) do |delivery_info, _metadata, response|
         #   # Event logger header message
-        #   subscriber_logger = subscriber_logger_for(:example_event_name)
+        #   subscriber_logger = subscriber_logger_for(:event_name)
         #   payload = JSON.parse(response, symbolize_names: true)
         #   subscriber_logger.info "#{class_short_name}, response: #{payload}"
 
@@ -92,5 +94,7 @@ module EventSource
         # end
       RUBY
     end
+    # rubocop:enable Lint/InterpolationCheck
+
   end
 end

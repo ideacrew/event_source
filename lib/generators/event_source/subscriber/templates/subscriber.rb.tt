@@ -8,7 +8,11 @@
 <%= indent("class #{class_short_name}Subscriber", @class_indent * @indentation) %>
 <%= indent("send(:include, Dry::Monads[:result, :do])", (@class_indent + 1) * @indentation) %>
 <%= indent(subscriber_params, (@class_indent + 1) * @indentation) %>
-<%= indent(event_declarations.strip, (@class_indent + 1) * @indentation) %>
+<%= indent("# Following subscribe() dequeues and consumes any queued event message", (@class_indent + 1) * @indentation) %>
+<%= indent("# Uncommenting this line will silently ignore any named events not handled by another subscribe()", (@class_indent + 1) * @indentation) %>
+<%= indent(all_events_declaration, (@class_indent + 1) * @indentation) %>
+<%= indent("# Following subscribe() dequeues and silently ignores messages that match event name", (@class_indent + 1) * @indentation) %>
+<%= indent(event_declarations, (@class_indent + 1) * @indentation) %>
 <%= indent('', (@class_indent + 1) * @indentation) %>
 <%= indent(example_subscription, (@class_indent + 1) * @indentation) %>
 <% (0...@class_indent + 1).reverse_each do |index| -%>

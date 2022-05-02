@@ -2,7 +2,7 @@
 
 <%= "module Events" %>
 <% class_path.each_with_index do |path_fragment, index| -%>
-<%= indent("module #{path_fragment.to_s.camelcase}", index * @indentation) %>
+<%= indent("module #{path_fragment.to_s.camelcase}", (index + @indent_offset) * @indentation) %>
 <% end -%>
 <%= indent("# ** REPLACE WITH DEFINITION FOR EVENT: #{class_short_name} **", @class_indent * @indentation) %>
 <%= indent("class #{class_short_name} < EventSource::Event", @class_indent * @indentation) %>

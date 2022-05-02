@@ -20,16 +20,31 @@ module EventSource
     def generate_event_files
       events.map do |event_name|
         pathed_event_name = File.join(class_path, event_name)
-        generate "event_source:event #{pathed_event_name} #{class_short_name.camelcase}"
+        case self.behavior
+        when :invoke
+          generate "event_source:event #{pathed_event_name} #{class_short_name.camelcase}"
+        when :revoke
+          Rails::Generators.invoke "event_source:event", [pathed_event_name], behavior: :revoke
+        end
       end
     end
 
     def generate_publisher_file
-      generate "event_source:publisher", @local_args
+      case self.behavior
+      when :invoke
+        generate 'event_source:publisher', @local_args
+      when :revoke
+        Rails::Generators.invoke 'event_source:publisher', @local_args, behavior: :revoke
+      end
     end
 
     def generate_subscriber_file
-      generate "event_source:subscriber", @local_args
+      case self.behavior
+      when :invoke
+        generate 'event_source:subscriber', @local_args
+      when :revoke
+        Rails::Generators.invoke 'event_source:subscriber', @local_args, behavior: :revoke
+      end
     end
   end
 end

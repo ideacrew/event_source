@@ -26,7 +26,7 @@ module EventSource
     end
 
     def publisher_params
-      "include ::EventSource::Publisher[amqp: '#{operation_name}']"
+      "include ::EventSource::Publisher[amqp: '#{operation_name}']\n"
     end
 
     def event_declarations

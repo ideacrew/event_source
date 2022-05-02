@@ -6,18 +6,17 @@ module EventSource
   # Generate an EventSource Event file
   class EventGenerator < Rails::Generators::NamedBase
     include ::Generators::GeneratorHelper
-
     source_root File.expand_path('templates', __dir__)
+
+    EVENT_PATH = 'app/event_source/events'
+    EVENT_TEMPLATE_FILENAME = 'event.rb'
+
+    desc 'Generate an EventSource Event'
 
     argument :publisher_name,
              type: :string,
              default: 'application_publisher',
              banner: 'PUBLISHER_NAME (Default: application_publisher)'
-
-    EVENT_PATH = 'app/event_source/events'
-    EVENT_TEMPLATE_FILENAME = 'event.rb'
-
-    desc 'Generate an EventSource Event file'
 
     check_class_collision
 
@@ -30,11 +29,11 @@ module EventSource
       @publisher_name = publisher_short_name
     end
 
-    def create_event_file
+    def generate_event_file
       template EVENT_TEMPLATE_FILENAME, event_filename
     end
 
-    hook_for :test_framework, in: :rspec, as: :event
+    # hook_for :test_framework, in: :rspec, as: :event
 
     private
 
