@@ -2,12 +2,12 @@
 
 require File.expand_path('../boot', __FILE__)
 
-require "rails"
-require "active_job/railtie"
+require 'rails'
+require 'active_job/railtie'
 
 Bundler.require(*Rails.groups)
 
-require "event_source"
+# require 'event_source'
 
 module RailsApp
   class Application < Rails::Application
@@ -26,7 +26,5 @@ module RailsApp
     # config.i18n.default_locale = :de
 
     # config.autoload_paths += %W(#{config.root}/app/event_source/publishers/parties)
-
   end
 end
-
