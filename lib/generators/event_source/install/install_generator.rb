@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
+require_relative '../generator_helper'
 module EventSource
   # Generator that adds EventSource assets to a Rails application
   class InstallGenerator < Rails::Generators::Base
+    include ::Generators::GeneratorHelper
     source_root File.expand_path('templates', __dir__)
 
     desc 'Create EventSource Initializer file'
@@ -13,8 +15,6 @@ module EventSource
       end
     end
 
-    hook_for :test_framework, in: :rspec, as: :install
-
     private
 
     def initializer_content
@@ -23,6 +23,10 @@ module EventSource
 
         # Configuration settings for EventSource gem
         EventSource.configure do |config|
+
+          ###                                  ###
+          ### General configuration section    ###
+          ###                                  ###
 
           # Set application name
           config.app_name = :#{app_name}
@@ -34,26 +38,34 @@ module EventSource
           config.protocols = %w[amqp]
 
           config.server_key = ENV['RAILS_ENV'] || Rails.env.to_sym
-          config.servers do |server|
 
+          ###                                  ###
+          ### API Server configuration section ###
+          ###                                  ###
+
+          config.servers do |server|
             # AMQP protocol connection configuration
-            server.amqp do |rabbitmq|
-              rabbitmq.ref = 'amqp://rabbitmq:5672/event_source'
-              rabbitmq.host = ENV['RABBITMQ_HOST'] || 'amqp://localhost'
-              warn rabbitmq.host
-              rabbitmq.vhost = ENV['RABBITMQ_VHOST'] || '/event_source'
-              warn rabbitmq.vhost
-              rabbitmq.port = ENV['RABBITMQ_PORT'] || '5672'
-              warn rabbitmq.port
-              rabbitmq.url = ENV['RABBITMQ_URL'] || 'amqp://localhost:5672/'
-              warn rabbitmq.url
-              rabbitmq.user_name = ENV['RABBITMQ_USERNAME'] || 'guest'
-              warn rabbitmq.user_name
-              rabbitmq.password = ENV['RABBITMQ_PASSWORD'] || 'guest'
-              warn rabbitmq.password
-            end
+            # Uncomment this block and configure settings to connect with RabbitMQ
+            #   AMQP server
+            # server.amqp do |rabbitmq|
+            #   rabbitmq.ref = 'amqp://rabbitmq:5672/event_source'
+            #   rabbitmq.host = ENV['RABBITMQ_HOST'] || 'amqp://localhost'
+            #   warn rabbitmq.host
+            #   rabbitmq.vhost = ENV['RABBITMQ_VHOST'] || '/event_source'
+            #   warn rabbitmq.vhost
+            #   rabbitmq.port = ENV['RABBITMQ_PORT'] || '5672'
+            #   warn rabbitmq.port
+            #   rabbitmq.url = ENV['RABBITMQ_URL'] || 'amqp://localhost:5672/'
+            #   warn rabbitmq.url
+            #   rabbitmq.user_name = ENV['RABBITMQ_USERNAME'] || 'guest'
+            #   warn rabbitmq.user_name
+            #   rabbitmq.password = ENV['RABBITMQ_PASSWORD'] || 'guest'
+            #   warn rabbitmq.password
+            # end
 
             # HTTP Protocol endpoint configuration
+            # Uncomment this block and configure settings to connect with HTTP
+            #   server
             # server.http do |http|
             #   http.host = "http://localhost"
             #   http.port = "3000"
@@ -61,9 +73,15 @@ module EventSource
             # end
           end
 
-          ###                                                   ###
-          ### AysncApi in AcaEntities gem configuration section ###
-          ###                                                   ###
+          ###                                  ###
+          ### AysncApi configuration section   ###
+          ###                                  ###
+
+          # EventSource supports the AsyncApi specification (https://www.asyncapi.com/docs/specifications/v2.0.0) to describe
+          #  EventSource API resources.  IdeaCrew's aca_entities gem (https://github.com/ideacrew/aca_entities) includes an
+          #  async_api folder (https://github.com/ideacrew/aca_entities/tree/trunk/lib/aca_entities/async_api) with API resource
+          #  definitions for each State-based Marketplace (SBM) solution component.  Access existing, or add new, API definition
+          #  files and uncomment blocks below to load them.
 
           # Load AMQP protocol Publishers/Subscribers as defined under AsyncApi section of AcaEntities gem
           # { service_name: nil } option will load all defined pub/sub operations.
@@ -83,10 +101,6 @@ module EventSource
         # Connect to configured servers and channels
         EventSource.initialize!
       RUBY
-    end
-
-    def app_name
-      Rails.application.class.name.chomp('::Application').underscore
     end
   end
 end
