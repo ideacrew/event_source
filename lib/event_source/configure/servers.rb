@@ -19,6 +19,13 @@ module EventSource
       end
     end
 
+    DelayConfiguration = Struct.new(:retry_delay, :retry_limit, :retry_exceptions, :event_name, :call_location) do
+      def to_h
+        attribute_hash = super()
+        attribute_hash.compact
+      end
+    end
+
     ClientCertificateConfiguration = Struct.new(:client_certificate, :client_key, :client_key_password, :call_location) do
       def to_h
         attribute_hash = super()
@@ -42,6 +49,13 @@ module EventSource
         cc_settings.call_location = caller(1)
         yield(cc_settings)
         self.client_certificate_settings = cc_settings
+      end
+
+      def delayed_queue
+        delay_settings = DelayConfiguration.new
+        delay_settings.call_location = caller(1)
+        yield(delay_settings)
+        self.delayed_queue_settings = delay_settings
       end
 
       def soap?
