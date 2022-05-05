@@ -35,6 +35,8 @@ require 'event_source/publisher'
 require 'event_source/event'
 require 'event_source/subscriber'
 require 'event_source/operations/codec64'
+require 'event_source/operations/enqueue_delayed_message'
+require 'event_source/operations/delayed_message_handler'
 
 # Event source provides ability to compose, publish and subscribe to events
 module EventSource

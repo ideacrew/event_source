@@ -19,7 +19,7 @@ module EventSource
       end
     end
 
-    DelayConfiguration = Struct.new(:retry_delay, :retry_limit, :retry_exceptions, :event_name, :call_location) do
+    DelayConfiguration = Struct.new(:retry_delay, :retry_limit, :retry_exceptions, :event_name, :publisher, :call_location) do
       def to_h
         attribute_hash = super()
         attribute_hash.compact
@@ -36,7 +36,7 @@ module EventSource
     AmqpConfiguration = Struct.new(:protocol, :ref, :host, :vhost, :port, :url, :user_name, :password, :call_location, :default_content_type)
 
     HttpConfiguration = Struct.new(:protocol, :ref, :host, :port, :url, :user_name, :password, :soap_settings, :client_certificate_settings,
-                                   :call_location, :default_content_type) do
+                                   :delayed_queue_settings, :call_location, :default_content_type) do
       def soap
         s_settings = SoapConfiguration.new
         s_settings.call_location = caller(1)
@@ -71,8 +71,10 @@ module EventSource
         main_hash = attribute_hash.compact
         main_hash.delete(:soap_settings)
         main_hash.delete(:client_certificate_settings)
+        main_hash.delete(:delayed_queue_settings)
         main_hash = main_hash.merge({ soap: soap_settings.to_h }) if soap?
         main_hash = main_hash.merge({ client_certificate: client_certificate_settings.to_h }) if client_certificate_settings
+        main_hash = main_hash.merge({ delayed_queue: delayed_queue_settings.to_h }) if delayed_queue_settings
         main_hash
       end
     end
