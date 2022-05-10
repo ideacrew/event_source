@@ -41,6 +41,12 @@ module EventSource
 
         attr_reader :channel_proxy, :subject, :name, :channel_item, :connection
 
+        PUBLISH_OPTION_DEFAULTS = {
+          interval: 1000,
+          max: 3,
+          retry_exceptions: [StandardError, SystemStackError, Faraday::TimeoutError].freeze
+        }
+
         # @param channel_proxy [EventSource::Protocols::Http::FaradayChannelProxy] Http Channel proxy
         # @param async_api_channel_item [Hash] channel_bindings Channel definition and bindings
         # @return [Faraday::Request]
@@ -74,7 +80,7 @@ module EventSource
         # @param [Hash] publish_bindings AsyncAPI HTTP message bindings
         # @return [Faraday::Response] response
         def publish(payload: nil, publish_bindings: {}, headers: {})
-          delay_message_options = delay_message_options(headers.delete(:delay_options) || {})
+          delay_message_options = delay_message_options_for(headers)
           faraday_publish_bindings = sanitize_bindings(publish_bindings)
           faraday_publish_bindings[:headers] = (faraday_publish_bindings[:headers] || {}).merge(headers)
           text_payload =
@@ -97,15 +103,23 @@ module EventSource
           @channel_proxy.enqueue(response)
           logger.debug 'FaradayRequest#publish response enqueued.'
           response
-
         rescue *delay_message_options[:retry_exceptions] => e
-          EventSource::Operations::EnqueueDelayedMessage.new.call(payload: payload, proxy: self, delay_options: delay_message_options)
+          if delay_message_options[:event_name]
+            EventSource::Operations::EnqueueDelayedMessage.new.call(payload: payload, proxy: self, delay_options: delay_message_options)
+          end
         end
 
-        def delay_message_options(delay_options)
-          channel_proxy = self.channel_proxy
-          connection_proxy = channel_proxy.connection_proxy
-          options = connection_proxy.server.to_h[:delayed_queue].merge(delay_options)
+        def delay_message_options_for(headers)
+          options = headers.delete(:publish_options) || {}
+          delay_defaults = PUBLISH_OPTION_DEFAULTS.merge(options[:retry_delay] || {})
+          message_delay_defaults = {
+            :'x-delay' => delay_defaults[:interval],
+            :retry_limit => delay_defaults[:max],
+            :retry_count => 0
+          }.merge(delay_default.slice(:event_name, :retry_service, :retry_exceptions))
+
+          message_delay_options = headers.delete(:delay_options)
+          message_delay_defaults.merge(message_delay_options)
         end
 
         def attach_payload_correlation_id(response, text_payload, payload)

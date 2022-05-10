@@ -45,6 +45,7 @@ module EventSource
         # @param [Hash] publish_bindings
         # @param [Hash] headers
         def publish(payload:, publish_bindings:, headers: {})
+          publish_options = headers.delete(:publish_options) || {}
           bunny_publish_bindings = sanitize_bindings((publish_bindings || {}).to_h)
           bunny_publish_bindings[:correlation_id] = headers.delete(:correlation_id) if headers[:correlation_id]
           bunny_publish_bindings[:headers] = headers unless headers.empty?
