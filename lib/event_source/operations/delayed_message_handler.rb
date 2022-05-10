@@ -25,9 +25,10 @@ module EventSource
         Success(headers)
       end
 
+      # Add retry_count
       def execute(payload, headers)
-        headers[:retry_limit] = (headers[:retry_limit].to_i - 1)
-        headers[:publisher].constantize.new.call(payload, {delay_options: headers})
+        headers[:retry_count] += 1
+        headers[:retry_service].constantize.new.call(payload, {delay_options: headers})
 
         Success(true)
       end

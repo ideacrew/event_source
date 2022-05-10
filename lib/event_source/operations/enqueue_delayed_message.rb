@@ -11,8 +11,8 @@ module EventSource
       include EventSource::Logging
 
       def call(params)
-        delay_options = yield validate_retry_limit(params[:delay_options])
-        event = yield build_event(params[:payload], delay_options)
+        delay_options = yield validate_retry_count(params[:delay_options])
+        event  = yield build_event(params[:payload], delay_options)
         result = yield publish_message(event)
 
         Success(result)
@@ -20,8 +20,8 @@ module EventSource
 
       private
 
-      def validate_retry_limit(delay_options)
-        if delay_options[:retry_limit] <= 0
+      def validate_retry_count(delay_options)
+        if delay_options[:retry_count] > delay_options[:retry_limit]
           logger.info("Enqueue Delayed message failed, due to remaining retry count is #{delay_options[:retry_limit]}")
           Failure("retry limit reached. enqueue failed!!")
         else
