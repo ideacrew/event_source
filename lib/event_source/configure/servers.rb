@@ -19,13 +19,6 @@ module EventSource
       end
     end
 
-    DelayConfiguration = Struct.new(:retry_delay, :retry_limit, :retry_exceptions, :event_name, :publisher, :call_location) do
-      def to_h
-        attribute_hash = super()
-        attribute_hash.compact
-      end
-    end
-
     ClientCertificateConfiguration = Struct.new(:client_certificate, :client_key, :client_key_password, :call_location) do
       def to_h
         attribute_hash = super()
@@ -36,7 +29,7 @@ module EventSource
     AmqpConfiguration = Struct.new(:protocol, :ref, :host, :vhost, :port, :url, :user_name, :password, :call_location, :default_content_type)
 
     HttpConfiguration = Struct.new(:protocol, :ref, :host, :port, :url, :user_name, :password, :soap_settings, :client_certificate_settings,
-                                   :delayed_queue_settings, :call_location, :default_content_type) do
+                                   :call_location, :default_content_type) do
       def soap
         s_settings = SoapConfiguration.new
         s_settings.call_location = caller(1)
@@ -49,13 +42,6 @@ module EventSource
         cc_settings.call_location = caller(1)
         yield(cc_settings)
         self.client_certificate_settings = cc_settings
-      end
-
-      def delayed_queue
-        delay_settings = DelayConfiguration.new
-        delay_settings.call_location = caller(1)
-        yield(delay_settings)
-        self.delayed_queue_settings = delay_settings
       end
 
       def soap?
@@ -71,10 +57,8 @@ module EventSource
         main_hash = attribute_hash.compact
         main_hash.delete(:soap_settings)
         main_hash.delete(:client_certificate_settings)
-        main_hash.delete(:delayed_queue_settings)
         main_hash = main_hash.merge({ soap: soap_settings.to_h }) if soap?
         main_hash = main_hash.merge({ client_certificate: client_certificate_settings.to_h }) if client_certificate_settings
-        main_hash = main_hash.merge({ delayed_queue: delayed_queue_settings.to_h }) if delayed_queue_settings
         main_hash
       end
     end
