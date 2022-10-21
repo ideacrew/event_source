@@ -73,6 +73,12 @@ module EventSource
 
           @channel_proxy.subject.prefetch(prefetch)
 
+          # Do not spawn consumers in the 'publisher' mode
+          unless ::EventSource.config.mode.listener?
+            logger.debug "In publisher mode, not booting subscription"
+            return
+          end
+
           if options[:block]
             spawn_thread(options) { add_consumer(subscriber_klass, options) }
           else

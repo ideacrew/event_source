@@ -4,6 +4,7 @@ require_relative "configure/types"
 require_relative "configure/servers"
 require_relative "configure/contracts"
 require_relative "configure/operations"
+require_relative "configure/mode"
 require_relative "configure/config"
 
 module EventSource
