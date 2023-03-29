@@ -180,7 +180,7 @@ module EventSource
             if URI(url)
               amqp_url = URI.parse(url)
               return {} unless amqp_url.userinfo
-              { username: URI.unescape(amqp_url.user), password: URI.unescape(amqp_url.password) }
+              { username: CGI.unescape(amqp_url.user), password: CGI.unescape(amqp_url.password) }
             else
               {}
             end
