@@ -39,7 +39,7 @@ module EventSource
 
           def create(values)
             Try do
-              EventSource::AsyncApi::AsyncApiConf.new(values.to_h)
+              EventSource::AsyncApi::AsyncApiConf.new(values.to_h.deep_symbolize_keys)
             end.or do |e|
               Failure(e)
             end

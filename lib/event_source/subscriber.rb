@@ -16,7 +16,7 @@ module EventSource
     # @attr_reader [String] publisher_key the unique key for publisher broadcasting event
     #   messsages that this subsciber will receive
     # TODO: Ram update the references to :publisher_key to reflect publisher or publish_operation
-    attr_reader :protocol, :publisher_key
+    attr_reader :protocol, :publisher_key, :suffix
 
     # @api private
     def self.subscriber_container
@@ -30,21 +30,22 @@ module EventSource
     def self.[](exchange_ref)
       # TODO: validate publisher already exists
       # raise EventSource::Error::PublisherAlreadyRegisteredError.new(id) if registry.key?(id)
-
-      new(exchange_ref.first[0], exchange_ref.first[1])
+      new(exchange_ref.first[0], exchange_ref.first[1], exchange_ref[:alt_name])
     end
 
     # @api private
-    def initialize(protocol, publisher_key)
+    def initialize(protocol, publisher_key, suffix = nil)
       super()
       @protocol = protocol
       @publisher_key = publisher_key
+      @suffix = suffix
     end
 
     def included(base)
       self.class.subscriber_container[base] = {
         publisher_key: publisher_key,
-        protocol: protocol
+        protocol: protocol,
+        suffix: suffix
       }
       base.extend ClassMethods
       base.include InstanceMethods
@@ -81,6 +82,10 @@ module EventSource
         EventSource::Subscriber.subscriber_container[self][:protocol]
       end
 
+      def suffix
+        EventSource::Subscriber.subscriber_container[self][:suffix]
+      end
+
       def channel_name
         publisher_key.to_sym
       end
@@ -96,6 +101,7 @@ module EventSource
         identifier = subscription_name.to_s.match(/^on_(.*)/)[1]
         unique_key_elements = [app_name]
         unique_key_elements.push(formatted_publisher_key)
+        unique_key_elements.push(suffix) if suffix
 
         unless formatted_publisher_key.gsub(delimiter, '_') == identifier
           unique_key_elements.push(identifier)
@@ -122,7 +128,7 @@ module EventSource
           if protocol == :http
             "/on#{publisher_key}"
           else
-            "on_#{app_name}.#{publisher_key}"
+            ["on_#{app_name}.#{publisher_key}", suffix].compact.join(delimiter)
           end
 
         connection_params = {
@@ -145,6 +151,8 @@ module EventSource
       end
 
       def executable_for(name)
+        name.gsub!(/^#{publisher_key}/i, [publisher_key, suffix].join(delimiter)) if suffix
+
         EventSource::Subscriber.executable_container[name]
       end
 

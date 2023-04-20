@@ -120,7 +120,7 @@ module EventSource
     # Find a registered {EventSource::SubscribeOperation} that matches search
     #   criteria
     # @param [Hash] params search criteria
-    # @option params [String] :publish_operation_name SubscribeOperation name
+    # @option params [String] :subscribe_operation_name SubscribeOperation name
     # @return [EventSource::SubscribeOperation] subscribe_operation SubscribeOperation instance
     def find_subscribe_operation(params)
       logger.debug "find subscribe operation with #{params}"

@@ -30,10 +30,14 @@ module EventSource
 
           bindings.deep_symbolize_keys!
           queue_bindings = channel_item_queue_bindings_for(bindings)
-          @exchange_name = exchange_name_from_queue(queue_bindings[:name])
+          @exchange_name = exchange_name_from_tag(async_api_channel_item.subscribe) || exchange_name_from_queue(queue_bindings[:name])
           @subject = bunny_queue_for(queue_bindings)
           bind_exchange(@exchange_name, async_api_channel_item.subscribe)
           subject
+        end
+
+        def exchange_name_from_tag(subscribe_operation)
+          subscribe_operation.tags&.detect{|tag| tag.description == "exchange name"}&.name
         end
 
         # Find a Bunny queue that matches the configuration of an {EventSource::AsyncApi::ChannelItem}

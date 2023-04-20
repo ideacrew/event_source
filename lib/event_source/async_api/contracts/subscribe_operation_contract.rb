@@ -11,6 +11,7 @@ module EventSource
           optional(:description).value(:string)
           optional(:bindings).hash
           optional(:message).hash
+          optional(:tags).maybe(:array)
         end
 
         rule(:bindings) do

@@ -9,6 +9,11 @@ module EventSource
       # definitions for the operation.
       # @return [Hash]
       attribute :bindings, SubscribeBindings.meta(omittable: true)
+
+      # @!attribute [r] tags
+      # list of unique tags used by spec w/additional metadata
+      # @return [Array<Tag>]
+      attribute :tags, Types::Array.of(Tag).meta(omittable: true)
     end
   end
 end
