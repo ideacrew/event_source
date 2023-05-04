@@ -95,6 +95,14 @@ module EventSource
     # @return [EventSource::SubscribeOperation]
     def add_subscribe_operation(async_api_channel_item)
       return false unless async_api_channel_item.subscribe
+
+      if @channel_proxy.has_exchange_to_exchange_binding?(async_api_channel_item)
+        subscribe_proxy =
+          @channel_proxy.add_exchange_to_exchange_binding(async_api_channel_item)
+
+        return
+      end
+
       subscribe_proxy =
         @channel_proxy.add_subscribe_operation(async_api_channel_item)
 

@@ -79,6 +79,36 @@ module EventSource
           add_queue
         end
 
+        def has_exchange_to_exchange_binding?(async_api_channel_item)
+          async_api_channel_item.bindings.deep_symbolize_keys!
+          async_api_channel_item.bindings[:amqp][:exchange].present?
+        end
+
+        def add_exchange_to_exchange_binding(async_api_channel_item)
+          exchange_proxy = BunnyExchangeProxy.new(self, async_api_channel_item)
+          exchange_name = exchange_name_from_tag(async_api_channel_item.subscribe)
+          bind_exchange_to_exchange(exchange_name, exchange_proxy.name, async_api_channel_item.subscribe)
+        end
+
+        def bind_exchange_to_exchange(source_name, destination_name, subscribe_operation_item)
+          operation_bindings =
+            subscribe_operation_item.bindings.amqp.symbolize_keys || {}
+
+          bind_exchange(
+            source_name,
+            destination_name,
+            { routing_key: operation_bindings[:routing_key] }
+          )
+          logger.info "Exchange #{destination_name} bound to exchange #{source_name}"
+        rescue Bunny::NotFound => e
+          raise EventSource::Protocols::Amqp::Error::ExchangeNotFoundError,
+                "exchange #{source_name} not found. got exception #{e}"
+        end
+
+        def exchange_name_from_tag(subscribe_operation_item)
+          subscribe_operation_item.tags&.detect{|tag| tag.description == "exchange name"}&.name
+        end
+
         # @return [String] a human-readable summary for this channel
         def to_s
           subject.to_s
@@ -107,6 +137,10 @@ module EventSource
         # bound to at least one exchange
         def bind_queue(name, exchange, options = {})
           subject.queue_bind(name, exchange, options)
+        end
+
+        def bind_exchange(name, exchange, options = {})
+          subject.exchange_bind(name, exchange, options)
         end
 
         def respond_to_missing?(name, include_private); end
@@ -158,10 +192,7 @@ module EventSource
         end
 
         def add_exchange
-          async_api_channel_item.bindings.deep_symbolize_keys!
-          exchange_bindings =
-            async_api_channel_item.bindings[:amqp][:exchange]
-          BunnyExchangeProxy.new(self, exchange_bindings)
+          BunnyExchangeProxy.new(self, async_api_channel_item)
         end
 
         def connection_for(connection_proxy)
