@@ -81,6 +81,7 @@ module EventSource
 
         def create_exchange_to_exchange_bindings(exchange_proxy)
           exchange_to_exchange_bindings&.each do |exchange_name, options|
+            options.deep_symbolize_keys!
             source_exchange = exchange_by_name(exchange_name)
             source_exchange ||= exchange_proxy.bunny_exchange_for(options[:bindings][:amqp][:exchange])
 
@@ -140,6 +141,10 @@ module EventSource
         # bound to at least one exchange
         def bind_queue(name, exchange, options = {})
           subject.queue_bind(name, exchange, options)
+        end
+
+        def bind_exchange(name, exchange, options = {})
+          subject.exchange_bind(name, exchange, options)
         end
 
         def respond_to_missing?(name, include_private); end
