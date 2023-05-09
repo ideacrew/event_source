@@ -79,6 +79,39 @@ module EventSource
           add_queue
         end
 
+        def create_exchange_to_exchange_bindings(exchange_proxy)
+          exchange_to_exchange_bindings&.each do |exchange_name, options|
+            source_exchange = exchange_by_name(exchange_name)
+            source_exchange ||= exchange_proxy.bunny_exchange_for(options[:bindings][:amqp][:exchange])
+
+            bind_exchange_to_exchange(source_exchange.name, exchange_proxy.name, options)
+          end
+        end
+
+        def publish_bindings
+          async_api_channel_item&.publish&.bindings
+        end
+
+        def exchange_to_exchange_bindings
+          publish_bindings&.x_amqp_exchange_to_exchanges
+        end
+
+        def bind_exchange_to_exchange(source_name, destination_name, options)
+          bind_exchange(
+            source_name,
+            destination_name,
+            { routing_key: options[:routing_key] }
+          )
+          logger.info "Exchange #{destination_name} bound to exchange #{source_name}"
+        rescue Bunny::NotFound => e
+          raise EventSource::Protocols::Amqp::Error::ExchangeNotFoundError,
+                "exchange #{source_name} not found. got exception #{e}"
+        end
+
+        def exchange_name_from_tag(subscribe_operation_item)
+          subscribe_operation_item.tags&.detect{|tag| tag.description == "exchange name"}&.name
+        end
+
         # @return [String] a human-readable summary for this channel
         def to_s
           subject.to_s
