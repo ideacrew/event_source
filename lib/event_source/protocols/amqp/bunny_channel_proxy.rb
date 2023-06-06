@@ -110,7 +110,7 @@ module EventSource
         end
 
         def exchange_name_from_tag(subscribe_operation_item)
-          subscribe_operation_item.tags&.detect{|tag| tag.description == "exchange name"}&.name
+          subscribe_operation_item.tags&.detect {|tag| tag.description == "exchange name"}&.name
         end
 
         # @return [String] a human-readable summary for this channel
