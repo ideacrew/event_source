@@ -36,9 +36,5 @@ module Generators
     def subscriber_fully_qualified_name
       ['subscribers', class_path.join('.'), subscriber_short_name].reject(&:empty?).join('.')
     end
-
-    def app_name
-      Rails.application.class.name.chomp('::Application').underscore
-    end
   end
 end
