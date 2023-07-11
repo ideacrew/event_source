@@ -3,10 +3,13 @@
 module EventSource
   module Protocols
     module Http
+      # soap module
       module Soap
         # Add SOAP security headers and body around the payload.
         class PayloadHeaderMiddleware < Faraday::Middleware
           def on_request(env)
+            return env if env.request_headers["Content-Type"] == "application/json"
+
             sec_config = SecurityHeaderConfiguration.new(options[:soap_settings])
             body_to_encode = env.body || ""
             decorate_result = Operations::DecoratePayloadUsingConfiguration.new.call(
