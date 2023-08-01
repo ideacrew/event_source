@@ -1,4 +1,4 @@
-name: Rubocop and Rspec
+name: Rspec
 on: push
 
 jobs:
