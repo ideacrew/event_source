@@ -1,8 +1,11 @@
-name: Rubocop and Rspec 
+name: Rubocop and Rspec
 on: push
 
 jobs:
   rspec:
+    strategy:
+      matrix:
+        ruby_version: ["2.7.5", "3.0.5"]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -14,7 +17,7 @@ jobs:
           sudo rabbitmqctl set_permissions -p event_source guest ".*" ".*" ".*"
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.2.1
+          ruby-version: ${{ matrix.ruby_version }}
       - name: Cache Gems
         uses: actions/cache@v1
         with:

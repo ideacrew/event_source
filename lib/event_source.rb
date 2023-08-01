@@ -13,6 +13,7 @@ require 'oj'
 require 'active_support/all' # TODO: Remove ActiveSupport dependency
 
 require 'event_source/version'
+require 'event_source/ruby_versions'
 require 'event_source/error'
 require 'event_source/inflector'
 require 'event_source/logging'
