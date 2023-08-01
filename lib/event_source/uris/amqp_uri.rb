@@ -8,7 +8,7 @@ module URI
     DEFAULT_PORT = 5672
   end
 
-  if EventSource::RubyVersions::LESS_THAN_THREE
+  if EventSource::RubyVersions::LESS_THAN_THREE_ONE
     @@schemes['AMQP'] = AMQP
   else
     register_scheme 'AMQP', AMQP
