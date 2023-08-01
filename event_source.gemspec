@@ -14,13 +14,13 @@ Gem::Specification.new do |spec|
   spec.summary =
     'Record changes to application state by storing updates as a sequence of events'
   spec.description =
-    "This service uses Mogoid/MongoDB to create an event object to record a state change and
+    "This service uses Mongoid/MongoDB to create an event object to record a state change and
                           then processes it to update values in the underlying model. It's an implementation of
                           Martin Fowler's Event Sourcing design pattern and adapted from code developed by
                           Philippe Creux"
   spec.homepage = 'https://github.com/ideacrew/event_source'
   spec.license = 'MIT'
-  spec.required_ruby_version = Gem::Requirement.new('>= 2.5')
+  spec.required_ruby_version = Gem::Requirement.new('>= 2.5', "< 3")
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
