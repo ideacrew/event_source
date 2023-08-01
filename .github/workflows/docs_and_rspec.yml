@@ -4,6 +4,7 @@ on: push
 jobs:
   rspec:
     strategy:
+      fail-fast: false
       matrix:
         ruby_version: ["2.7.5", "3.0.5", "3.1.4", "3.2.2"]
     runs-on: ubuntu-latest
