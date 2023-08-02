@@ -187,7 +187,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyConnectionProxy, "given a url 
 
   # rubocop:disable Lint/UriEscapeUnescape
   let(:connection_url) do
-    "amqp://#{URI.escape(username)}:#{URI.escape(password)}@localhost:5672"
+    "amqp://#{CGI.escape(username)}:#{CGI.escape(password)}@localhost:5672"
   end
   # rubocop:enable Lint/UriEscapeUnescape
 

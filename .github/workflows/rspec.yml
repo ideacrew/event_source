@@ -1,8 +1,12 @@
-name: Rubocop and Rspec 
+name: Rspec
 on: push
 
 jobs:
   rspec:
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby_version: ["2.7.5", "3.0.5", "3.1.4", "3.2.2"]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -14,14 +18,14 @@ jobs:
           sudo rabbitmqctl set_permissions -p event_source guest ".*" ".*" ".*"
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 2.6
+          ruby-version: ${{ matrix.ruby_version }}
       - name: Cache Gems
         uses: actions/cache@v1
         with:
           path: vendor/bundle
-          key: ${{ runner.os }}-event_source-gems-${{ hashFiles('**/Gemfile.lock') }}-${{ hashFiles('**/Gemfile' ) }}
+          key: ${{ runner.os }}-${{matrix.ruby_version}}-event_source-gems-${{ hashFiles('**/Gemfile.lock') }}-${{ hashFiles('**/Gemfile' ) }}
           restore-keys: |
-            ${{ runner.os }}-event_source-gems-${{ hashFiles('**/Gemfile.lock') }}-${{ hashFiles('**/Gemfile' ) }}
+            ${{ runner.os }}-${{matrix.ruby_version}}-event_source-gems-${{ hashFiles('**/Gemfile.lock') }}-${{ hashFiles('**/Gemfile' ) }}
       - name: bundle install
         run: |
           bundle config path vendor/bundle
