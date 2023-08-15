@@ -8,6 +8,10 @@ module EventSource
     class Config
       include EventSource::Logging
 
+      def initialize
+        @log_level = :warn
+      end
+
       # TODO: add default for pub_sub_root
       attr_writer :pub_sub_root, :protocols, :server_configurations
       attr_accessor :app_name, :log_level
