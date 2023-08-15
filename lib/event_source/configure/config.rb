@@ -10,6 +10,7 @@ module EventSource
 
       # TODO: add default for pub_sub_root
       attr_writer :pub_sub_root, :protocols, :server_configurations
+      attr_accessor :app_name, :log_level
 
       def load_protocols
         @protocols.each do |protocol|
@@ -164,8 +165,6 @@ module EventSource
           '.'
         end
       end
-
-      attr_accessor :app_name
     end
   end
 end
