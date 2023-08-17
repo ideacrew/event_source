@@ -5,6 +5,7 @@ EventSource.configure do |config|
   config.pub_sub_root = Pathname.pwd.join('spec', 'rails_app', 'app', 'event_source')
   config.server_key = Rails.env.to_sym
   config.app_name = :enroll
+  config.log_level = :warn
 
   config.servers do |server|
     # mitc
