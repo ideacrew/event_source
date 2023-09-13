@@ -188,11 +188,12 @@ module EventSource
               payload,
               &executable
             )
-
+          EventSource.threaded.amqp_consumer_lock.mon_enter
           subscription_handler.run
         rescue Bunny::Exception => e
           logger.error "Bunny Consumer Error \n  message: #{e.message} \n  backtrace: #{e.backtrace.join("\n")}"
         ensure
+          EventSource.threaded.amqp_consumer_lock.mon_exit
           subscriber = nil
         end
 
