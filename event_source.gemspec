@@ -4,7 +4,6 @@ lib = File.expand_path('../lib', __FILE__)
 
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'event_source/version'
-require 'event_source/ruby_versions'
 
 Gem::Specification.new do |spec|
   spec.name = 'event_source'
