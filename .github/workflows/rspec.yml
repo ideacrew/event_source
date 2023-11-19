@@ -35,4 +35,4 @@ jobs:
 #          bundle exec rubocop
       - name: Run rspec
         run: |
-          bundle exec rspec
+          ES_HOSTING_MODE=listener bundle exec rspec

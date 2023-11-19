@@ -26,6 +26,10 @@ module EventSource
         @server_key = value&.to_sym
       end
 
+      def mode
+        @mode ||= ::EventSource::Configure::Mode.parse(ENV['ES_HOSTING_MODE'])
+      end
+
       attr_writer :async_api_schemas
 
       def servers

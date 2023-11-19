@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    event_source (0.5.7)
+    event_source (0.6.0)
       addressable (>= 2.8.0)
       bunny (>= 2.14)
       deep_merge (~> 1.2.0)
@@ -320,7 +320,7 @@ GEM
     ruby2_keywords (0.0.4)
     rufus-scheduler (3.6.0)
       fugit (~> 1.1, >= 1.1.6)
-    set (1.0.2)
+    set (1.0.3)
     sinatra (2.1.0)
       mustermann (~> 1.0)
       rack (~> 2.2)

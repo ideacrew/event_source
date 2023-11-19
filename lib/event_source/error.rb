@@ -21,6 +21,7 @@ module EventSource
     ConstantNotDefined = Class.new(Error)
     ContractNotFound = Class.new(Error)
     EventNameUndefined = Class.new(Error)
+    InvalidModeError = Class.new(Error)
     FileAccessError = Class.new(Error)
     InvalidChannelsResourceError = Class.new(Error)
     PublisherAlreadyRegisteredError = Class.new(Error)
