@@ -23,12 +23,14 @@ module EventSource
         end
 
         def bunny_exchange_for(bindings)
+          opts = bindings.slice(:durable, :auto_delete, :vhost)
+          opts[:arguments] = bindings.slice(:'x-delayed-type') if bindings[:'x-delayed-type']
           exchange =
             Bunny::Exchange.new(
               channel_proxy.subject,
               bindings[:type],
               bindings[:name],
-              bindings.slice(:durable, :auto_delete, :vhost)
+              opts
             )
           exchange.on_return do |return_info, properties, content|
             logger.error "Got a returned message: #{content} with return info: #{return_info}, properties: #{properties}"
@@ -43,6 +45,7 @@ module EventSource
         # @param [Hash] publish_bindings
         # @param [Hash] headers
         def publish(payload:, publish_bindings:, headers: {})
+          publish_options = headers.delete(:publish_options) || {}
           bunny_publish_bindings = sanitize_bindings((publish_bindings || {}).to_h)
           bunny_publish_bindings[:correlation_id] = headers.delete(:correlation_id) if headers[:correlation_id]
           bunny_publish_bindings[:headers] = headers unless headers.empty?

@@ -14,7 +14,7 @@ module EventSource
     #   publisher (for example: amqp)
     # @attr_reader [String] exchange name of the Exchange where event
     #   messages are published
-    attr_reader :protocol, :publisher_key
+    attr_reader :protocol, :publisher_key, :options
 
     # Internal publisher registry, which is used to identify them globally
     #
@@ -26,23 +26,25 @@ module EventSource
       @publisher_container ||= Concurrent::Map.new
     end
 
-    def self.[](exchange_ref)
+    def self.[](exchange_ref, **options)
       # TODO: validate publisher already exists
       # raise EventSource::Error::PublisherAlreadyRegisteredError.new(id) if registry.key?(id)
-      new(exchange_ref.first[0], exchange_ref.first[1])
+      new(exchange_ref.first[0], exchange_ref.first[1], options)
     end
 
     # @api private
-    def initialize(protocol, publisher_key)
+    def initialize(protocol, publisher_key, options)
       super()
       @protocol = protocol
       @publisher_key = publisher_key
+      @options = options[:options] || {}
     end
 
     def included(base)
       self.class.publisher_container[base] = {
         publisher_key: publisher_key,
-        protocol: protocol
+        protocol: protocol,
+        options: options
       }
       base.extend(ClassMethods)
 
@@ -66,7 +68,7 @@ module EventSource
 
         logger.debug "Publisher#publish publish_operation_name: #{publish_operation_name}"
         publish_operation = find_publish_operation_for(publish_operation_name)
-        publish_operation.call(event.payload, {headers: event.headers})
+        publish_operation.call(event.payload, {headers: event.headers.merge(publish_options: options)})
       end
 
       def channel_name
@@ -122,6 +124,10 @@ module EventSource
 
       def protocol
         EventSource::Publisher.publisher_container[self][:protocol]
+      end
+
+      def options
+        EventSource::Publisher.publisher_container[self][:options]
       end
 
       def logger

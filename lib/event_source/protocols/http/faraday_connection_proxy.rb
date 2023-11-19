@@ -306,6 +306,10 @@ module EventSource
             :xml
           end
         end
+
+        def server
+          @server
+        end
       end
     end
   end
