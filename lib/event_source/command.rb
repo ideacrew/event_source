@@ -72,7 +72,7 @@ module EventSource
 
       def user_session_details
         @user_session_details = {}
-        @user_session_details[:user_id] = current_user.id if defined? current_user
+        @user_session_details[:user_id] = current_user.id.to_s if defined? current_user
         @user_session_details[:session_details] = {
           portal: session[:portal],
           person_id: session[:person_id],
