@@ -65,11 +65,25 @@ module EventSource
 
       def build_command_event(event_key, options = {})
         event_class = event_klass_for(event_key)
+        options[:headers] =|| {}
+        options[:headers][:user_session_details] = user_session_details
         event_class.new(options)
       end
 
+      def user_session_details
+        @user_session_details = {}
+        @user_session_details[:user_id] = current_user.id if current_user
+        @user_session_details[:session_details] = {
+          portal: session[:portal],
+          person_id: session[:person_id],
+          id: session.id
+        } if session
+
+        @user_session_details
+      end
+
       def event_klass_for(event_key)
-        klass_name = event_key.split('.').map(&:camelcase).join('::')
+        klass_name = event_key.split(".").map(&:camelcase).join("::")
         klass_name.constantize
       rescue StandardError
         raise EventSource::Error::EventNameUndefined,
