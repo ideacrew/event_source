@@ -65,7 +65,7 @@ module EventSource
 
       def build_command_event(event_key, options = {})
         event_class = event_klass_for(event_key)
-        options[:headers] =|| {}
+        options[:headers] ||= {}
         options[:headers][:user_session_details] = user_session_details
         event_class.new(options)
       end
