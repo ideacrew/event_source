@@ -22,14 +22,29 @@ module EventSource
       @attribute_keys = klass_var_for(:attribute_keys) || []
       @payload = {}
 
+      header_options = options[:headers] || {}
+      header_options[:user_session_details] = user_session_details
+
       send(:payload=, options[:attributes] || {})
-      send(:headers=, options[:headers] || {})
+      send(:headers=, header_options)
 
       @publisher_path = klass_var_for(:publisher_path) || nil
       if @publisher_path.eql?(nil)
         raise EventSource::Error::PublisherKeyMissing,
               "add 'publisher_path' to #{self.class.name}"
       end
+    end
+
+    def user_session_details
+      @user_session_details = {}
+      @user_session_details[:user_id] = current_user.id if current_user
+      @user_session_details[:session_details] = {
+        portal: session[:portal],
+        person_id: session[:person_id],
+        id: session.id
+      } if session
+
+      @user_session_details
     end
 
     # Set payload
