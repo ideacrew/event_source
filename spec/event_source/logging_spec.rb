@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'config_helper'
 require 'event_source/logging'
 
 class LogService

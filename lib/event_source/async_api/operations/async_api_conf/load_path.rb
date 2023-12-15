@@ -8,7 +8,7 @@ module EventSource
       module AsyncApiConf
         # load channel params from given file path
         class LoadPath
-          send(:include, Dry::Monads[:result, :do, :try])
+          include Dry::Monads[:result, :do, :try]
 
           def call(path:)
             file_io  = yield read(path)
@@ -27,7 +27,7 @@ module EventSource
 
           def deserialize(file_io)
             Try do
-              YAML.safe_load(file_io, [Symbol])
+              YAML.load(file_io)
             end.to_result
           end
 
