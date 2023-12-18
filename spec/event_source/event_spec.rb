@@ -255,7 +255,7 @@ RSpec.describe EventSource::Event do
     module EventSource
       class MyCompositeEvent < EventSource::Event
         # include EventSource::Operations::CompositeOperation
-        event_log_message_enabled true
+        # event_log_message_enabled true
 
         publisher_path 'parties.organization_publisher'
       end
