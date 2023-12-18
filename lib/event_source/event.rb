@@ -8,7 +8,7 @@ module EventSource
     # @attr_reader [Array<String>] attribute_keys optional list of attributes that must be included in { Payload }
     # @attr_reader [String] publisher_path namespaced key indicating the class that registers event for publishing
     # @attr_reader [String] payload attribute/value pairs for the message that accompanies the event
-    attr_reader :attribute_keys, :publisher_path, :payload, :headers, :metadata
+    attr_reader :attribute_keys, :publisher_path, :payload, :headers, :metadata, :message
 
     HeaderDefaults = {
       version: '3.0',
@@ -26,10 +26,25 @@ module EventSource
       send(:headers=, options[:headers] || {})
 
       @publisher_path = klass_var_for(:publisher_path) || nil
+      build_message(options)
+
       if @publisher_path.eql?(nil)
         raise EventSource::Error::PublisherKeyMissing,
               "add 'publisher_path' to #{self.class.name}"
       end
+    end
+
+    def build_message(options)
+      @message = EventSource::Message.new(
+          headers: options[:headers],
+          payload: options[:attributes],
+          name: name
+        )
+
+
+      # result = EventSource::Operations::BuildMessage.new.call(options)
+      # raise EventSource::Error::MessageBuildError, result.failure unless result.success?
+      # @message = result.success if result.success?
     end
 
     # Set payload
@@ -127,6 +142,7 @@ module EventSource
 
     def validate_attribute_presence
       return unless attribute_keys.present?
+
       gapped_keys = attribute_keys - payload.keys
       @event_errors = []
       event_errors.push("missing required keys: #{gapped_keys}") unless gapped_keys.empty?

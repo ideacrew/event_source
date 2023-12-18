@@ -31,18 +31,18 @@ module EventSource
       # @!attribute [r] correlation_id
       # Definition of the correlation ID used for message tracing or matching
       # @return [String]
-      attribute :correlation_id do
-        # @!attribute [r] description
-        # An optional description of the identifier.
-        # CommonMark syntax can be used for rich text representation
-        # @return [String]
-        attribute :description, Types::String.meta(omittable: true)
+      # attribute :correlation_id do
+      #   # @!attribute [r] description
+      #   # An optional description of the identifier.
+      #   # CommonMark syntax can be used for rich text representation
+      #   # @return [String]
+      #   attribute :description, Types::String.meta(omittable: true)
 
-        # @!attribute [r] location
-        # Required. A runtime expression that specifies the location of the correlation ID
-        # @return [String]
-        attribute :location, Types::String.meta(omittable: true)
-      end.meta(omittable: true)
+      #   # @!attribute [r] location
+      #   # Required. A runtime expression that specifies the location of the correlation ID
+      #   # @return [String]
+      #   attribute :location, Types::String.meta(omittable: true)
+      # end.meta(omittable: true)
 
       # @!attribute [r] schema_format
       # A string containing the name of the schema format used to define the message payload.

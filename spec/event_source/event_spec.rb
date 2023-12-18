@@ -249,4 +249,51 @@ RSpec.describe EventSource::Event do
       end
     end
   end
+
+  describe 'message composite event' do
+
+    module EventSource
+      class MyCompositeEvent < EventSource::Event
+        # include EventSource::Operations::CompositeOperation
+        event_log_message_enabled true
+
+        publisher_path 'parties.organization_publisher'
+      end
+    end
+
+    module SessionConcern
+      def current_user
+        OpenStruct.new(id: 1)
+      end
+
+      def session
+        {
+          "session_id" => "ad465b7f-1d9e-44b1-ba72-b97e166f3acb"
+        }
+      end
+    end
+
+    context 'when event is message composite' do
+
+      let(:options) do
+        {
+          attributes: {
+            subject_id: "gid://enroll/Person/53e693d7eb899ad9ca01e734",
+            category: 'hc4cc eligibility',
+            event_time: DateTime.now
+          },
+          headers: {
+            correlation_id: "edf0e41b-891a-42b1-a4b6-2dbd97d085e4"
+          }
+        }
+      end
+
+      subject { EventSource::MyCompositeEvent.new(options) }
+
+      it 'should build message' do
+        expect(subject.message).to be_present
+        expect(subject.message.payload[:session_details]).to include('session_id')
+      end
+    end
+  end
 end
