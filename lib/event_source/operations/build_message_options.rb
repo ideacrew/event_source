@@ -24,8 +24,8 @@ module EventSource
 
       def build_options(params)
         message_attributes = {
-          payload: params[:attributes].symbolize_keys,
-          headers: params[:headers].symbolize_keys
+          payload: params[:attributes]&.symbolize_keys || {},
+          headers: params[:headers]&.symbolize_keys || {}
         }
 
         message_attributes[:payload][:message_id] ||= SecureRandom.uuid
@@ -48,7 +48,7 @@ module EventSource
         else
           message_attributes[:payload].merge!(
             account_id: system_account&.id
-          )
+          ) if defined?(system_account)
         end
 
         # Create system account user <admin@dc.gov> when session is not available

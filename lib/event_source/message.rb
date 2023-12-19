@@ -17,13 +17,13 @@ module EventSource
     private
 
     def build_message(options)
-      result = EventSource::Operations::BuildMessageOptions.call(options)
+      result = EventSource::Operations::BuildMessageOptions.new.call(options)
       raise "unable to build message options due to #{result.failure}" unless result.success?
       result.success
     end
 
     def create_message(options)
-      result = EventSource::Operations::CreateMessage.call(options)
+      result = EventSource::Operations::CreateMessage.new.call(options)
       raise "unable to create message due to #{result.failure}" unless result.success?
       result.success
     end
