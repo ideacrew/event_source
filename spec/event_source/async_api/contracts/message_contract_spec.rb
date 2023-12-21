@@ -3,104 +3,100 @@
 require 'spec_helper'
 
 RSpec.describe EventSource::AsyncApi::Contracts::MessageContract do
+  let(:occurred_at_property) { { type: 'string', description: 'Message timestamp' } }
+  let(:correlation_id_property) { { type: 'string', description: 'Correlation ID set by application' } }
+
+  let(:header_schema_object_properties) do
+    { correlation_id: correlation_id_property, occurred_at: occurred_at_property }
+  end
+  let(:header_schema_object_type) { 'object' }
+  let(:header_schema_object_required) { %w[correlation_id] }
+
+  let(:header_schema_object) do
+    {
+      type: header_schema_object_type,
+      required: header_schema_object_required,
+      properties: header_schema_object_properties
+    }
+  end
+
+  let(:header_schema_format) { 'application/vnd.apache.avro+json;version=1.9.0' }
+  let(:header_schema) { { schema_format: header_schema_format, schema: header_schema_object } }
+
+  let(:provider_property) { { type: 'string', description: 'Third party OAuth service that authenticates account' } }
+  let(:uid_property) { { type: 'string', description: 'Provider-assigned unique account identifier' } }
+
+  let(:payload_schema_object_properties) { { provider: provider_property, uid: uid_property } }
+  let(:payload_schema_object_type) { 'object' }
+  let(:payload_schema_object_required) { %w[provider uid] }
+
+  let(:payload_schema_object) do
+    {
+      type: payload_schema_object_type,
+      required: payload_schema_object_required,
+      properties: payload_schema_object_properties
+    }
+  end
+
+  let(:payload_schema_format) { 'application/vnd.apache.avro+json;version=1.9.0' }
+  let(:payload_schema) { { schema_format: payload_schema_format, schema: payload_schema_object } }
+
+  let(:content_type) { 'application/json' }
   let(:name) { 'UserSignup' }
   let(:title) { 'User signup' }
   let(:summary) { 'Action to sign a user up.' }
   let(:description) { 'A longer description' }
-  let(:contentType) { 'application/json' }
-  let(:tags) do
-    [{ name: 'user' }, { name: 'signup' }, { name: 'register' }]
+  let(:tags) { [{ name: 'user' }, { name: 'signup' }, { name: 'register' }] }
+
+  let(:correlation_id) { { description: 'Default Correlation ID', location: '$message.header#/correlation_id' } }
+  let(:traits) { [{ '$ref': '#/components/messageTraits/commonHeaders' }] }
+
+  let(:content_encoding) { 'gzip' }
+  let(:message_type) { 'user.signup' }
+  let(:binding_version) { '0.3.0' }
+
+  let(:message_binding) do
+    { content_encoding: content_encoding, message_type: message_type, binding_version: binding_version }
   end
 
-  let(:header_type) { 'object' }
-  let(:header_correlation_id) do
-    { description: 'Correlation ID set by application', type: 'string' }
-  end
-  let(:application_instance_id) do
-    {
-      description:
-        'Unique identifier for a given instance of the publishing application',
-      type: 'string'
-    }
-  end
-  let(:header_properties) do
-    {
-      correlation_id: header_correlation_id,
-      application_instance_id: application_instance_id
-    }
-  end
-  let(:headers) { { type: header_type, properties: header_properties } }
-
-  let(:payload_type) { 'object' }
-  let(:user) { { "$ref": '#/components/schemas/userCreate' } }
-  let(:signup) { { "$ref": '#/components/schemas/signup' } }
-  let(:payload_properties) { { user: user, signup: signup } }
-
-  let(:correlation_id) do
-    { description: 'Correlation ID set by application', type: 'string' }
-  end
-
-  let(:payload) { { type: payload_type, properties: payload_properties } }
-  let(:correlation_id) do
-    {
-      description: 'Default Correlation ID',
-      location: '$message.header#/correlation_id'
-    }
-  end
-  let(:traits) { [{ "$ref": '#/components/messageTraits/commonHeaders' }] }
-
-  let(:schema_format) { nil }
-  let(:content_type) { nil }
   let(:external_docs) { [] }
   let(:bindings) { nil }
   let(:examples) { nil }
 
   let(:optional_params) do
     {
-      headers: headers,
-      payload: payload,
+      headers: header_schema,
+      payload: payload_schema,
+      correlation_id: correlation_id,
+      content_type: content_type,
       name: name,
       title: title,
       summary: summary,
       description: description,
-      traits: traits,
       tags: tags,
-      schema_format: schema_format,
-      contentType: content_type,
+      bindings: message_binding,
       external_docs: external_docs,
-      bindings: bindings,
-      examples: examples
+      examples: examples,
+      traits: traits
     }
   end
 
   describe '#call' do
+    subject(:message) { described_class.new }
+
     context 'Given empty parameters' do
-      it { expect(subject.call({}).success?).to be_truthy }
+      it 'returns monad success' do
+        expect(message.call({}).success?).to be_truthy
+      end
     end
 
-    context 'Given valid parameters' do
-      context 'and optional parameters' do
-        it 'should successfully return all optional params as attributes' do
-          result = subject.call(optional_params)
+    context 'Given optional only parameters' do
+      it 'returns monad success' do
+        expect(message.call(optional_params).success?).to be_truthy
+      end
 
-          expect(result.success?).to be_truthy
-          expect(result.to_h).to eq optional_params
-
-          expect(result[:headers]).to eq headers
-          expect(result[:payload]).to eq payload
-          expect(result[:name]).to eq name
-          expect(result[:title]).to eq title
-          expect(result[:summary]).to eq summary
-          expect(result[:description]).to eq description
-          expect(result[:tags]).to eq tags
-          expect(result[:traits]).to eq traits
-
-          expect(result[:schema_format]).to eq schema_format
-          expect(result[:contentType]).to eq content_type
-          expect(result[:external_docs]).to eq external_docs
-          expect(result[:bindings]).to eq bindings
-          expect(result[:examples]).to eq examples
-        end
+      it 'all input params are returned' do
+        expect(message.call(optional_params).to_h).to eq optional_params
       end
     end
   end
