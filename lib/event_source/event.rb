@@ -26,7 +26,7 @@ module EventSource
       send(:headers=, options[:headers] || {})
 
       @publisher_path = klass_var_for(:publisher_path) || nil
-      build_message(options)
+      build_message(options) if headers.delete(:build_message)
 
       if @publisher_path.eql?(nil)
         raise EventSource::Error::PublisherKeyMissing,
@@ -40,11 +40,6 @@ module EventSource
           payload: options[:attributes],
           name: name
         )
-
-
-      # result = EventSource::Operations::BuildMessage.new.call(options)
-      # raise EventSource::Error::MessageBuildError, result.failure unless result.success?
-      # @message = result.success if result.success?
     end
 
     # Set payload

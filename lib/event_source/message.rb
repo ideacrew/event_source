@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require 'forwardable'
+require "forwardable"
 
 module EventSource
-  # Generate and forwared a notification that something has happened in the system
+  # Construct async api message object
   class Message
     extend Forwardable
 
@@ -18,13 +18,19 @@ module EventSource
 
     def build_message(options)
       result = EventSource::Operations::BuildMessageOptions.new.call(options)
-      raise "unable to build message options due to #{result.failure}" unless result.success?
+      unless result.success?
+        raise EventSource::Error::MessageBuildError,
+              "unable to build message options due to #{result.failure}"
+      end
       result.success
     end
 
     def create_message(options)
       result = EventSource::Operations::CreateMessage.new.call(options)
-      raise "unable to create message due to #{result.failure}" unless result.success?
+      unless result.success?
+        raise EventSource::Error::MessageBuildError,
+              "unable to create message due to #{result.failure}"
+      end
       result.success
     end
   end

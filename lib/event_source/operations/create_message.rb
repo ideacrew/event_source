@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'dry/monads'
-require 'dry/monads/do'
+require "dry/monads"
+require "dry/monads/do"
 
 module EventSource
   module Operations
@@ -10,16 +10,18 @@ module EventSource
       include Dry::Monads[:result, :do]
 
       def call(params)
-        values  = yield build(params)
+        values = yield build(params)
         message = yield create(values)
-        
+
         Success(message)
       end
 
       private
 
       def build(params)
-        result = ::EventSource::AsyncApi::Contracts::MessageContract.new.call(params)
+        result =
+          ::EventSource::AsyncApi::Contracts::MessageContract.new.call(params)
+
         result.success? ? Success(result.to_h) : Failure(result.errors.to_h)
       end
 

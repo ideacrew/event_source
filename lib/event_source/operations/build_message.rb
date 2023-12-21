@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'dry/monads'
-require 'dry/monads/do'
+require "dry/monads"
+require "dry/monads/do"
 
 module EventSource
   module Operations
@@ -10,7 +10,7 @@ module EventSource
       include Dry::Monads[:result, :do]
 
       def call(params)
-        values  = yield build_message(params)
+        values = yield build_options(params)
         message = yield create_message(values)
 
         Success(message)
@@ -18,7 +18,7 @@ module EventSource
 
       private
 
-      def build_message(params)
+      def build_options(params)
         result = BuildMessageOptions.new.call(params)
         result.success? ? result : Failure(result.errors.to_h)
       end
@@ -29,8 +29,3 @@ module EventSource
     end
   end
 end
-
-
-
-
-

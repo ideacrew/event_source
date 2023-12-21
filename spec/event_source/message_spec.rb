@@ -1,156 +1,77 @@
 # frozen_string_literal: true
 
-module EventSource
-  class MyValidEvent < EventSource::Event
-    publisher_path 'parties.organization_publisher'
-  end
+require "spec_helper"
 
-  class MyEvent < EventSource::Event
-    publisher_path 'parties.organization_publisher'
-    attribute_keys :hbx_id, :fein, :entity_kind
-  end
-
-  class MyEventTwo < EventSource::Event
-    publisher_path 'parties.organization_publisher'
-  end
-
-  class MyEventThree < EventSource::Event
-    publisher_path 'parties.organization_publisher'
-    attribute_keys :hbx_id, :entity_kind, :fein, :legal_name
-  end
-end
-
-RSpec.describe EventSource::Event do
-  context 'A new Event class' do
-  
-    context 'and the required publisher_path provided is valid' do
-      let(:valid_event_class) { EventSource::MyValidEvent }
-
-      subject { valid_event_class.new }
-
-      it 'should have an event_key' do
-        expect(subject.name).to eq 'event_source.my_valid_event'
-      end
+RSpec.describe EventSource::Message do
+  module SessionConcern
+    def current_user
+      OpenStruct.new(id: 1)
     end
 
-    context 'with a defined contract_class' do
-      context "and the contract_class isn't defined" do
-        it 'should raise an EventSource::Errors::ContractNotDefined'
-      end
+    def session
+      {
+        "session_id" => "ad465b7f-1d9e-44b1-ba72-b97e166f3acb",
+        "portal" => "enroll/families/home",
+        "login_session_id" => "ad465b7f-1d9e-44b1-ba72-b97e166f3acb"
+      }
     end
   end
 
-  context 'An initialized Event class with defined attribute_keys' do
-    let(:event_class) { EventSource::MyEvent }
-
-    it 'keys should be initialized for each attribute' do
-      expect(event_class.new.attribute_keys).to eq %i[hbx_id fein entity_kind]
+  context "input params passed" do
+    let(:input_params) do
+      {
+        payload: {
+          subject_id: "gid://enroll/Person/53e693d7eb899ad9ca01e734",
+          event_category: "hc4cc_eligibility",
+          event_time: DateTime.now,
+          market_kind: "individual"
+        },
+        headers: {
+          correlation_id: "edf0e41b-891a-42b1-a4b6-2dbd97d085e4"
+        },
+        name: "enroll.events.person.hc4cc_eligibility.created"
+      }
     end
 
-    subject { event_class.new(attributes: attributes) }
+    context "when params passed" do
+      it "should create message entity" do
+        message = described_class.new(input_params)
 
-
-    context 'and all attribute values are present' do
-      let(:attributes) do
-        { hbx_id: '553234', entity_kind: 'c_corp', fein: '546232323' }
+        expect(message).to be_a(EventSource::Message)
       end
 
-      it '#valid? should return true' do
-        expect(subject.valid?).to be_truthy
-      end
-    end
-  end
+      it "should have headers on the message" do
+        message = described_class.new(input_params)
 
-  context 'An initialized Event class with no attribute_keys' do
-    let(:event_class) { EventSource::MyEventTwo }
-
-    subject { event_class.new }
-    it 'attribute_keys should be empty' do
-      expect(subject.attribute_keys).to be_empty
-    end
-
-    context 'with no attributes passed' do
-      it '#event_errors should be empty' do
-        expect(subject.event_errors).to be_empty
+        expect(message.headers).to be_a(Hash)
+        expect(message.headers.keys).to match_array(%i[correlation_id])
       end
 
-      it '#valid? should return true' do
-        expect(subject.valid?).to be_truthy
+      it "should have payload on the message" do
+        message = described_class.new(input_params)
+
+        expect(message.payload).to be_a(Hash)
+        expect(message.payload.keys).to match_array(
+          %i[
+            subject_id
+            event_category
+            message_id
+            event_name
+            event_time
+            market_kind
+            account_id
+            session_details
+          ]
+        )
       end
 
-      it 'attributes should be an empty hash' do
-        expect(subject.payload).to be_empty
-      end
-    end
+      it "should have payload with session on the message" do
+        message = described_class.new(input_params)
 
-    context 'and with attributes passed' do
-      let(:attributes) do
-        {
-          hbx_id: '553234',
-          entity_kind: 'c_corp',
-          fein: '546232323',
-          legal_name: 'Test Corp LLC'
-        }
-      end
-
-      subject { event_class.new(attributes: attributes) }
-
-      it '#event_errors should be empty' do
-        expect(subject.event_errors).to be_empty
-      end
-      it '#valid? should return true' do
-        expect(subject.valid?).to be_truthy
-      end
-      it 'should have all attributes' do
-        expect(subject.payload).to eq attributes
-      end
-    end
-  end
-
-  context 'An initialized Event class with attribute_keys' do
-    let(:event_class) { EventSource::MyEventThree }
-
-    context 'with attributes passed' do
-      let(:attributes) do
-        {
-          hbx_id: '553234',
-          entity_kind: 'c_corp',
-          fein: '546232323',
-          legal_name: 'Test Corp LLC'
-        }
-      end
-
-      subject { event_class.new(attributes: attributes) }
-
-      it 'attribute_keys should be present' do
-        expect(subject.attribute_keys).to eq %i[
-          hbx_id
-          entity_kind
-          fein
-          legal_name
-        ]
-      end
-      it '#event_errors should be empty' do
-        expect(subject.event_errors).to be_empty
-      end
-      it '#valid? should return true' do
-        expect(subject.valid?).to be_truthy
-      end
-      it 'should have all attributes' do
-        expect(subject.payload).to eq attributes
-      end
-    end
-
-    context 'with attribute getter' do
-      let(:attributes) { { hbx_id: '553234', fein: '546232323' } }
-
-      subject { event_class.new(attributes: attributes) }
-
-      context 'when attribute name is passed' do
-        it 'should return the value' do
-          expect(subject[:fein]).to eq attributes[:fein]
-          expect(subject[:hbx_id]).to eq attributes[:hbx_id]
-        end
+        expect(message.payload[:session_details]).to be_a(Hash)
+        expect(message.payload[:session_details].keys).to match_array(
+          %i[session_id portal login_session_id]
+        )
       end
     end
   end

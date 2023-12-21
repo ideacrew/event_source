@@ -38,6 +38,7 @@ require 'event_source/event'
 require 'event_source/subscriber'
 require 'event_source/operations/codec64'
 require 'event_source/operations/create_message'
+require 'event_source/operations/fetch_session'
 require 'event_source/operations/build_message_options'
 require 'event_source/operations/build_message'
 
