@@ -21,15 +21,18 @@ RSpec.describe EventSource::Operations::BuildMessageOptions do
     let(:input_params) do
       {
         payload: {
-          subject_id: "gid://enroll/Person/53e693d7eb899ad9ca01e734",
-          event_category: "hc4cc_eligibility",
-          event_time: DateTime.now,
-          market_kind: "individual"
+          record: double
         },
         headers: {
-          correlation_id: "edf0e41b-891a-42b1-a4b6-2dbd97d085e4"
+          event_name: "events.hc4cc.eligibilities.created",
+          event_category: "hc4cc_eligibility",
+          event_time: DateTime.now,
+          event_outcome: "eligibility created",
+          subject_id: "gid://enroll/Person/53e693d7eb899ad9ca01e734",
+          resource_id: "gid://enroll/Eligibility/53e693d7eb899ad9ca01e734",
+          market_kind: "individual"
         },
-        name: "enroll.events.person.hc4cc_eligibility.created"
+        event_name: "enroll.events.person.hc4cc_eligibility.created"
       }
     end
 
@@ -46,7 +49,19 @@ RSpec.describe EventSource::Operations::BuildMessageOptions do
 
         expect(message_options[:headers]).to be_a(Hash)
         expect(message_options[:headers].keys).to match_array(
-          %i[correlation_id]
+          %i[
+            correlation_id
+            subject_id
+            resource_id
+            event_category
+            message_id
+            event_name
+            event_time
+            event_outcome
+            market_kind
+            account_id
+            session
+          ]
         )
       end
 
@@ -55,26 +70,15 @@ RSpec.describe EventSource::Operations::BuildMessageOptions do
         message_options = result.value!
 
         expect(message_options[:payload]).to be_a(Hash)
-        expect(message_options[:payload].keys).to match_array(
-          %i[
-            subject_id
-            event_category
-            message_id
-            event_name
-            event_time
-            market_kind
-            account_id
-            session_details
-          ]
-        )
+        expect(message_options[:payload].keys).to match_array(%i[record])
       end
 
       it "should build session options" do
         result = subject.call(input_params)
         message_options = result.value!
 
-        expect(message_options[:payload][:session_details]).to be_a(Hash)
-        expect(message_options[:payload][:session_details].keys).to match_array(
+        expect(message_options[:headers][:session]).to be_a(Hash)
+        expect(message_options[:headers][:session].keys).to match_array(
           %i[session_id portal login_session_id]
         )
       end

@@ -38,7 +38,7 @@ module EventSource
       @message = EventSource::Message.new(
           headers: options[:headers],
           payload: options[:attributes],
-          name: name
+          event_name: name
         )
     end
 

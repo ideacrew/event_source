@@ -21,12 +21,18 @@ RSpec.describe EventSource::Operations::BuildMessage do
     let(:input_params) do
       {
         payload: {
-          subject_id: "gid://enroll/Person/53e693d7eb899ad9ca01e734",
+          record: double
+        },
+        headers: {
+          event_name: "events.hc4cc.eligibilities.created",
           event_category: "hc4cc_eligibility",
           event_time: DateTime.now,
+          event_outcome: "eligibility created",
+          subject_id: "gid://enroll/Person/53e693d7eb899ad9ca01e734",
+          resource_id: "gid://enroll/Eligibility/53e693d7eb899ad9ca01e734",
           market_kind: "individual"
         },
-        name: "enroll.events.person.hc4cc_eligibility.created"
+        event_name: "enroll.events.person.hc4cc_eligibility.created"
       }
     end
 
