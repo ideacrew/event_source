@@ -1,4 +1,7 @@
 # This yaml describes our current checks.
+require:
+  - rubocop-performance
+
 AllCops:
   TargetRubyVersion: 2.5
   SuggestExtensions: false
