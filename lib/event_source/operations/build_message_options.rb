@@ -25,6 +25,7 @@ module EventSource
         headers[:correlation_id] ||= SecureRandom.uuid
         headers[:message_id] ||= SecureRandom.uuid
         headers[:event_name] ||= params[:event_name]
+        headers[:event_time] = headers[:event_time]&.utc
 
         Success(headers)
       end
@@ -40,16 +41,12 @@ module EventSource
 
         if output.success?
           session, current_user = output.value!
-          headers.merge!(
-            session: session&.symbolize_keys,
-            account_id: current_user.id
-          )
+          headers[:session] = session&.symbolize_keys
         else
           # Create system account user <admin@dc.gov> when session is not available
-          if defined?(system_account)
-            headers.merge!(account_id: system_account&.id)
-          end
+          current_user = system_account if defined?(system_account)
         end
+        headers[:account_id] = current_user&.id&.to_s
 
         Success(headers)
       end

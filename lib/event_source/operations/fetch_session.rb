@@ -20,12 +20,11 @@ module EventSource
       private
 
       def include_session_helper
-        if session_concern_defined?
-          self.class.include(::SessionConcern)
-          Success(::SessionConcern)
-        else
-          Failure("SessionConcern is not defined")
-        end
+        self.class.include(::SessionConcern)
+
+        Success(::SessionConcern)
+      rescue NameError => e
+        Failure(e.to_s)
       end
 
       def fetch_session
@@ -42,10 +41,6 @@ module EventSource
         else
           Failure("current_user is not defined")
         end
-      end
-
-      def session_concern_defined?
-        Object.const_defined?(:SessionConcern)
       end
     end
   end
