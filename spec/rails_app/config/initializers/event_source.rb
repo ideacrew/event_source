@@ -114,7 +114,7 @@ EventSource.configure do |config|
   #   },
   # ]
 
-  # config.asyncapi_resources = AcaEntities::AsyncApi::Mitctasks/event_source.rake
+  # config.asyncapi_resources = AcaEntities::AsyncApi::Mitc
   # config.asyncapi_resources = AcaEntities.find_resources_for(:enroll, %w[amqp]) # will give you resouces in array of hashes form
   # AcaEntities::Operations::AsyncApi::FindResource.new.call(self)
 end
