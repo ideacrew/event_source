@@ -2,7 +2,9 @@
 
 require 'spec_helper'
 
-RSpec.describe EventSource::AsyncApi::Contracts::MessageContract do
+RSpec.describe EventSource::AsyncApi::MessageTrait do
+  subject(:message) { described_class }
+
   let(:occurred_at_property) { { type: 'string', description: 'Message timestamp' } }
   let(:correlation_id_property) { { type: 'string', description: 'Correlation ID set by application' } }
 
@@ -26,20 +28,6 @@ RSpec.describe EventSource::AsyncApi::Contracts::MessageContract do
   let(:provider_property) { { type: 'string', description: 'Third party OAuth service that authenticates account' } }
   let(:uid_property) { { type: 'string', description: 'Provider-assigned unique account identifier' } }
 
-  let(:payload_schema_object_properties) { { provider: provider_property, uid: uid_property } }
-  let(:payload_schema_object_type) { 'object' }
-  let(:payload_schema_object_required) { %w[provider uid] }
-
-  let(:payload_schema_object) do
-    {
-      type: payload_schema_object_type,
-      required: payload_schema_object_required,
-      properties: payload_schema_object_properties
-    }
-  end
-
-  let(:payload_schema_format) { 'application/vnd.apache.avro+json;version=1.9.0' }
-  let(:payload_schema) { { schema_format: payload_schema_format, schema: payload_schema_object } }
 
   let(:content_type) { 'application/json' }
   let(:name) { 'UserSignup' }
@@ -59,12 +47,10 @@ RSpec.describe EventSource::AsyncApi::Contracts::MessageContract do
   end
 
   let(:external_docs) { [{ description: 'Version 1 message', url: 'http://example.com' }] }
-  let(:traits) { [{ content_type: content_type }] }
 
-  let(:optional_params) do
+  let(:all_params) do
     {
       headers: header_schema,
-      payload: payload_schema,
       correlation_id: correlation_id,
       content_type: content_type,
       name: name,
@@ -74,27 +60,18 @@ RSpec.describe EventSource::AsyncApi::Contracts::MessageContract do
       tags: tags,
       bindings: message_binding,
       external_docs: external_docs,
-      traits: traits
     }
   end
 
-  describe '#call' do
-    subject(:message) { described_class.new }
+  context 'Given validated all params' do
+    let(:validated_params) { EventSource::AsyncApi::Contracts::MessageContract.new.call(all_params).to_h }
 
-    context 'Given empty parameters' do
-      it 'returns monad success' do
-        expect(message.call({}).success?).to be_truthy
-      end
+    it 'it returns an entity instance' do
+      expect(message.new(validated_params)).to be_a message
     end
 
-    context 'Given optional only parameters' do
-      it 'returns monad success' do
-        expect(message.call(optional_params).success?).to be_truthy
-      end
-
-      it 'all input params are returned' do
-        expect(message.call(optional_params).to_h).to eq optional_params
-      end
+    it 'and all input params are populated' do
+      expect(message.new(validated_params).to_h).to eq all_params
     end
   end
 end

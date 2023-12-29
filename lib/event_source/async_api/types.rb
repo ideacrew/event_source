@@ -18,7 +18,7 @@ module EventSource
       #   end
       UriKind =
         Types.Constructor(EventSource::Uris::Uri) do |val|
-          EventSource::Uris::Uri.new(uri: val)
+          EventSource::Uris::Uri.new(uri: val).to_s
         end
 
       # UriKind = Types.Constructor(::URI, &:parse)
@@ -27,10 +27,7 @@ module EventSource
       # TypeContainer = Dry::Schema::TypeContainer.new
       # TypeContainer.register('params.uri', UriKind)
 
-      Email =
-        Coercible::String.constrained(
-          format: /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z]+)*\.[a-z]+\z/i
-        )
+      Email = Coercible::String.constrained(format: /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z]+)*\.[a-z]+\z/i)
 
       Emails = Array.of(Email)
       HashOrNil = Types::Hash | Types::Nil
@@ -66,24 +63,13 @@ module EventSource
           :message_bindings
         )
       Vhost = Types::Coercible::String.default('/')
-      ChannelTypeKind =
-        Types::Coercible::Symbol
-        .default(:routing_key)
-        .enum(:routing_key, :queue)
-      ExchangeTypeKind =
-        Types::Coercible::Symbol.enum(
-          :topic,
-          :fanout,
-          :default,
-          :direct,
-          :headers
-        )
+      ChannelTypeKind = Types::Coercible::Symbol.default(:routing_key).enum(:routing_key, :queue)
+      ExchangeTypeKind = Types::Coercible::Symbol.enum(:topic, :fanout, :default, :direct, :headers)
       MessageDeliveryModeKind = Types::Coercible::Integer.enum(1, 2)
       RoutingKeyKind = Types::Coercible::String
       RoutingKeyKinds = Types::Array.of(RoutingKeyKind)
       QueueName = Types::Coercible::String
-      AmqpBindingVersionKind =
-        Types::Coercible::String.default('0.2.0').enum('0.2.0')
+      AmqpBindingVersionKind = Types::Coercible::String.default('0.2.0').enum('0.2.0')
 
       OperationNameType = Types::String | Types::Symbol
       # PatternedFieldName  = String.constrained(format: /^[A-Za-z0-9_\-]+$/)

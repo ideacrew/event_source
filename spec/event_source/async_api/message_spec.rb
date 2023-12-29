@@ -2,7 +2,9 @@
 
 require 'spec_helper'
 
-RSpec.describe EventSource::AsyncApi::Contracts::MessageContract do
+RSpec.describe EventSource::AsyncApi::Message do
+  subject(:message) { described_class }
+
   let(:occurred_at_property) { { type: 'string', description: 'Message timestamp' } }
   let(:correlation_id_property) { { type: 'string', description: 'Correlation ID set by application' } }
 
@@ -61,7 +63,7 @@ RSpec.describe EventSource::AsyncApi::Contracts::MessageContract do
   let(:external_docs) { [{ description: 'Version 1 message', url: 'http://example.com' }] }
   let(:traits) { [{ content_type: content_type }] }
 
-  let(:optional_params) do
+  let(:all_params) do
     {
       headers: header_schema,
       payload: payload_schema,
@@ -78,23 +80,15 @@ RSpec.describe EventSource::AsyncApi::Contracts::MessageContract do
     }
   end
 
-  describe '#call' do
-    subject(:message) { described_class.new }
+  context 'Given validated all params' do
+    let(:validated_params) { EventSource::AsyncApi::Contracts::MessageContract.new.call(all_params).to_h }
 
-    context 'Given empty parameters' do
-      it 'returns monad success' do
-        expect(message.call({}).success?).to be_truthy
-      end
+    it 'it returns an entity instance' do
+      expect(message.new(validated_params)).to be_a message
     end
 
-    context 'Given optional only parameters' do
-      it 'returns monad success' do
-        expect(message.call(optional_params).success?).to be_truthy
-      end
-
-      it 'all input params are returned' do
-        expect(message.call(optional_params).to_h).to eq optional_params
-      end
+    it 'and all input params are populated' do
+      expect(message.new(validated_params).to_h).to eq all_params
     end
   end
 end
