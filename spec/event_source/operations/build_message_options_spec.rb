@@ -59,8 +59,7 @@ RSpec.describe EventSource::Operations::BuildMessageOptions do
             event_time
             event_outcome
             market_kind
-            account_id
-            session
+            account
           ]
         )
       end
@@ -77,8 +76,8 @@ RSpec.describe EventSource::Operations::BuildMessageOptions do
         result = subject.call(input_params)
         message_options = result.value!
 
-        expect(message_options[:headers][:session]).to be_a(Hash)
-        expect(message_options[:headers][:session].keys).to match_array(
+        expect(message_options[:headers][:account][:session]).to be_a(Hash)
+        expect(message_options[:headers][:account][:session].keys).to match_array(
           %i[session_id portal login_session_id]
         )
       end
