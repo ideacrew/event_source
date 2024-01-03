@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    event_source (0.5.7)
+    event_source (0.5.8)
       addressable (>= 2.8.0)
       bunny (>= 2.14)
       deep_merge (~> 1.2.0)
