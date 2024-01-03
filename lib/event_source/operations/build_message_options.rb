@@ -13,7 +13,7 @@ module EventSource
       def call(params)
         headers = yield build_headers(params)
         payload = yield build_payload(params)
-        headers = yield append_session_details(headers)
+        headers = yield append_account_details(headers)
 
         Success(headers: headers, payload: payload)
       end
@@ -36,17 +36,20 @@ module EventSource
         Success(payload)
       end
 
-      def append_session_details(headers)
+      def append_account_details(headers)
         output = FetchSession.new.call
+        account = {}
 
         if output.success?
           session, current_user = output.value!
-          headers[:session] = session&.symbolize_keys
+          account[:session] = session&.symbolize_keys
         else
           # Create system account user <admin@dc.gov> when session is not available
           current_user = system_account if defined?(system_account)
         end
-        headers[:account_id] = current_user&.id&.to_s
+
+        account[:id] = current_user&.id&.to_s
+        headers[:account] = account
 
         Success(headers)
       end

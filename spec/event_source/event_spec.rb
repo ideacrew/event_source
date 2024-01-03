@@ -287,7 +287,7 @@ RSpec.describe EventSource::Event do
 
       it "should build message" do
         expect(subject.message).to be_present
-        expect(subject.message.headers[:session]).to include(
+        expect(subject.message.headers[:account][:session]).to include(
           :session_id
         )
       end

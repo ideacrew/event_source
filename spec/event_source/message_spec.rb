@@ -58,8 +58,7 @@ RSpec.describe EventSource::Message do
             event_time
             event_outcome
             market_kind
-            account_id
-            session
+            account
           ]
         )
       end
@@ -74,8 +73,8 @@ RSpec.describe EventSource::Message do
       it "should have payload with session on the message" do
         message = described_class.new(input_params)
 
-        expect(message.headers[:session]).to be_a(Hash)
-        expect(message.headers[:session].keys).to match_array(
+        expect(message.headers[:account][:session]).to be_a(Hash)
+        expect(message.headers[:account][:session].keys).to match_array(
           %i[session_id portal login_session_id]
         )
       end
