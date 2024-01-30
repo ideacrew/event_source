@@ -13,8 +13,9 @@ module EventSource
         helper = yield include_session_helper
         session = yield fetch_session
         current_user = yield fetch_current_user
+        system_account = yield fetch_system_account
 
-        Success([session, current_user])
+        Success([session, current_user, system_account])
       end
 
       private
@@ -40,6 +41,14 @@ module EventSource
           Success(current_user)
         else
           Failure("current_user is not defined")
+        end
+      end
+
+      def fetch_system_account
+        if respond_to?(:system_account)
+          Success(system_account)
+        else
+          Failure("system_account is not defined")
         end
       end
     end

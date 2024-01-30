@@ -38,17 +38,17 @@ module EventSource
 
       def append_account_details(headers)
         output = FetchSession.new.call
+        return output unless output.success?
+
+        session, current_user, system_account = output.value!
         account = {}
 
-        if output.success?
-          session, current_user = output.value!
+        if session.present? && current_user.present?
           account[:session] = session&.symbolize_keys
+          account[:id] = current_user&.id&.to_s
         else
-          # Create system account user <admin@dc.gov> when session is not available
-          current_user = system_account if defined?(system_account)
+          account[:id] = system_account&.id&.to_s
         end
-
-        account[:id] = current_user&.id&.to_s
         headers[:account] = account
 
         Success(headers)
