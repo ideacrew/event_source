@@ -6,16 +6,20 @@ RSpec.describe EventSource::Operations::FetchSession do
   let(:fetch_session) { described_class.new }
 
   describe "when session helper not defined" do
+    before do
+      allow(fetch_session).to receive(:respond_to?).with(:session).and_return(
+        respond_to_session
+      )
+      allow(fetch_session).to receive(:respond_to?).with(
+        :current_user
+      ).and_return(respond_to_current_user)
+    end
+
+    let(:respond_to_session) { true }
+    let(:respond_to_current_user) { true }
 
     context "when current user not defined" do
-      before do
-        allow(fetch_session).to receive(:respond_to?).with(:session).and_return(
-          true
-        )
-        allow(fetch_session).to receive(:respond_to?).with(
-          :current_user
-        ).and_return(false)
-      end
+      let(:respond_to_current_user) { false }
 
       it "should fail" do
         result = fetch_session.call
@@ -26,14 +30,7 @@ RSpec.describe EventSource::Operations::FetchSession do
     end
 
     context "when session not defined" do
-      before do
-        allow(fetch_session).to receive(:respond_to?).with(:session).and_return(
-          false
-        )
-        allow(fetch_session).to receive(:respond_to?).with(
-          :current_user
-        ).and_return(true)
-      end
+      let(:respond_to_session) { false }
 
       it "should fail" do
         result = fetch_session.call
@@ -58,7 +55,13 @@ RSpec.describe EventSource::Operations::FetchSession do
             "login_session_id" => "ad465b7f-1d9e-44b1-ba72-b97e166f3acb"
           }
         end
+
+        def system_account
+          OpenStruct.new(id: 2)
+        end
       end
+
+      let(:session_concern) { Class.new.extend(SessionConcern) }
 
       it "should return session and current user" do
         result = fetch_session.call
@@ -66,12 +69,9 @@ RSpec.describe EventSource::Operations::FetchSession do
         expect(result.success?).to be_truthy
         expect(result.value!).to eq(
           [
-            {
-              "session_id" => "ad465b7f-1d9e-44b1-ba72-b97e166f3acb",
-              "portal" => "enroll/families/home",
-              "login_session_id" => "ad465b7f-1d9e-44b1-ba72-b97e166f3acb"
-            },
-            OpenStruct.new(id: 1)
+            session_concern.session,
+            session_concern.current_user,
+            session_concern.system_account
           ]
         )
       end
