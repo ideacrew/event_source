@@ -35,6 +35,10 @@ module EventSource
             result = ::EventSource::Configure::Contracts::HttpConfigurationContract.new.call(params_as_hash)
             return Success(sc) if result.success?
             Failure([sc, result.errors])
+          when ::EventSource::Configure::SftpConfiguration
+            result = ::EventSource::Configure::Contracts::SftpConfigurationContract.new.call(params_as_hash)
+            return Success(sc) if result.success?
+            Failure([sc, result.errors])
           else
             Success(sc)
           end

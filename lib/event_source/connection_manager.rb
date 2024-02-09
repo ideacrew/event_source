@@ -41,7 +41,6 @@ module EventSource
     #   an {EventSource::AsyncApi::Server} configuration
     # @return [EventSource::Connection] Connection
     def fetch_connection(async_api_server)
-      # raise connections.keys.inspect
       client_klass = protocol_klass_for(async_api_server.protocol)
       connection_uri = client_klass.connection_uri_for(async_api_server)
       connections[connection_uri]
@@ -171,6 +170,8 @@ module EventSource
         EventSource::Protocols::Amqp::BunnyConnectionProxy
       when :http, :https, 'http', 'https'
         EventSource::Protocols::Http::FaradayConnectionProxy
+      when :sftp, 'sftp'
+        EventSource::Protocols::Sftp::SftpConnectionProxy
       else
         raise EventSource::Protocols::Amqp::Error::UnknownConnectionProtocolError,
               "unknown protocol: #{protocol}"

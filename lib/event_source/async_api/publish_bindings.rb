@@ -12,6 +12,7 @@ module EventSource
       transform_keys(&:to_sym)
       attribute :http, ::EventSource::Protocols::Http::PublishBindings.meta(omittable: true)
       attribute :amqp, Types::Hash.meta(omittable: true)
+      attribute :sftp, Types::Hash.meta(omittable: true)
       attribute :x_amqp_exchange_to_exchanges, Types::Hash.meta(omittable: true)
     end
   end

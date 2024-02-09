@@ -63,6 +63,24 @@ module EventSource
       end
     end
 
+    SftpConfiguration = Struct.new(
+      :protocol,
+      :ref,
+      :host,
+      :port,
+      :url,
+      :user_name,
+      :password,
+      :path,
+      :private_key,
+      :call_location
+    ) do
+      def to_h
+        attribute_hash = super()
+        attribute_hash.compact
+      end
+    end
+
     # Represents a server configuration.
     class Servers
       attr_reader :default_content_type, :configurations
@@ -83,6 +101,13 @@ module EventSource
         amqp_conf.call_location = caller(1)
         yield(amqp_conf)
         @configurations.push(amqp_conf)
+      end
+
+      def sftp
+        sftp_conf = SftpConfiguration.new(:sftp)
+        sftp_conf.call_location = caller(1)
+        yield(sftp_conf)
+        @configurations.push(sftp_conf)
       end
     end
   end

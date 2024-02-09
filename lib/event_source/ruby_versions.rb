@@ -5,10 +5,13 @@ module EventSource
   class RubyVersions
     CURRENT_VERSION = Gem::Version.new(RUBY_VERSION)
 
+    VERSION_TWO_SEVEN = Gem::Version.new("2.7.0")
     VERSION_THREE = Gem::Version.new("3.0.0")
     VERSION_THREE_ONE = Gem::Version.new("3.1.0")
 
     LESS_THAN_THREE = CURRENT_VERSION < VERSION_THREE
     LESS_THAN_THREE_ONE = CURRENT_VERSION < VERSION_THREE_ONE
+    
+    GREATER_THAN_TWO_SIX = CURRENT_VERSION >= VERSION_TWO_SEVEN
   end
 end

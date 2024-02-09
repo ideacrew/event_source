@@ -8,6 +8,7 @@ RSpec.describe EventSource::ConnectionManager do
   before(:all) do
     described_class.instance.drop_connections_for(:amqp)
     described_class.instance.drop_connections_for(:http)
+    described_class.instance.drop_connections_for(:sftp)
   end
 
   context 'A ConnectionManager Singleton instance' do

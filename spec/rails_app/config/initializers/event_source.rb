@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 EventSource.configure do |config|
-  config.protocols = %w[amqp http]
+  config.protocols = %w[amqp http sftp]
   config.pub_sub_root = Pathname.pwd.join('spec', 'rails_app', 'app', 'event_source')
   config.server_key = Rails.env.to_sym
   config.app_name = :enroll
@@ -87,6 +87,24 @@ EventSource.configure do |config|
         soap.password_encoding = :plain
         soap.use_timestamp = true
         soap.timestamp_ttl = 60.seconds
+      end
+
+      server.sftp do |sftp|
+        sftp.ref = "sftp://sftp/"
+        sftp.url = "sftp://localhost"
+        sftp.user_name = "user1"
+        sftp.password = "password1"
+        sftp.path = File.expand_path(
+          File.join(
+            File.dirname(__FILE__),
+            "..",
+            "..",
+            "..",
+            "mock_services",
+            "sftp_server_root"
+          )
+        )
+        sftp.port = 31337
       end
     end
 

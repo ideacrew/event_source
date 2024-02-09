@@ -11,6 +11,7 @@ module EventSource
         params do
           optional(:http).hash
           optional(:amqp).hash
+          optional(:sftp).hash
         end
 
         rule(:http) do
