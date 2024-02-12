@@ -12,4 +12,6 @@ group :development, :test do
   gem "pry-byebug", platform: :mri, require: false
   gem 'rubocop'
   gem 'yard'
+  gem 'hrr_rb_ssh', git: "https://github.com/adfoster-r7/hrr_rb_ssh.git", branch: "investigate-openssl3-support"
+  gem 'hrr_rb_sftp'
 end

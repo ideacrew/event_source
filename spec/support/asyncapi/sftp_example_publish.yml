@@ -1,0 +1,21 @@
+---
+asyncapi: 2.0.0
+info:
+  title: SFTP Example
+  version: 0.1.0
+  description: AMQP Publish configuration for the Fdsh services
+
+servers:
+  test:
+    url: "sftp://sftp/"
+    protocol: sftp
+    description: Sftp Server
+
+channels:
+  some.file.upload_to_cms:
+    publish:
+      operationId: some.file.upload_to_cms
+      description: Upload some file
+      bindings:
+        sftp:
+          path: /home/user/outbox

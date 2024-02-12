@@ -4,6 +4,7 @@ lib = File.expand_path('../lib', __FILE__)
 
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'event_source/version'
+require 'event_source/ruby_versions'
 
 Gem::Specification.new do |spec|
   spec.name = 'event_source'
@@ -38,23 +39,31 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'addressable', '>= 2.8.0'
   spec.add_dependency 'bunny', '>= 2.14'
   spec.add_dependency 'deep_merge', '~> 1.2.0'
-  spec.add_dependency 'dry-configurable', '~> 0.12'
+  spec.add_dependency 'dry-core', '< 0.8.0'
+  spec.add_dependency 'dry-configurable', '~> 0.12.0'
+  spec.add_dependency 'dry-container', '~> 0.8.0'
   spec.add_dependency 'dry-events', '~> 0.3'
-  spec.add_dependency 'dry-inflector', '~> 0.2'
-  spec.add_dependency 'dry-initializer', '~> 3.0'
+  spec.add_dependency 'dry-inflector', '< 0.3.0'
+  spec.add_dependency 'dry-initializer', '~> 3.0.0'
   spec.add_dependency 'dry-monads', '~> 1.3'
   spec.add_dependency 'dry-struct', '~> 1.4'
   spec.add_dependency 'dry-types', '~> 1.5'
   spec.add_dependency 'dry-validation', '~> 1.6'
-  spec.add_dependency 'dry-schema', '~> 1.6'
+  spec.add_dependency 'dry-schema', '~> 1.6.0'
   spec.add_dependency 'faraday', '~> 1.4.1'
   spec.add_dependency 'faraday_middleware', '~> 1.0'
   spec.add_dependency 'logging', '~> 2.3.0'
-  spec.add_dependency 'nokogiri', '>= 1.13.0'
+  if EventSource::RubyVersions::GREATER_THAN_TWO_SIX
+    spec.add_dependency 'nokogiri', '>= 1.13.0'
+  else
+    spec.add_dependency 'nokogiri', '< 1.14.0'
+  end
+  spec.add_dependency 'set', '< 1.0.4'
   spec.add_dependency 'mime-types'
-  spec.add_dependency 'oj', '~> 3.11'
-  spec.add_dependency 'ox', '~> 2.14'
+  spec.add_dependency 'oj', '< 3.14'
+  spec.add_dependency 'ox', '< 2.14.15'
   spec.add_dependency 'typhoeus', '~> 1.4.0'
+  spec.add_dependency 'net-sftp'
 
   # TODO: Change to development dependency
   spec.add_development_dependency 'database_cleaner'

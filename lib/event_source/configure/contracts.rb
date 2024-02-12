@@ -3,6 +3,7 @@
 require_relative "contracts/client_certificate_settings_contract"
 require_relative "contracts/soap_settings_contract"
 require_relative "contracts/http_configuration_contract"
+require_relative "contracts/sftp_configuration_contract"
 
 module EventSource
   module Configure
