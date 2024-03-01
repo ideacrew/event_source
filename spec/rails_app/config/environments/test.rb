@@ -15,7 +15,7 @@ Rails.application.configure do
   config.eager_load = false
 
   # Configure static file server for tests with Cache-Control for performance.
-  config.serve_static_files   = true
+  config.serve_static_files = true
   config.static_cache_control = 'public, max-age=3600'
 
   # Show full error reports and disable caching.
@@ -31,6 +31,18 @@ Rails.application.configure do
   config.active_support.deprecation = :stderr
 
   config.active_job.queue_adapter = :test
+
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
+
+  config.generators do |g|
+    # Initialize configuration defaults for originally generated Rails version.
+    # g.load_defaults 6.1
+
+    # Generate rspec BDD test files
+    g.test_framework :rspec
+
+    # Don't generate system test files.
+    g.system_tests = nil
+  end
 end

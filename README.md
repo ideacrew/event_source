@@ -1,97 +1,90 @@
 # EventSource: Event-enable your application's domain model
 
-EventSource simplifies event-driven architecture design by adding helpers and interfaces that abstract away many of the underlying complexities associated with composing, publishing and subscribing to events - Event Sourcing Lite. The gem presents a standards-based DSL for configuring and exchanging event using multiple protocols within an application or between services.
+EventSource simplifies microservice event-driven architecture design by adding helpers and interfaces that abstract away many of the underlying complexities associated with composing, publishing and subscribing to events - Event Sourcing Lite. The gem presents a standards-based DSL for configuring and exchanging event messages within or between services using multiple protocols.
 
-EventSource supports the following protocols:
+EventSource defines four core components:
+
+1. **Event**: objects with messages that notify when something happens in the system
+2. **Command**: any PORO using EventSource's Event mixin to build and publish an Event
+3. **Publisher**: aggregates and broadcasts one or more Events to a single AMQP exchange or HTTP endpoint
+4. **Subscriber**: consumers (listeners) for published Event messages
+
+And supports the following protocols:
 
 1. AMQP using [RabbitMQ](https://rabbitmq.com/) broker
-2. HTTP and HTTP with SOAP extensions
+2. HTTP
+3. HTTP with SOAP extensions
 
 ## Installation
 
-Add this line to your application's Gemfile:
+1. Using git's repository and branch options, add the gem to your application's Gemfile:
 
 ```ruby
-gem 'event_source'
+gem 'event_source', git: 'https://github.com/ideacrew/event_source.git', branch: 'trunk'
 ```
 
-And then execute:
+2. Then execute:
 
 ```sh
+# Download and install
 $ bundle
+
+# Generate the intialization file
+# Check comments in generated file for configuration details
+$ rails generate eventsource:install
+ initializer  event_source.rb
 ```
 
-Or install it yourself as:
+The `config/initializers/event_source.rb` is divided into three sections: General, API Server and AsyncApi configurations. Initializer settings must be uncommented and configured with local environment values to enable EventSource services.
+
+The **General configuration section** includes setting values for the application name, enabled communication protocols and root folder. The `#pub_sub_root` setting points to the root folder (default: `app/event_source`) where EventSource component files are located. It is structured as follows:
 
 ```sh
-$ gem install event_source
+app
+  |- event_source
+  | |- events
+  | |- publishers
+  | |- subscribers
 ```
 
-## Development
+The **API Server section** specifies connection values for protocol servers and resource endpoints. Example AMQP and HTTP server settings may be uncommented and configured to enable connections.
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
-## Configuration
-
-EventSource's DSL applies the [AsyncAPi 2.0.0](https://www.asyncapi.com/docs/specifications/v2.0.0) specification for configuring the infrastucture environment and exchanging event messages. AsyncAPI components include:
-
-- Servers
-- Channels
-- Operations
-- Protocol-specific bindings at various levels
-
-Using AsyncAPI definitions, EventSource enables your application to join message broker- and Web server- hosted networks, registering as a message producer and/or consumer, performing message publish and subscribe operations.
-
-Following is an abbrevatiated example AsyncAPI YAML configuration file for accessing a service over HTTP protocol:
-
-```yaml
-asyncapi: "2.0.0"
----
-servers:
-  production:
-    url: http://mitc:3001
-    protocol: http
-    protocolVersion: 0.1.0
-    description: MitC Development Server
-
-channels:
-  /determinations/eval:
-    publish:
-      operationId: /determinations/eval
-      description: HTTP endpoint for MitC eligibility determination requests
-      bindings:
-        http:
-          type: request
-          method: POST
-          headers:
-            Content-Type: application/json
-            Accept: application/json
-    subscribe:
-      operationId: /on/determinations/eval
-      description: EventSource Subscriber that publishes MitC eligibility determination responses
-      bindings:
-        http:
-          type: response
-          method: GET
-          headers:
-            Content-Type: application/json
-            Accept: application/json
-```
+The **AsyncApi section** bridges your microservice component to common API configuration settings defined in IdeaCrew's [AcaEntities gem](https://github.com/ideacrew/aca_entities). These definitions leverage EventSource's support for the [AsyncApi specification](https://www.asyncapi.com/docs/specifications/v2.0.0) to describe API resources. AcaEntities' [async_api folder](https://github.com/ideacrew/aca_entities/tree/trunk/lib/aca_entities/async_api) houses API resource definitions for State-based Marketplace (SBM) solution microservices. Uncomment and configure blocks to access gem-defined pub/sub event message APIs.
 
 ## Usage
 
-EventSource enables these core components:
+### Creating basic components with `rails generate`
 
-1. Event - notifications about something that happens in the system
-2. Command - mixin to build and publish an Event
-3. Publisher - aggregate and broadcast Events
-4. Subscriber - consumers (listeners) for published Events
+In addition to `event_source:install`, EventSource's `event_source:pubsub` generator creates publish/subscribe operations and one or more events events in a single commmand.
+
+The `event_source:pubsub` generator accepts an operation name and list of event name arguments and creates corresponding Event, Publisher and Subscriber files.
+
+```sh
+
+$ rails generate event_source:pubsub multi_tax_household/tax_forms updated_1095a_requested updated_1095a_received
+    generate  event_source:event multi_tax_household/updated_1095a_requested TaxForms
+       rails  generate event_source:event multi_tax_household/updated_1095a_requested TaxForms
+      create  app/event_source/events/multi_tax_household/updated_1095a_requested.rb
+    generate  event_source:event multi_tax_household/updated_1095a_received TaxForms
+       rails  generate event_source:event multi_tax_household/updated_1095a_received TaxForms
+      create  app/event_source/events/multi_tax_household/updated_1095a_received.rb
+    generate  event_source:publisher
+       rails  generate event_source:publisher multi_tax_household/tax_forms updated_1095a_requested updated_1095a_received updated_1095a_archived
+      create  app/event_source/publishers/multi_tax_household/tax_forms_publisher.rb
+    generate  event_source:subscriber
+       rails  generate event_source:subscriber multi_tax_household/tax_forms updated_1095a_requested updated_1095a_received updated_1095a_archived
+      create  app/event_source/subscribers/multi_tax_household/tax_forms_subscriber.rb
+```
+
+There's a generator for each EventSource component. The command: `$ rails generate event_source` will produce a list of generators.
+
+## EventSource Component Overview
 
 ### Event
 
-Events are signals about anything notable that happens in the system. For example, events can indicate that an enrollment period has begun, an eligibility determined, an application submitted and an enrollment effectuated. Event names use past tense form as a convention, for example: `Created`, `Updated`, `Deleted`.
+Events are signals about anything notable that happens in the system. For example, events can indicate that an enrollment period has begun, an eligibility determined, an application submitted and an enrollment effectuated.
+
+Event names use past tense form as a convention, for example: `Created`, `Updated`, `Deleted`.
 
 Events are subclassed from the `EventSource::Event` class. An Event class must include a `publisher_path`. The `publisher_path` is a dot-notation, stringified class name that specifies the topic where event instances are published.
 
@@ -125,12 +118,7 @@ created_event.valid?
 created_event.event_errors
 # => ["missing required keys: [:hbx_id, :legal_name, :fein, :entity_kind]"]
 
-created_event.attributes = {
-  hbx_id: '12345',
-  legal_name: 'ACME Corp',
-  entity_kind: :c_corp,
-  fein: '898784125',
-}
+created_event.attributes = { hbx_id: '12345', legal_name: 'ACME Corp', entity_kind: :c_corp, fein: '898784125' }
 # => {:hbx_id=>"12345", :legal_name=>"ACME Corp", :entity_kind=>:c_corp, :fein=>"898784125"}
 
 created_event.valid?
@@ -177,9 +165,7 @@ For the following `publish_event` method, the Command will publish the event `or
 
 ```ruby
 def publish_event(organization)
-  event =
-    event 'organizations.general_organization_created',
-          attributes: organization.to_h
+  event = event 'organizations.general_organization_created', attributes: organization.to_h
   event.publish
   logger.info "Published event: #{event}"
 end
@@ -244,9 +230,7 @@ class OrganizationSubscriber
   include EventSource::Logging
   include ::EventSource::Subscriber[amqp: 'organizations.organization_events']
 
-  subscribe(
-    :on_polypress_general_organization_created,
-  ) do |delivery_info, metadata, event|
+  subscribe(:on_polypress_general_organization_created) do |delivery_info, metadata, event|
     event = JSON.parse(event, symbolize_names: true)
     result = ::Operations.GenerateNotice('new_general_organization').call(event)
 
@@ -303,71 +287,6 @@ end
 
 <!-- prettier_ignore_end -->
 
-## File System Conventions
-
-A good convention for Rails applications is to group EventSource components under the `app/` into three subfolders: `event_source`, `events` and `operations`. For example:
-
-```ruby
-enroll system
-
-app
-  |- contracts
-  | |- organizations
-  | | |- organization_contract.rb
-  |- entities
-  | |- organizations
-  | | |- organization.rb
-  |- event_source
-  | |- events
-  | | |- organizations
-  | | | |- address_updated.rb
-  | | | |- general_organization_created.rb
-  | | | |- general_organization_fein_corrected.rb
-  | | | |- general_organization_fein_updated.rb
-  | |- subscribers
-  | | |- polypress
-  | | | |- enroll_medicaid_notices.rb
-  | | |- medicaid_gateway
-  | | | |- eligiblity_determinations.rb
-  | |- publishers
-  | | |- organizations
-  | | | | |- organization_publisher.rb
-  |- operations
-  | |- organizations
-  | | |- correct_or_update_general_organization_fein.rb
-  | | |- create_general_organization_fein.rb
-  | | |- update_address.rb
-```
-
-This structure will result in dot-namespaced values like the following:
-
-```ruby
-organizations.exempt_organization (entity)
-organizations.general_organization (entity)
-contracts.organizations.exempt_organization_contract (contract)
-contracts.organizations.general_organization_contract (contract)
-organizations.general_organization_model (model)
-organizations.exempt_organization_model (model)
-operations.organizations.create_general_organization (command / operation)
-events.organizations.general_organization_created (event)
-events.organizations.address_updated (event)
-publishers.organizations.organizations_publisher (publisher)
-subscribers.polypress.enroll_medicaid_notices_subscriber (subscriber)
-subscribers.medicaid_gateway.eligiblity_determinations_subscriber (subscriber)
-```
-
-And Routing Keys like the following:
-
-```ruby
-medicaid_gateway: channal_item_name: magi_medicaid.mitc.eligibilities.determined_mixed_eligible:
-medicaid_gateway: publish_operation_id: magi_medicaid.mitc.eligibilities.determined_mixed_eligible:
-medicaid_gateway: publish_operation_id: magi_medicaid.mitc.eligibilities.determined_mixed_eligible:
-medicaid_gateway exchange name (bindings): magi_medicaid.mitc.eligibilities
-medicaid_gateway routing key (bindings): magi_medicaid.mitc.eligibilities.determined_mixed_eligible:
-polypress subscriber: on_polypress.magi_medicaid.mitc.eligibilities
-
-```
-
 ## Future
 
 ### EventStream
@@ -392,15 +311,54 @@ topic_publishers = [
 
 # provide default broadcast Publisher (Dispatcher) with ability to override
 # supported by local subscibers that publish to enterprise
-broadcast_publishers = %w[
-  urgent
-  each_minute
-  beginning_of_day
-  end_of_day
-  hourly
-  beginning_of_month
-  silent_period
-]
+broadcast_publishers = %w[urgent each_minute beginning_of_day end_of_day hourly beginning_of_month silent_period]
+```
+
+## Example AsyncApi Definition
+
+EventSource's DSL applies the [AsyncAPi 2.0.0](https://www.asyncapi.com/docs/specifications/v2.0.0) specification for configuring the infrastucture environment and exchanging event messages. AsyncAPI components include:
+
+- Servers
+- Channels
+- Operations
+- Protocol-specific bindings at various levels
+
+Using AsyncAPI definitions, EventSource enables your application to join message broker- and Web server- hosted networks, registering as a message producer and/or consumer, performing message publish and subscribe operations.
+
+Following is an abbrevatiated example AsyncAPI YAML configuration file for accessing a service over HTTP protocol:
+
+```yaml
+asyncapi: "2.0.0"
+---
+servers:
+  production:
+    url: http://mitc:3001
+    protocol: http
+    protocolVersion: 0.1.0
+    description: MitC Development Server
+
+channels:
+  /determinations/eval:
+    publish:
+      operationId: /determinations/eval
+      description: HTTP endpoint for MitC eligibility determination requests
+      bindings:
+        http:
+          type: request
+          method: POST
+          headers:
+            Content-Type: application/json
+            Accept: application/json
+    subscribe:
+      operationId: /on/determinations/eval
+      description: EventSource Subscriber that publishes MitC eligibility determination responses
+      bindings:
+        http:
+          type: response
+          method: GET
+          headers:
+            Content-Type: application/json
+            Accept: application/json
 ```
 
 ## Contributing

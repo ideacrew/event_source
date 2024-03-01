@@ -1,0 +1,20 @@
+# frozen_string_literal: true
+
+<%= "module Subscribers" %>
+<% class_path.each_with_index do |path_fragment, index| -%>
+<%= indent("module #{path_fragment.to_s.camelcase}", (index + @indent_offset) * @indentation) %>
+<% end -%>
+<%= indent("# Subscribe to {#{class_name}Subscriber} events", @class_indent * @indentation) %>
+<%= indent("class #{class_short_name}Subscriber", @class_indent * @indentation) %>
+<%= indent("send(:include, Dry::Monads[:result, :do])", (@class_indent + 1) * @indentation) %>
+<%= indent(subscriber_params, (@class_indent + 1) * @indentation) %>
+<%= indent("# Following subscribe() dequeues and consumes any queued event message", (@class_indent + 1) * @indentation) %>
+<%= indent("# Uncommenting this line will silently ignore any named events not handled by another subscribe()", (@class_indent + 1) * @indentation) %>
+<%= indent(all_events_declaration, (@class_indent + 1) * @indentation) %>
+<%= indent("# Following subscribe() dequeues and silently ignores messages that match event name", (@class_indent + 1) * @indentation) %>
+<%= indent(event_declarations, (@class_indent + 1) * @indentation) %>
+<%= indent('', (@class_indent + 1) * @indentation) %>
+<%= indent(example_subscription, (@class_indent + 1) * @indentation) %>
+<% (0...@class_indent + 1).reverse_each do |index| -%>
+<%= indent('end', index * @indentation) %>
+<% end -%>
