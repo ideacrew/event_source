@@ -211,12 +211,12 @@ GEM
     parallel (1.20.1)
     parser (3.0.1.1)
       ast (~> 2.4.1)
-    pry (0.14.1)
+    pry (0.13.1)
       coderay (~> 1.1)
       method_source (~> 1.0)
-    pry-byebug (3.8.0)
+    pry-byebug (3.9.0)
       byebug (~> 11.0)
-      pry (~> 0.10)
+      pry (~> 0.13.0)
     public_suffix (4.0.6)
     racc (1.6.2)
     rack (2.2.3)
@@ -326,7 +326,6 @@ DEPENDENCIES
   event_source!
   faker
   mongoid
-  pry
   pry-byebug
   rails (>= 6.1.4)
   rspec-rails

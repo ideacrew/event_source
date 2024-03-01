@@ -16,28 +16,35 @@ module EventSource
       # MUST be in the format of a Channel Item Object. If there are conflicts between the
       # referenced definition and this Channel Item's definition, the behavior is undefined.
       # @return [String]
-      attribute :ref, Types::String.meta(omittable: true)
+      attribute :ref, Types::String.optional.meta(omittable: true)
 
       # @!attribute [r] description
       # An optional description of this channel item
       # @return [String]
-      attribute :description, Types::String.meta(omittable: true)
+      attribute :description, Types::String.optional.meta(omittable: true)
 
       # @!attribute [r] subscribe
       # A definition of the Subscribe operation
       # @return [Operation]
-      attribute :subscribe, SubscribeOperation.meta(omittable: true)
+      attribute :subscribe,
+                EventSource::AsyncApi::SubscribeOperation.optional.meta(
+                  omittable: true
+                )
 
       # @!attribute [r] publish
       # A definition of the Publish operation
       # @return [Operation]
-      attribute :publish, PublishOperation.meta(omittable: true)
+      attribute :publish,
+                EventSource::AsyncApi::PublishOperation.optional.meta(
+                  omittable: true
+                )
 
       # @!attribute [r] url
       # A map of the parameters included in the channel name.
       # It SHOULD be present only when using channels with expressions
       # @return [Parameter]
-      attribute :parameters, Parameter.meta(omittable: true)
+      attribute :parameters,
+                EventSource::AsyncApi::Parameter.optional.meta(omittable: true)
 
       # @!attribute [r] bindings
       # A map where the keys describe the name of the protocol and the

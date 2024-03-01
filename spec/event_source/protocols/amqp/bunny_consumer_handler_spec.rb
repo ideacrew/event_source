@@ -2,9 +2,8 @@
 
 require 'spec_helper'
 require 'config_helper'
-require 'shared_contexts/amqp/connection.rb'
-require 'shared_contexts/amqp/channel_item.rb'
-require 'pry'
+require 'shared_contexts/amqp/connection'
+require 'shared_contexts/amqp/channel_item'
 
 class LogService
   include EventSource::Logging
@@ -15,7 +14,7 @@ module Subscribers
     include ::EventSource::Subscriber[amqp: 'spec.crm_contact_created']
     extend EventSource::Logging
 
-    subscribe(:on_crm_sugarcrm_contacts_contact_created) do |delivery_info, _metadata, response|
+    subscribe(:on_crm_sugarcrm_contacts_contact_created) do |delivery_info, _metadata, _response|
       def method_one(msg)
         method_one(msg)
       end
@@ -93,7 +92,7 @@ RSpec.describe EventSource::Protocols::Amqp::BunnyConsumerHandler do
         sleep 1
 
         match_found = false
-        while true
+        loop do
           match_found = @log_output.readline&.match(/ERROR  EventSource : Consumer processed message. Failed and message rejected with exception/)
           break if match_found
         end
